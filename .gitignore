@@ -1,0 +1,23 @@
+# deps
+node_modules
+bun.lock
+
+# build
+build
+.svelte-kit
+
+# env
+.env
+.env.*
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# misc
+*.log
+static/pagefind/

@@ -1,0 +1,16 @@
+# 依赖
+node_modules
+.svelte-kit
+build
+
+# 静态输出
+/static
+
+# 包管理
+pnpm-lock.yaml
+package-lock.json
+bun.lock
+
+# 环境
+.env
+.env.*

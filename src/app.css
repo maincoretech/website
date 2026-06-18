@@ -1,0 +1,169 @@
+/* ============================================
+   maincore — 水色系主题
+   ============================================ */
+@import '@fontsource/lato/latin-400.css';
+@import '@fontsource/lato/latin-700.css';
+@import '@fontsource/oswald/latin-300.css';
+@import '@fontsource/oswald/latin-400.css';
+@import '@fontsource/oswald/latin-700.css';
+@import '@fontsource/roboto-condensed/latin-300.css';
+@import '@fontsource/roboto-condensed/latin-400.css';
+@import '@fontsource/inconsolata/latin-400.css';
+
+:root {
+  --c-t: rgb(51,71,85); --c-l: rgb(16,90,140); --c-m: rgb(215,228,235); --c-e: rgb(200,218,228);
+  --c-nav: rgb(185,210,222); --c-con: rgb(205,218,224); --c-sh: rgba(11,80,140,.44);
+  --c-ft: rgba(11,60,100,.36); --c-nt: rgba(185,210,222,.61); --c-cb: rgb(185,210,220); --c-pr: rgb(35,65,88);
+  --c-hv: rgba(80,120,150,.35);
+  --f-b: "Lato","Helvetica","Arial",sans-serif; --f-d: "Alfa Slab One",serif;
+  --f-h: "Oswald","Bookman Old Style",serif; --f-n: "Roboto Condensed","Bookman Old Style",serif;
+  --f-m: "Inconsolata",monospace;
+  --bg-n: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='32'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.0 0.01' numOctaves='2' seed='16807' stitchTiles='stitch'/%3E%3CfeBlend mode='color-dodge' in='SourceGraphic' in2='noise'/%3E%3C/filter%3E%3Crect width='160' height='32' filter='url(%23f)' fill='%23bcd5e8' opacity='.30'/%3E%3C/svg%3E");
+  --g-body: linear-gradient(90deg,rgb(136,168,179) 5%,rgb(158,180,188) 28% 72%,rgb(136,168,179) 95%);
+  --g-toc: linear-gradient(90deg,#5a7a8a 1%,#6090a0 1% 6%,rgb(130,170,185) 6% 11%,rgb(185,200,210) 11% 89%,rgb(130,170,185) 89% 94%,#6090a0 94% 99%,#5a7a8a 99%);
+  --g-st: linear-gradient(90deg,rgb(170,190,200) 18px,rgb(180,198,208) 18px calc(100% - 18px),rgb(170,190,200) calc(100% - 18px));
+}
+
+/* --- Reset --- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font:max(.825vw,15px) var(--f-b)}
+body{display:flex;flex-direction:column;min-height:100vh;color:var(--c-t);background-image:var(--bg-n),var(--g-body)}
+a{text-decoration:none;color:var(--c-l);transition:background .15s,color .15s}
+a:hover,[role="button"]:hover,.top-link:hover{background:var(--c-hv)}
+img{display:block;max-width:100%;margin:15px auto}
+hr{border:0}
+p{line-height:1.65;margin:16px auto}
+li{line-height:1.6;margin-left:1.5em}
+pre{display:block;overflow-x:auto;margin:16px 0;padding:14px 16px;font:.9rem/1.5 var(--f-m);color:rgb(210,218,224);background:var(--c-pr);border:2px solid #8a9aaa;border-radius:3px}
+pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inherit;font-size:inherit}
+:not(pre)>code{display:inline;margin:0 3px;padding:1px 5px;font:.9em var(--f-m);color:rgb(34,55,65);background:var(--c-cb);border-radius:2px}
+
+/* --- View Transitions --- */
+@view-transition{navigation:auto}
+::view-transition-old(main-content){animation:vt-out .15s ease forwards}
+::view-transition-new(main-content){animation:vt-in .2s ease forwards}
+@keyframes vt-out{to{opacity:0;filter:blur(4px)}}
+@keyframes vt-in{from{opacity:0;filter:blur(4px)}}
+
+/* --- Shared utilities --- */
+.grad-bar{margin:0 -20px 30px;box-shadow:0 4px 7px rgba(120,150,160,.73)}
+.grad-bar--toc{background:var(--g-toc)}
+.sec-title-box{display:block;width:max-content;margin:0 100px 24px -60px;padding:2px 40px 4px 20px;background:var(--g-st);box-shadow:3px 2px 5px rgba(90,110,120,.57)}
+.sec-title-box__title{font:700 1.25rem var(--f-h);color:rgb(110,118,128);letter-spacing:.05rem;padding-left:15px}
+
+/* --- Header --- */
+#banner{width:100%;position:sticky;top:0;z-index:99;box-shadow:2px 2px 3px rgba(38,80,110,.67);transition:transform .3s ease}
+#banner.header-hidden{transform:translateY(-100%)}
+#masthead{display:flex;align-items:center;justify-content:space-between;height:52px;background:var(--c-m)}
+#masthead .site-emboss{font:3rem Impact,serif;color:var(--c-e);margin:auto 20px auto 8px;white-space:nowrap;user-select:none}
+#site-sections-bar{display:flex;justify-content:center;height:24px;background:var(--c-nav)}
+#site-section-links{display:flex;width:100%;max-width:960px}
+#site-section-links a{flex:1;display:flex;align-items:center;justify-content:center;font:.9rem var(--f-b);color:var(--c-t)}
+
+/* --- Layout --- */
+#content-container{flex:1;width:720px;max-width:90vw;margin:12px auto 0}
+
+/* --- Content body --- */
+#toc-body{min-height:calc(100vh - 330px);padding:20px 20px 60px;background:var(--c-con);box-shadow:4px 4px 6px rgba(85,95,100,.5),-4px 0 3px rgba(85,95,100,.5)}
+.sec-header{text-align:center;margin:0 -20px 28px}
+.sec-header .title{font:400 1.8rem var(--f-h);color:rgb(95,100,110);letter-spacing:.12rem;padding-top:10px}
+.sec-header .subtitle{font:400 1rem Roboto,sans-serif;color:rgb(100,110,120);letter-spacing:.1rem;padding-bottom:15px}
+
+/* --- Article meta row --- */
+.article-meta-row{display:flex;justify-content:space-between;align-items:center;margin:16px -20px}
+.article-back,.article-byline{padding:5px 20px;background:rgb(190,205,215);font-size:.85rem;line-height:1.4;display:inline-flex;align-items:center}
+.article-back{border-radius:0 5px 5px 0;box-shadow:3px 2px 5px rgba(160,175,185,.93);font-family:var(--f-n);font-weight:300;color:rgba(70,85,95,.85);gap:4px}
+.article-back :global(svg){flex-shrink:0}
+.article-back:hover{background:var(--c-hv)}
+.article-byline{border-radius:5px 0 0 5px;box-shadow:-3px 2px 5px rgba(160,175,185,.93);color:rgb(105,115,125);gap:1rem}
+.article-byline .article-author{font-size:.9rem;font-weight:700}
+.article-byline .article-date{}
+
+/* --- Sections --- */
+.toc-section{margin:24px 0 0;font:1em var(--f-b);color:var(--c-t)}
+.article-section{margin:8px 10px 0;font:1em var(--f-b);color:var(--c-t)}
+.section-body{padding:4px 4px;border-radius:5px}
+.section-body p{margin:10px auto}
+.section-body a{color:rgb(35,85,145)}
+.section-body em{font-style:oblique 5deg;color:rgb(70,80,130)}
+.section-body strong{color:rgb(50,80,108)}
+.section-body h2,.section-body h3,.section-body h4{font-family:var(--f-h);color:rgb(55,90,115)}
+.section-body h2{font:600 1.35rem var(--f-h);margin:28px 0 12px;padding-bottom:4px;border-bottom:2px solid rgba(120,155,175,.25)}
+.section-body h3{font:500 1.15rem var(--f-h);margin:22px 0 8px}
+.section-body h4{font:500 1.05rem var(--f-h);margin:18px 0 6px}
+.section-body del{text-decoration:line-through;color:rgb(120,130,140)}
+.section-body img{max-width:100%;margin:12px auto}
+.section-body input[type=checkbox]{margin-right:6px}
+.section-body ul,.section-body ol{margin:12px 0 12px 1.2em;padding:0}
+.section-body li{margin:4px 0 4px .5em;line-height:1.6}
+.section-body blockquote{margin:16px 0;padding:10px 20px;border-left:4px solid rgba(80,130,160,.45);background:rgba(185,205,215,.35);font-style:italic;color:rgb(60,80,100)}
+.section-body blockquote p{margin:6px 0}
+.section-body table{width:100%;margin:16px 0;border-collapse:collapse;font-size:.9rem}
+.section-body td,.section-body th{padding:8px 12px;border:1px solid rgba(120,150,170,.3);text-align:left}
+.section-body th{background:rgba(160,190,205,.4);font-weight:600;color:rgb(50,80,105)}
+.section-body hr{border-top:2px dotted rgba(105,125,140,.25);margin:24px 0}
+
+/* --- Blog list --- */
+.toc-entries{width:auto;margin:10px -20px;border-top:3px solid #b8c5ce;border-bottom:3px solid #b8c5ce}
+.toc-entry-box{display:block;background:rgba(180,200,215,.72)}
+.toc-entry-box:nth-child(4n+3){background:#c0ced8de}
+.toc-entry-box:hover{background:var(--c-hv)}
+.toc-entry-divider{border-top:2px solid rgb(170,185,195)}
+.toc-entry-box .title{font:1.1rem var(--f-n);color:#4a5058f5;padding:10px 16px 4px 16px}
+.toc-entry-box .metadata{display:flex;justify-content:space-between;padding:2px 16px 6px}
+.toc-entry-box .metadata .date{font:.7rem Arial,serif;color:#616161;margin-right:10px}
+
+/* --- Notice & Divider --- */
+.notice{width:80%;margin:20px auto;padding:10px;border-radius:5px;text-align:center;color:rgb(50,75,85);background:var(--c-nt);border-left:10px solid #7a9aaa8a;border-right:10px solid #8aa0b0;box-shadow:0 2px 5px #8a9498b8}
+.notice a{color:rgb(100,130,150);text-decoration:underline #889caa solid 2px}
+.notice em{font-style:oblique 3deg;color:rgb(80,100,120)}
+.divider{width:40%;margin:40px auto 20px;border-top:3px dotted rgba(105,115,125,.3)}
+
+/* --- Footer --- */
+#site-footer{width:100%;min-height:120px;margin-top:60px;padding:10px 0;background:var(--c-ft)}
+#site-footer p{max-width:1280px;margin:1px auto;font:.8rem var(--f-b);color:rgb(235,240,245);text-align:center}
+#site-footer a{color:rgb(180,210,235)}
+#site-footer .copyright{margin-top:20px}
+
+/* ============================================
+   响应式
+   ============================================ */
+@media(max-width:640px){
+  html{font-size:14px}
+  #content-container{width:auto;max-width:none;margin:12px auto 0;padding:0 32px}
+  #banner{height:auto}
+  #masthead .site-emboss{display:none}
+  #site-sections-bar{height:22px}
+  #site-section-links a{font-size:.78rem}
+  #toc-body{padding:14px 14px 40px;min-height:auto}
+  .toc-section{margin:18px 0 0}
+  .article-section{margin:30px 10px 0}
+  .sec-title-box{margin-left:-14px;margin-right:20px;padding:2px 24px 4px 12px}
+  .sec-title-box__title{font-size:1rem;padding-left:6px}
+  .grad-bar{margin:0 -14px 20px}
+  .sec-header .title{font:400 1.4rem/1.3 var(--f-h);padding:8px 0 4px}
+  .sec-header .subtitle{font:.85rem/1.3 Roboto,sans-serif;padding:0 0 8px}
+  .article-meta-row{margin:16px -14px 24px;flex-wrap:wrap;gap:6px}
+  .article-back,.article-byline{padding:3px 14px;font-size:.72rem}
+  .notice{width:94%}
+  .toc-entries{margin:10px -14px}
+  #site-footer p{padding:0 12px}
+}
+@media(max-width:480px){
+  #masthead{height:44px}
+  #site-sections-bar{height:20px}
+  #site-section-links a{font-size:.72rem}
+  #content-container{margin:12px 8px 0}
+  #toc-body{padding:10px 10px 30px}
+  .grad-bar{margin:0 -10px 16px}
+  .toc-entries{margin:8px -10px}
+  .article-meta-row{margin:12px -10px 20px;flex-wrap:wrap;gap:4px}
+  .sec-header .title{font:400 1.15rem/1.3 var(--f-h);padding:8px 32px 4px}
+  .sec-header .subtitle{font:.75rem/1.3 Roboto,sans-serif;padding:0 32px 8px}
+  .toc-entry-box .title{font-size:.9rem;padding:8px 12px 2px}
+  .toc-entry-box .metadata .date{font-size:.65rem}
+  .section-body{padding:8px 2px}
+  .section-body h2{font-size:1.1rem}
+  #site-footer{min-height:80px;margin-top:30px}
+  #site-footer p{font-size:.7rem}
+}
