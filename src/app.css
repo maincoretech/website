@@ -112,7 +112,6 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 /* --- Blog list --- */
 .toc-entries{width:auto;margin:10px -20px;border-top:3px solid #b8c5ce;border-bottom:3px solid #b8c5ce}
 .toc-entry-box{display:block;background:rgba(180,200,215,.72)}
-.toc-entry-box:nth-child(4n+3){background:#c0ced8de}
 .toc-entry-box:hover{background:var(--c-hv)}
 .toc-entry-divider{border-top:2px solid rgb(170,185,195)}
 .toc-entry-box .title{font:1.1rem var(--f-n);color:#4a5058f5;padding:10px 16px 4px 16px}
