@@ -8,6 +8,7 @@
   import { error } from '@sveltejs/kit';
   import { t } from '$lib/i18n/index.js';
   import { ArrowBack } from '$lib/icons.js';
+  import Giscus from '$lib/components/Giscus.svelte';
 
   const modules = import.meta.glob('$lib/posts/*.md', { eager: true });
 
@@ -54,8 +55,10 @@
 
   <div class="divider"></div>
 
-  <div style="text-align: center; margin-top: 40px;">
-    <a href="/blog" style="font-family: 'Roboto Condensed', serif; font-size: 1rem; color: rgb(60, 100, 140); display: inline-flex; align-items: center; gap: 5px;">
+  <Giscus />
+
+  <div class="article-bottom-back">
+    <a href="/blog">
       {@html ArrowBack}
       {$t('back.blog')}
     </a>

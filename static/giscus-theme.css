@@ -1,0 +1,93 @@
+/*! maincore — 水色系 giscus 主题 */
+main {
+  --color-prettylights-syntax-comment: #8c8fa1;
+  --color-prettylights-syntax-constant: #1e66f5;
+  --color-prettylights-syntax-entity: #1e66f5;
+  --color-prettylights-syntax-storage-modifier-import: #fe640b;
+  --color-prettylights-syntax-entity-tag: #179299;
+  --color-prettylights-syntax-keyword: #ea76cb;
+  --color-prettylights-syntax-string: #40a02b;
+  --color-prettylights-syntax-variable: #fe640b;
+  --color-prettylights-syntax-invalid-illegal-text: #d20f39;
+  --color-prettylights-syntax-invalid-illegal-bg: rgb(210 15 57 / 15%);
+  --color-prettylights-syntax-markup-heading: #179299;
+  --color-prettylights-syntax-markup-italic: #df8e1d;
+  --color-prettylights-syntax-markup-bold: #df8e1d;
+  --color-prettylights-syntax-markup-deleted-text: rgb(35,52,64);
+  --color-prettylights-syntax-markup-deleted-bg: rgb(210 15 57 / 40%);
+  --color-prettylights-syntax-markup-inserted-text: rgb(35,52,64);
+  --color-prettylights-syntax-markup-inserted-bg: rgb(64 160 43 / 40%);
+  --color-prettylights-syntax-markup-changed-text: rgb(35,52,64);
+  --color-prettylights-syntax-markup-changed-bg: rgb(223 142 29 / 40%);
+  --color-prettylights-syntax-markup-ignored-text: rgb(35,52,64);
+
+  --color-btn-text: rgb(35,52,64);
+  --color-btn-bg: rgb(205,218,224);
+  --color-btn-border: rgba(100,130,150,.28);
+  --color-btn-hover-bg: rgb(195,210,218);
+  --color-btn-hover-border: rgba(60,100,130,.45);
+  --color-btn-active-bg: rgb(185,200,210);
+  --color-btn-selected-bg: rgb(185,200,210);
+  --color-btn-counter-bg: rgb(185,200,210);
+  --color-btn-outline-text: rgb(16,90,140);
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-primary-text: #fff;
+  --color-btn-primary-bg: rgba(11,80,140,.44);
+  --color-btn-primary-border: transparent;
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: rgba(11,80,140,.56);
+  --color-btn-primary-hover-border: rgba(11,80,140,.56);
+  --color-btn-primary-selected-bg: rgba(11,80,140,.56);
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: rgba(35,52,64,.4);
+  --color-btn-primary-disabled-bg: rgba(11,80,140,.2);
+  --color-btn-primary-disabled-border: transparent;
+
+  --color-action-list-item-default-hover-bg: rgb(195,210,218);
+  --color-segmented-control-bg: rgb(185,200,210);
+  --color-segmented-control-button-bg: rgb(205,218,224);
+  --color-segmented-control-button-selected-border: rgba(100,130,150,.4);
+
+  --color-fg-default: rgb(35,52,64);
+  --color-fg-muted: rgba(35,52,64,.55);
+  --color-fg-subtle: rgba(35,52,64,.4);
+  --color-canvas-default: rgb(205,218,224);
+  --color-canvas-overlay: rgb(195,210,218);
+  --color-canvas-inset: rgb(215,228,235);
+  --color-canvas-subtle: rgb(210,222,228);
+  --color-border-default: rgba(100,130,150,.28);
+  --color-border-muted: rgba(100,130,150,.14);
+  --color-neutral-muted: rgba(100,130,150,.2);
+
+  --color-accent-fg: rgb(16,90,140);
+  --color-accent-emphasis: rgb(16,90,140);
+  --color-accent-muted: rgba(11,80,140,.12);
+  --color-accent-subtle: rgba(11,80,140,.06);
+  --color-success-fg: #40a02b;
+  --color-attention-fg: #fe640b;
+  --color-attention-muted: rgba(11,80,140,.3);
+  --color-attention-subtle: rgba(11,80,140,.12);
+  --color-danger-fg: #d20f39;
+  --color-danger-muted: rgb(210 15 57 / 40%);
+  --color-danger-subtle: rgb(210 15 57 / 20%);
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-1: rgb(195,210,218);
+  --color-scale-blue-1: rgb(16,90,140);
+  --color-social-reaction-bg-hover: var(--color-scale-gray-1);
+  --color-social-reaction-bg-reacted-hover: var(--color-scale-blue-1);
+}
+
+main .gsc-comment-box-textarea::placeholder {
+  color: rgba(35,52,64,.4);
+}
+
+main .pagination-loader-container {
+  background-image: url(https://github.com/images/modules/pulls/progressive-disclosure-line.svg);
+}
+
+main .gsc-loading-image {
+  background-image: url(https://github.githubassets.com/images/mona-loading-default.gif);
+}
+

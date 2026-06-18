@@ -1,3 +1,8 @@
 [build]
   command = "bun run build"
   publish = "build"
+
+[[headers]]
+  for = "/giscus-theme.css"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"

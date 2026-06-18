@@ -3,6 +3,7 @@
   import { error } from '@sveltejs/kit';
   import { t } from '$lib/i18n/index.js';
   import { ArrowBack } from '$lib/icons.js';
+  import Giscus from '$lib/components/Giscus.svelte';
 
   const modules = import.meta.glob('$lib/news/*.md', { eager: true });
 
@@ -38,8 +39,11 @@
   </article>
 
   <div class="divider"></div>
-  <div style="text-align:center;margin-top:40px">
-    <a href="/" style="font:1rem var(--f-n, 'Roboto Condensed',serif);color:var(--c-l);display:inline-flex;align-items:center;gap:5px">
+
+  <Giscus />
+
+  <div class="article-bottom-back">
+    <a href="/">
       {@html ArrowBack}
       {$t('back.news')}
     </a>

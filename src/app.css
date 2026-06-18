@@ -83,6 +83,12 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 .toc-section{margin:24px 0 0;font:1em var(--f-b);color:var(--c-t)}
 .article-section{margin:8px 10px 0;font:1em var(--f-b);color:var(--c-t)}
 .section-body{padding:4px 4px;border-radius:5px}
+
+/* --- Bottom back link --- */
+.article-bottom-back{text-align:center;margin-top:40px}
+.article-bottom-back a{display:inline-flex;align-items:center;gap:5px;padding:5px 20px;border-radius:5px;font:300 .85rem var(--f-n);color:rgba(70,85,95,.85);background:rgb(190,205,215);box-shadow:3px 2px 5px rgba(160,175,185,.93);transition:background .15s;text-decoration:none}
+.article-bottom-back a:hover{background:var(--c-hv)}
+.article-bottom-back :global(svg){flex-shrink:0}
 .section-body p{margin:10px auto}
 .section-body a{color:rgb(35,85,145)}
 .section-body em{font-style:oblique 5deg;color:rgb(70,80,130)}
