@@ -4,9 +4,7 @@ date: 2026-06-18
 priority: 2
 ---
 
-这是一个简单的介绍，是针对
-
-### WebGAL_k
+## WebGAL_k
 
 - 基于 [WebGAL](https://github.com/OpenWebGAL/WebGAL) / [Tauri v2](https://v2.tauri.app) / [hexz](https://github.com/maincoretech/hexz_k)，将游戏资源打包为单个 `.hxz` 归档。
 

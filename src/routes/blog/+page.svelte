@@ -39,8 +39,6 @@
     }
     return Object.entries(map);
   });
-
-  const catLabels = { design: '设计', tech: '技术', essay: '随笔', uncategorized: '未分类', tools: '工具', game: '游戏', business: '商业' };
 </script>
 
 <div id="toc-body">
@@ -52,7 +50,7 @@
   {#each grouped as [cat, catPosts]}
     <div class="toc-section">
       <div class="section-title-box">
-        <span class="section-title">{$t('cat.' + cat) || catLabels[cat] || cat}</span>
+        <span class="section-title">{$t('cat.' + cat) || cat}</span>
       </div>
 
       <div class="toc-entries">
@@ -73,8 +71,8 @@
 
   {#if posts.length === 0}
     <div class="notice">
-      暂无文章。<br />
-      在 <code class="code-inline">src/lib/posts/</code> 目录下创建 <code class="code-inline">.md</code> 文件即可自动渲染。
+      {$t('pages.blog.empty')}<br />
+      {$t('pages.blog.empty_hint')}
     </div>
   {/if}
 </div>

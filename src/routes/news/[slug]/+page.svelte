@@ -10,7 +10,7 @@
   let contentState = $derived.by(() => {
     const slug = $page.params.slug;
     const match = Object.entries(modules).find(([p]) => p.endsWith(`/${slug}.md`));
-    if (!match) error(404, `新闻 "${slug}" 未找到。`);
+    if (!match) error(404, $t('error.news_not_found') + ` "${slug}"`);
     const [, mod] = match;
     return { Content: mod.default, meta: mod.metadata ?? {} };
   });

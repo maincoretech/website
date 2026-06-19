@@ -1,5 +1,6 @@
 <script>
   import { page } from '$app/stores';
+  import { t } from '$lib/i18n/index.js';
 
   let { open, onclose } = $props();
 
@@ -15,7 +16,7 @@
 <aside class="drawer" class:open>
   <div id="current-page-navigation">
     <div id="navigation-header">
-      <span class="navigation-title">目录</span>
+      <span class="navigation-title">{$t('sidebar.toc')}</span>
     </div>
     <div id="navigation-links">
       {#each headings as h, i}

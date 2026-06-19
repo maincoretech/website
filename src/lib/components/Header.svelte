@@ -58,7 +58,7 @@
   <div id="masthead">
     {#if showHamburger}
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <span class="hamburger" onmousedown={(e) => { e.stopPropagation(); ontoggle?.(); }} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label="菜单">☰</span>
+      <span class="hamburger" onmousedown={(e) => { e.stopPropagation(); ontoggle?.(); }} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')}>☰</span>
     {/if}
     <div class="site-emboss">{siteConfig.domain}</div>
     <span class="spacer"></span>
@@ -110,7 +110,7 @@
 
 {#if showHamburger && headerHidden}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label="菜单">☰</span>
+  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')}>☰</span>
 {/if}
 
 <style>

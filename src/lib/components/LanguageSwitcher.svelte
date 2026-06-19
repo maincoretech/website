@@ -75,4 +75,8 @@
   }
   .lang-opt:hover { background: rgba(80,120,150,.3); }
   .lang-opt.active { color: var(--c-l); font-weight: 700; }
+
+  @media (max-width: 480px) {
+    .lang-wrap { padding: 6px 0; }
+  }
 </style>

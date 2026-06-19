@@ -1,4 +1,6 @@
 <script>
+  import { t } from '$lib/i18n/index.js';
+
   let visible = $state(false);
 
   function check() {
@@ -24,7 +26,7 @@
 
 {#if visible}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <button class="btt" onclick={scrollUp} aria-label="返回顶部">▲</button>
+  <button class="btt" onclick={scrollUp} aria-label={$t('a11y.back_to_top')}>▲</button>
 {/if}
 
 <style>

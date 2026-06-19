@@ -6,10 +6,7 @@ const config = {
   extensions: ['.svelte', '.md', '.svx'],
   preprocess: [
     mdsvex({
-      extensions: ['.md', '.svx'],
-      layout: {
-        blog: 'src/lib/components/BlogPostLayout.svelte'
-      }
+      extensions: ['.md', '.svx']
     })
   ],
   kit: {
@@ -20,6 +17,7 @@ const config = {
       precompress: 'br',
       strict: true
     }),
+    inlineStyleThreshold: 30720,
     prerender: {
       handleHttpError: 'warn'
     }
