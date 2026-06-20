@@ -77,6 +77,6 @@
   .lang-opt.active { color: var(--c-l); font-weight: 700; }
 
   @media (max-width: 480px) {
-    .lang-wrap { padding: 6px 0; }
+    .lang-wrap { padding: 7px 0; }
   }
 </style>

@@ -77,7 +77,6 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 .article-back:hover{background:var(--c-hv)}
 .article-byline{border-radius:5px 0 0 5px;box-shadow:-3px 2px 5px rgba(160,175,185,.93);color:rgb(105,115,125);gap:1rem}
 .article-byline .article-author{font-size:.9rem;font-weight:700}
-.article-byline .article-date{}
 
 /* --- Sections --- */
 .toc-section{margin:24px 0 0;font:1em var(--f-b);color:var(--c-t)}
