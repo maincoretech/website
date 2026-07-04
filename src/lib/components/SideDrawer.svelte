@@ -34,10 +34,10 @@
   @keyframes fade-in { from { opacity: 0 } }
   .drawer {
     position: fixed; top: 96px; bottom: 0; z-index: 160; width: 14vw; min-width: 180px;
-    left: -260px; transform: scale(.92); transform-origin: left center;
-    transition: left .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1);
+    left: 0; transform: translateX(calc(-100% - 8px)); transform-origin: left center;
+    transition: transform .25s cubic-bezier(.4,0,.2,1);
   }
-  .drawer.open { left: 0; transform: scale(1); }
+  .drawer.open { transform: translateX(0); }
 
   #current-page-navigation {
     margin-top: 54px; min-height: 300px; padding-bottom: 50px;

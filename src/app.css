@@ -26,7 +26,7 @@
 
 /* --- Reset --- */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font:max(.825vw,15px) var(--f-b)}
+html{font:max(min(.825vw,19px),15px) var(--f-b)}
 body{display:flex;flex-direction:column;min-height:100vh;color:var(--c-t);background-image:var(--bg-n),var(--g-body)}
 a{text-decoration:none;color:var(--c-l);transition:background .15s,color .15s}
 a:hover,[role="button"]:hover,.top-link:hover{background:var(--c-hv)}
@@ -55,7 +55,7 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 #banner{width:100%;position:sticky;top:0;z-index:99;box-shadow:2px 2px 3px rgba(38,80,110,.67);transition:transform .3s ease}
 #banner.header-hidden{transform:translateY(-100%)}
 #masthead{display:flex;align-items:center;justify-content:space-between;height:52px;background:var(--c-m)}
-#masthead .site-emboss{font:3rem Impact,serif;color:var(--c-e);margin:auto 20px auto 8px;white-space:nowrap;user-select:none}
+#masthead .site-emboss{font:3rem Impact,serif;color:var(--c-e);margin:0 20px 0 8px;white-space:nowrap;user-select:none;line-height:52px}
 #site-sections-bar{display:flex;justify-content:center;height:24px;background:var(--c-nav)}
 #site-section-links{display:flex;width:100%;max-width:960px}
 #site-section-links a{flex:1;display:flex;align-items:center;justify-content:center;font:.9rem var(--f-b);color:var(--c-t)}
