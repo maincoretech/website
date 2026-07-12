@@ -5,10 +5,14 @@
   import SideDrawer from '$lib/components/SideDrawer.svelte';
   import BackToTop from '$lib/components/BackToTop.svelte';
   import { onNavigate } from '$app/navigation';
+  import { onMount } from 'svelte';
+  import { initLang } from '$lib/i18n/index.js';
 
   let { children } = $props();
 
   let drawerOpen = $state(false);
+
+  onMount(initLang);
 
   onNavigate((navigation) => {
     drawerOpen = false;

@@ -1,7 +1,6 @@
 <script>
   import { page } from '$app/stores';
   import { siteConfig } from '$lib/siteConfig.js';
-  import { search } from '$lib/search.js';
   import { browser } from '$app/environment';
   import { t } from '$lib/i18n/index.js';
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
@@ -15,6 +14,8 @@
   let focused = $state(false);
   let inputEl = $state(null);
   let headerHidden = $state(false);
+  let searchFn;
+  let searchModulePromise;
 
   const isMac = browser && /Mac/i.test(navigator.platform);
   const isMobile = browser && /Mobi/i.test(navigator.userAgent);
@@ -36,9 +37,20 @@
     return () => window.removeEventListener('scroll', onScroll);
   });
 
-  function doSearch() {
+  function loadSearch() {
+    searchModulePromise ??= import('$lib/search.js').then((mod) => {
+      searchFn = mod.search;
+      return searchFn;
+    });
+    return searchModulePromise;
+  }
+
+  async function doSearch() {
     if (!query.trim()) { results = []; return; }
-    results = search(query);
+    const term = query;
+    const search = searchFn ?? await loadSearch();
+    if (query !== term) return;
+    results = search(term);
   }
 
   $effect(() => { doSearch(); });
@@ -71,7 +83,7 @@
           class="search-input"
           placeholder={$t('search.placeholder')}
           bind:value={query}
-          onfocus={() => focused = true}
+          onfocus={() => { focused = true; loadSearch(); }}
           onblur={blurSoon}
         />
         {#if !focused && !query && !isMobile}
@@ -168,4 +180,3 @@
     .kbd-hint { display: none; }
   }
 </style>
-

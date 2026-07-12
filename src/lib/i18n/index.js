@@ -42,8 +42,17 @@ function detectLang() {
   return defaultLang;
 }
 
-/** 当前语言 store */
-export const lang = writable(detectLang());
+/** 当前语言 store。SSR 和 hydration 均从默认语言开始，避免标记不一致。 */
+export const lang = writable(defaultLang);
+
+let initialized = false;
+
+/** hydration 完成后恢复用户语言偏好 */
+export function initLang() {
+  if (!browser || initialized) return;
+  initialized = true;
+  lang.set(detectLang());
+}
 
 /** 当前翻译字典 (derived) */
 export const dict = derived(lang, ($lang) => dicts[$lang] ?? dicts[defaultLang]);
