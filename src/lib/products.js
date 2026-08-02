@@ -7,6 +7,11 @@ export const products = [
     category: 'VN引擎',
     items: [
       {
+        name: 'Kēne',
+        desc: '基于 Rust、Bevy 和 wgpu 的原生视觉小说引擎',
+        link: 'https://github.com/maincoretech/keine'
+      },
+      {
         name: 'WebGAL_k',
         desc: '桌面端视觉小说引擎。基于 WebGAL + Tauri v2 + hexz',
         link: 'https://github.com/maincoretech/WebGAL_k'
