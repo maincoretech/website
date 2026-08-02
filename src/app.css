@@ -10,6 +10,13 @@
 @import '@fontsource/roboto-condensed/latin-400.css';
 @import '@fontsource/inconsolata/latin-400.css';
 
+/* Kēne uses ē (Latin Extended-A); keep the matching face instead of falling back per glyph. */
+@font-face{font-family:'Lato';font-display:swap;font-weight:400;src:url('../node_modules/@fontsource/lato/files/lato-latin-ext-400-normal.woff2') format('woff2');unicode-range:U+0113}
+@font-face{font-family:'Lato';font-display:swap;font-weight:700;src:url('../node_modules/@fontsource/lato/files/lato-latin-ext-700-normal.woff2') format('woff2');unicode-range:U+0113}
+@font-face{font-family:'Oswald';font-display:swap;font-weight:400;src:url('../node_modules/@fontsource/oswald/files/oswald-latin-ext-400-normal.woff2') format('woff2');unicode-range:U+0113}
+@font-face{font-family:'Oswald';font-display:swap;font-weight:700;src:url('../node_modules/@fontsource/oswald/files/oswald-latin-ext-700-normal.woff2') format('woff2');unicode-range:U+0113}
+@font-face{font-family:'Roboto Condensed';font-display:swap;font-weight:400;src:url('../node_modules/@fontsource/roboto-condensed/files/roboto-condensed-latin-ext-400-normal.woff2') format('woff2');unicode-range:U+0113}
+
 :root {
   --c-t: rgb(51,71,85); --c-l: rgb(16,90,140); --c-m: rgb(215,228,235); --c-e: rgb(200,218,228);
   --c-nav: rgb(185,210,222); --c-con: rgb(205,218,224); --c-sh: rgba(11,80,140,.44);
@@ -143,7 +150,8 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
   #masthead .site-emboss{display:none}
   #site-sections-bar{height:22px}
   #site-section-links a{font-size:.78rem}
-  #toc-body{padding:14px 14px 40px;min-height:auto}
+  #toc-body{padding:14px 14px 16px;min-height:auto}
+  #site-footer{min-height:72px;margin-top:12px}
   .toc-section{margin:18px 0 0}
   .article-section{margin:30px 10px 0}
   .sec-title-box{margin-left:-14px;margin-right:20px;padding:2px 24px 4px 12px}
@@ -162,7 +170,7 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
   #site-sections-bar{height:20px}
   #site-section-links a{font-size:.72rem}
   #content-container{margin:12px 8px 0}
-  #toc-body{padding:10px 10px 30px}
+  #toc-body{padding:10px 10px 12px}
   .grad-bar{margin:0 -10px 16px}
   .toc-entries{margin:8px -10px}
   .article-meta-row{margin:12px -10px 20px;flex-wrap:wrap;gap:4px}
@@ -172,6 +180,6 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
   .toc-entry-box .metadata .date{font-size:.65rem}
   .section-body{padding:8px 2px}
   .section-body h2{font-size:1.1rem}
-  #site-footer{min-height:80px;margin-top:30px}
+  #site-footer{min-height:56px;margin-top:12px}
   #site-footer p{font-size:.7rem}
 }
