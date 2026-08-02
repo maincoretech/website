@@ -132,6 +132,10 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 /* ============================================
    响应式
    ============================================ */
+@media(min-width:641px){
+  #toc-body{padding-bottom:12px}
+  #site-footer{min-height:100px;margin-top:12px}
+}
 @media(max-width:640px){
   html{font-size:14px}
   #content-container{width:auto;max-width:none;margin:12px auto 0;padding:0 32px}
