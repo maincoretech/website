@@ -1,0 +1,7 @@
+{
+  "name": "website",
+  "compatibility_date": "2026-08-15",
+  "assets": {
+    "directory": "./build"
+  }
+}
