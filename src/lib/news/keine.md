@@ -1,7 +1,7 @@
 ---
-title: Kēne — 原生视觉小说引擎
+title: Kēne｜另一个视觉小说引擎
 date: 2026-08-03
-priority: 3
+priority: 5
 ---
 
 ## Kēne

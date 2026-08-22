@@ -6,12 +6,10 @@
 
   let headings = $derived($page.data?.headings ?? []);
 
-  function close() { onclose?.(); }
+  function close() {
+    onclose?.();
+  }
 </script>
-
-{#if open}
-  <div class="backdrop" onmousedown={close} role="presentation"></div>
-{/if}
 
 <aside class="drawer" class:open>
   <div id="current-page-navigation">
@@ -22,7 +20,22 @@
       {#each headings as h, i}
         <div class="navigation-link toc-link" class:toc-h3={h.level === 'H3'}>
           <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <span onclick={() => { const el = document.querySelectorAll('.section-body h2, .section-body h3')[i]; el?.scrollIntoView({ behavior: 'smooth', block: 'start' }); close(); }} onkeydown={(e) => e.key === 'Enter' && (() => { const el = document.querySelectorAll('.section-body h2, .section-body h3')[i]; el?.scrollIntoView({ behavior: 'smooth', block: 'start' }); close(); })()} role="link" tabindex="0">{h.text}</span>
+          <span
+            onclick={() => {
+              const el = document.querySelectorAll('.section-body h2, .section-body h3')[i];
+              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              close();
+            }}
+            onkeydown={(e) =>
+              e.key === 'Enter' &&
+              (() => {
+                const el = document.querySelectorAll('.section-body h2, .section-body h3')[i];
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                close();
+              })()}
+            role="link"
+            tabindex="0">{h.text}</span
+          >
         </div>
       {/each}
     </div>
@@ -30,31 +43,88 @@
 </aside>
 
 <style>
-  .backdrop { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,.15); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fade-in .15s ease; }
-  @keyframes fade-in { from { opacity: 0 } }
   .drawer {
-    position: fixed; top: 96px; bottom: 0; z-index: 160; width: 14vw; min-width: 180px;
-    left: 0; transform: translateX(calc(-100% - 8px)); transform-origin: left center;
-    transition: transform .25s cubic-bezier(.4,0,.2,1);
+    --footer-clearance: 116px;
+    position: fixed;
+    top: 76px;
+    bottom: var(--footer-clearance);
+    left: 0;
+    z-index: 160;
+    width: 272px;
+    max-width: 82vw;
+    overflow-y: auto;
+    background: linear-gradient(
+      to bottom,
+      rgba(205, 218, 224, 0.98) 0%,
+      rgba(205, 218, 224, 0.98) 76%,
+      rgba(205, 218, 224, 0.58) 90%,
+      rgba(205, 218, 224, 0) 100%
+    );
+    border-right: 1px solid transparent;
+    border-image: linear-gradient(to bottom, rgba(80, 110, 130, 0.24) 0 76%, transparent 100%) 1;
+    transform: translateX(calc(-100% - 18px));
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .drawer.open { transform: translateX(0); }
-
+  .drawer.open {
+    transform: translateX(0);
+  }
   #current-page-navigation {
-    margin-top: 54px; min-height: 300px; padding-bottom: 50px;
-    background-image:
-      linear-gradient(145deg, rgba(200,225,240,.4), rgba(175,195,205,.3) 25%, rgba(165,182,190,.09) 75%, rgba(198,220,230,.4)),
-      linear-gradient(240deg, transparent 30%, rgba(175,195,205,.1) 48%, rgba(205,220,230,.13) 54%, rgba(165,182,190,.2) 60%, transparent 80%);
-    box-shadow: 4px 2px 6px rgba(180,210,225,.5), -1px 0 5px rgba(180,210,225,.4);
+    min-height: 100%;
+    padding-bottom: 24px;
   }
   #navigation-header {
-    display: flex; justify-content: center; align-items: center; min-height: 40px; margin-bottom: 35px;
-    background: var(--c-sh); box-shadow: 0 4px 10px rgba(64,64,64,.5);
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    background: var(--c-nav);
+    border-bottom: 1px solid rgba(80, 110, 130, 0.2);
   }
   #navigation-header .navigation-title {
-    font: 300 1.2rem var(--f-h); color: rgb(204,218,230); letter-spacing: .15rem;
+    font: 600 0.9rem var(--f-b);
+    color: var(--c-t);
+    letter-spacing: 0.08rem;
   }
-  #navigation-links { display: flex; flex-direction: column; align-items: stretch; }
-  .navigation-link { text-align: left; }
-  .toc-link span { font-size: .85rem; padding: 5px 12px 5px 16px; cursor: pointer; display: block; }
-  .toc-h3 { padding-left: 24px !important; font-size: .8rem !important; opacity: .85; }
+  #navigation-links {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+  }
+  .navigation-link {
+    text-align: left;
+  }
+  .toc-link span {
+    display: block;
+    padding: 9px 18px;
+    color: var(--c-t);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .toc-link span:hover,
+  .toc-link span:focus-visible {
+    background: rgba(80, 120, 150, 0.14);
+    border-left-color: rgba(16, 90, 140, 0.55);
+    outline: none;
+  }
+  .toc-h3 span {
+    padding-left: 32px;
+    color: rgba(51, 71, 85, 0.78);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 640px) {
+    .drawer {
+      --footer-clearance: 88px;
+      top: 74px;
+    }
+  }
+  @media (max-width: 480px) {
+    .drawer {
+      --footer-clearance: 72px;
+      top: 64px;
+      width: 280px;
+      max-width: 86vw;
+    }
+  }
 </style>

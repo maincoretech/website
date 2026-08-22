@@ -1,7 +1,7 @@
 ---
-title: WebGAL_k — 桌面端视觉小说引擎
+title: WebGAL_k｜桌面端视觉小说引擎
 date: 2026-06-18
-priority: 2
+priority: 1
 ---
 
 ## WebGAL_k

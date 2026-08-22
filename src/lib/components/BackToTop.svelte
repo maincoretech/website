@@ -1,5 +1,7 @@
 <script>
   import { t } from '$lib/i18n/index.js';
+  import { cubicIn, cubicOut } from 'svelte/easing';
+  import { scale } from 'svelte/transition';
 
   let visible = $state(false);
 
@@ -26,7 +28,7 @@
 
 {#if visible}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <button class="btt" onclick={scrollUp} aria-label={$t('a11y.back_to_top')}>▲</button>
+  <button class="btt" onclick={scrollUp} aria-label={$t('a11y.back_to_top')} in:scale={{ start: 0.8, duration: 140, easing: cubicOut }} out:scale={{ start: 0.8, duration: 140, easing: cubicIn }}>▲</button>
 {/if}
 
 <style>
@@ -37,8 +39,5 @@
     background: linear-gradient(145deg,rgba(185,210,230,.95),rgba(160,190,210,.95) 25%,rgba(150,175,195,.9) 75%,rgba(185,215,235,.95)),linear-gradient(240deg,transparent 30%,rgba(160,190,210,.9) 48%,rgba(195,218,232,.9) 54%,rgba(150,175,195,.9) 60%,transparent 80%);
     box-shadow: 4px 2px 6px rgba(180,210,225,.5),-1px 0 5px rgba(180,210,225,.4);
     display: flex; align-items: center; justify-content: center;
-    animation: btt-in .2s ease;
-    transition: transform .15s;
   }
-  @keyframes btt-in { from { opacity: 0; transform: scale(.8); } }
 </style>

@@ -16,7 +16,10 @@
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
-    script.setAttribute('data-theme', dev ? 'light' : window.location.origin + '/giscus-theme.css?v=3');
+    const theme = dev
+      ? 'https://cdn.jsdelivr.net/gh/maincoretech/website@a68ed5d14166b4e2ff7adc260bd45c9a511fbde6/static/giscus-theme.css'
+      : window.location.origin + '/giscus-theme.css?v=4';
+    script.setAttribute('data-theme', theme);
     script.setAttribute('data-lang', 'zh-CN');
     script.setAttribute('data-loading', 'lazy');
     script.setAttribute('crossorigin', 'anonymous');
@@ -29,5 +32,8 @@
 <div id="giscus-container" class="giscus"></div>
 
 <style>
-  .giscus { margin-top: 40px; min-height: 100px; }
+  .giscus {
+    margin-top: 40px;
+    min-height: 100px;
+  }
 </style>

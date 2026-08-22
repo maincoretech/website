@@ -25,6 +25,7 @@
     "@fontsource/lato": "^5.2.7",
     "@fontsource/oswald": "^5.2.8",
     "@fontsource/roboto-condensed": "^5.2.8",
+    "echarts": "^6.0.0",
     "minisearch": "^7.2.0"
   }
 }

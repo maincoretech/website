@@ -141,6 +141,7 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
    ============================================ */
 @media(min-width:641px){
   #toc-body{padding-bottom:12px}
+  .sec-header .title{width:calc(78% - 32px);margin:0 auto;overflow-wrap:anywhere}
   #site-footer{min-height:100px;margin-top:12px}
 }
 @media(max-width:640px){
@@ -180,6 +181,7 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
   .toc-entry-box .metadata .date{font-size:.65rem}
   .section-body{padding:8px 2px}
   .section-body h2{font-size:1.1rem}
+  .section-body table{display:block;overflow-x:auto}
   #site-footer{min-height:56px;margin-top:12px}
   #site-footer p{font-size:.7rem}
 }

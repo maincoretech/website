@@ -4,6 +4,8 @@
   import { browser } from '$app/environment';
   import { t } from '$lib/i18n/index.js';
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+  import { cubicIn, cubicOut } from 'svelte/easing';
+  import { scale } from 'svelte/transition';
 
   let { ontoggle } = $props();
 
@@ -122,7 +124,7 @@
 
 {#if showHamburger && headerHidden}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')}>☰</span>
+  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')} in:scale={{ start: 0.8, duration: 140, easing: cubicOut }} out:scale={{ start: 0.8, duration: 140, easing: cubicIn }}>☰</span>
 {/if}
 
 <style>
@@ -140,11 +142,9 @@
     background: rgba(205,218,224,.75);
     box-shadow: 0 2px 8px rgba(0,0,0,.12);
     display: flex; align-items: center; justify-content: center;
-    animation: float-in .2s ease;
     transition: background .15s;
     user-select: none;
   }
-  @keyframes float-in { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
   .spacer { flex: 1; }
   .search-inner { position: relative; display: flex; align-items: center; height: 100%; }
   .search-input {

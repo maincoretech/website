@@ -1,7 +1,7 @@
 ---
-title: hexz_k — 游戏资源打包工具
+title: hexz_k｜游戏资源打包工具
 date: 2026-06-18
-priority: 1
+priority: 2
 ---
 
 ## hexz_k
