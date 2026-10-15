@@ -5,7 +5,7 @@
 
   const colors = ['#6090a0', '#8aaab8', '#6d91a5'];
   const textStyle = {
-    color: '#334755',
+    color: '#bdd1dc',
     fontFamily: 'Lato, Helvetica, Arial, sans-serif'
   };
 
@@ -19,7 +19,7 @@
       trigger: 'axis',
       axisPointer: { type: 'none' },
       confine: true,
-      backgroundColor: '#d7e4eb',
+      backgroundColor: '#14232c',
       borderWidth: 0,
       textStyle,
       extraCssText: 'border-radius: 6px; box-shadow: none;'

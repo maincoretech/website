@@ -18,34 +18,18 @@
     .sort((a, b) => b.priority - a.priority || new Date(b.date) - new Date(a.date));
 </script>
 
-<div id="toc-body">
-  <div class="grad-bar grad-bar--toc sec-header">
-    <div class="title">News</div>
-    <div class="subtitle">{$t('pages.news.subtitle')}</div>
+<svelte:head>
+  <title>maincore · {$t('pages.news.section')}</title>
+  <meta name="description" content={$t('pages.news.intro')} />
+</svelte:head>
+<section class="news-list">
+  <h1 class="site-page-title">{$t('pages.news.section')}</h1>
+  <div class="preview-entries">
+    {#each news as item}
+      <a href="/news/{item.slug}" class="preview-entry">
+        <span class="entry-title">{item.title}</span>
+        <time datetime={item.date}>{item.date}</time>
+      </a>
+    {/each}
   </div>
-
-  <div class="toc-section">
-    <div class="section-title-box">
-      <span class="sec-title-box__title">{$t('pages.news.section')}</span>
-    </div>
-    <div class="section-body">
-      <p><strong>maincore</strong> — {$t('site.subtitle')}</p>
-      <p>{$t('pages.news.intro')}</p>
-    </div>
-  </div>
-
-  {#if news.length > 0}
-    <div class="divider"></div>
-    <div class="toc-entries">
-      {#each news as item, i}
-        <a href="/news/{item.slug}" class="toc-entry-box">
-          <div class="title">{item.title}</div>
-          <div class="metadata"><span class="date">{item.date}</span></div>
-        </a>
-        {#if i < news.length - 1}
-          <div class="toc-entry-divider"></div>
-        {/if}
-      {/each}
-    </div>
-  {/if}
-</div>
+</section>

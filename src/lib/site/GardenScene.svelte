@@ -4,6 +4,7 @@
   let host;
   let api = $state.raw(null);
   let status = $state('loading');
+  export function scroll(delta) { api?.scroll(delta); }
   $effect(() => {
     api?.select(region);
   });
@@ -35,9 +36,9 @@
 <div class="garden-canvas" bind:this={host} data-status={status}>
   {#if status !== 'ready'}
     <div class="scene-fallback" role="status">
-      <p>{status === 'loading' ? '正在加载预览…' : '此设备暂时无法显示动态背景。'}</p>
-      <small>也可以通过下方入口，直接阅读内容。</small>
-      <noscript>启用 JavaScript 后可以查看动态预览；原站的文章和项目仍可直接访问。</noscript>
+      <p>{status === 'loading' ? '正在加载水面…' : '此设备暂时无法显示动态背景。'}</p>
+      <small>页面内容仍可正常阅读。</small>
+      <noscript>启用 JavaScript 后可以查看动态背景。</noscript>
     </div>
   {/if}
 </div>

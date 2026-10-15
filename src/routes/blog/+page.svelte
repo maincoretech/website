@@ -41,38 +41,23 @@
   });
 </script>
 
-<div id="toc-body">
-  <div class="grad-bar grad-bar--toc sec-header">
-    <div class="title">Blog</div>
-    <div class="subtitle">{$t('pages.blog.subtitle')}</div>
-  </div>
-
-  {#each grouped as [cat, catPosts]}
-    <div class="toc-section">
-      <div class="section-title-box">
-        <span class="section-title">{$t('cat.' + cat) || cat}</span>
-      </div>
-
-      <div class="toc-entries">
-        {#each catPosts as post, i}
-          <a href="/blog/{post.slug}" class="toc-entry-box">
-            <div class="title">{post.title}</div>
-            <div class="metadata">
-              <span class="date">{post.date}</span>
-            </div>
-          </a>
-          {#if i < catPosts.length - 1}
-            <div class="toc-entry-divider"></div>
-          {/if}
-        {/each}
-      </div>
+<svelte:head>
+  <title>{$t('nav.blog')} · maincore</title>
+  <meta name="description" content={$t('pages.blog.subtitle')} />
+</svelte:head>
+<h1 class="site-page-title">{$t('pages.blog.subtitle')}</h1>
+{#each grouped as [cat, catPosts]}
+  <section class="list-section">
+    <h2>{$t('cat.' + cat) || cat}</h2>
+    <div class="preview-entries">
+      {#each catPosts as post}
+        <a href="/blog/{post.slug}" class="preview-entry">
+          <span class="entry-title">{post.title}</span>
+          <time datetime={post.date}>{post.date}</time>
+          {#if post.description}<p>{post.description}</p>{/if}
+        </a>
+      {/each}
     </div>
-  {/each}
-
-  {#if posts.length === 0}
-    <div class="notice">
-      {$t('pages.blog.empty')}<br />
-      {$t('pages.blog.empty_hint')}
-    </div>
-  {/if}
-</div>
+  </section>
+{/each}
+{#if posts.length === 0}<p class="site-intro">{$t('pages.blog.empty')}</p>{/if}

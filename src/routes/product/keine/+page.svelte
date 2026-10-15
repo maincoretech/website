@@ -1,46 +1,15 @@
 <script>
-  import { onMount } from 'svelte';
-  import Header from '$lib/components/Header.svelte';
   import { products } from '$lib/products.js';
-  import EngineDemos from '../EngineDemos.svelte';
-  import GardenScene from '../GardenScene.svelte';
-  import { architectureHref } from '../content.js';
-  import '../preview.css';
-  import './keine.css';
-  import '../hover.css';
-
+  import EngineDemos from '$lib/site/EngineDemos.svelte';
+  import { architectureHref } from '$lib/site/content.js';
+  import '$lib/site/keine.css';
   const engine = products.flatMap(group => group.items).find(item => item.name === 'Kēne');
-  let still = $state(false);
-  let reducedMotion = $state(true);
-  onMount(() => {
-    const media = matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => (reducedMotion = media.matches);
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  });
 </script>
-
 <svelte:head>
   <title>Kēne · 从一行剧本开始 · maincore</title>
-  <meta name="robots" content="noindex, nofollow" />
   <meta name="description" content="探索 Kēne 的 Eiyashou 剧本、Core / Loader / Engine 架构，以及 Hakutaku 资源更新方式。" />
 </svelte:head>
-
-<div class="home-preview keine-preview">
-  <a class="skip-link" href="#live">跳到交互演示</a>
-  <main class="keine-page">
-    <GardenScene region="product" still={still || reducedMotion} paper={false} />
-    <div class="keine-mask" aria-hidden="true"></div>
-    <div class="keine-content">
-      <header class="keine-masthead">
-        <a class="keine-brand" href="/preview" aria-label="maincore，返回首页">
-          <img src="/favicon.png" alt="" width="35" height="35" />
-          <span>maincore<small>games & software</small></span>
-        </a>
-        <a class="keine-back" href="/preview">← 返回首页</a>
-      </header>
-
+<div class="keine-content">
       <section class="keine-hero" aria-labelledby="keine-title">
         <div class="keine-wordmark">
           <span class="keine-kicker">NATIVE VISUAL NOVEL ENGINE</span>
@@ -74,15 +43,5 @@
         <a href="/blog/hakutaku"><span>Hakutaku</span><small>资源格式与设计 ↗</small></a>
       </section>
 
-      <footer class="keine-footer">
-        <span>Kēne · maincore</span>
-        <a href="/preview">回到首页 ↗</a>
-      </footer>
-    </div>
-    <div class="keine-motion">
-      <button type="button" disabled={reducedMotion} aria-pressed={still || reducedMotion}
-        onclick={() => (still = !still)}>{still || reducedMotion ? '背景已静止' : '暂停背景'}</button>
-    </div>
-  </main>
-  <Header />
+
 </div>

@@ -20,7 +20,7 @@ const zh = {
   },
 
   pages: {
-    news: { subtitle: '开发进度 & 最新动态', section: 'Latest', intro: '这里是 maincore 的官方站点，我们会在这里发布最新的开发进度、产品信息和各类文章。' },
+    news: { subtitle: '开发进度 & 最新动态', section: '近况', intro: '这里是 maincore 的官方站点，我们会在这里发布最新的开发进度、产品信息和各类文章。' },
     blog: { subtitle: '一些闲话', empty: '暂无文章。', empty_hint: '在 src/lib/posts/ 目录下创建 .md 文件即可自动渲染。' },
     product: { subtitle: '我们的产品' },
     about: { subtitle: '关于 maincore' }

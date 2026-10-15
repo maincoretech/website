@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { createOrigami } from './origami.js';
-import { WATER_PHASE_GLSL, RIPPLE_GLSL, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
+import { WATER_PHASE_GLSL, RIPPLE_GLSL, SCROLL_WAKE_GLSL, advanceScrollWake, scrollDisturbance, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
 
 const BACKGROUND = 0x0b1216;
 const VIEWS = { news: 0, product: Math.PI / 2, blog: Math.PI, about: -Math.PI / 2 };
@@ -48,6 +48,16 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
   const waterHit = new THREE.Vector3();
   const flow = new THREE.Vector3();
   const flowTarget = new THREE.Vector3();
+  const scrollWake = new THREE.Vector2(.68, 0);
+  const waterProjection = new THREE.Matrix4();
+  const scrollSample = new THREE.Vector3();
+  function scrollHeight(x, z) {
+    if (scrollWake.y === 0) return 0;
+    scrollSample.set(x, .012, z).applyMatrix4(waterProjection);
+    if (scrollSample.z < -1 || scrollSample.z > 1) return 0;
+    return scrollDisturbance((1 - scrollSample.y) / 2, scrollWake);
+  }
+  let pendingScroll = 0;
   const input = new THREE.Vector2();
   let inputPending = false;
   let inputRect;
@@ -68,6 +78,8 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
       time: { value: 0 },
       ripples: { value: rippleField },
       flow: { value: flow },
+      scrollWake: { value: scrollWake },
+      viewportHeight: { value: 1 },
       deep: { value: new THREE.Color(0x10242c) },
       light: { value: new THREE.Color(0x638898) }
     },
@@ -88,11 +100,13 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
       uniform vec3 light;
       ${WATER_PHASE_GLSL}
       ${RIPPLE_GLSL}
+      ${SCROLL_WAKE_GLSL}
       void main() {
         vec2 p = surfaceUv - .5;
         float radius = length(p) * 2.;
         float edge = 1. - smoothstep(.82, 1., radius);
         float ripple = disturbance(waterPoint, time);
+        ripple += scrollDisturbance(1. - gl_FragCoord.y / viewportHeight);
         float wave = sin(waterPhase(waterPoint, time) + ripple * 1.4);
         float sheen = pow(max(0., wave), 14.) * .075;
         float reflection = exp(-pow((p.x - .08 + sin(p.y * 16. - time * .18) * .035) * 5., 2.));
@@ -184,24 +198,13 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
     }
     if (dragId === null || now - lastInputTime > 160) flowTarget.z = 0;
     if (waterEnabled()) {
+      advanceScrollWake(scrollWake, pendingScroll, dt);
+      pendingScroll = 0;
       flow.lerp(flowTarget, 1 - Math.exp(-dt * 12));
       if (flowTarget.z === 0 && flow.z < .002) flow.z = 0;
     }
     waterMaterial.uniforms.time.value = waterTime;
     prepareRipples(waterTime, ripples, rippleField);
-    const smoothing = !waterEnabled() ? 1 : 1 - Math.exp(-dt * 14);
-    for (const prop of floatingProps) {
-      const { home, angle } = prop.userData;
-      sampleFloat(home.x, home.z, waterTime, pose, rippleField, flow, true);
-      prop.position.x += (pose.x - prop.position.x) * smoothing;
-      prop.position.y += (pose.y - prop.position.y) * smoothing;
-      prop.position.z += (pose.z - prop.position.z) * smoothing;
-      normal.set(-pose.slopeX, 1, -pose.slopeZ).normalize();
-      tilt.setFromUnitVectors(up, normal);
-      heading.setFromAxisAngle(up, angle + pose.yaw);
-      tilt.multiply(heading);
-      prop.quaternion.slerp(tilt, smoothing);
-    }
     if (journey) {
       // Exact critically damped response preserves velocity when retargeted.
       const decay = Math.exp(-12 * dt);
@@ -223,6 +226,23 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
     camera.position.copy(EYE);
     direction.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     camera.lookAt(direction.add(camera.position));
+    // Project onto the same current-camera screen band used by gl_FragCoord.
+    // Reuse one matrix/vector: five height samples per prop, no extra render loop.
+    camera.updateMatrixWorld();
+    waterProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    const smoothing = !waterEnabled() ? 1 : 1 - Math.exp(-dt * 14);
+    for (const prop of floatingProps) {
+      const { home, angle } = prop.userData;
+      sampleFloat(home.x, home.z, waterTime, pose, rippleField, flow, true, scrollHeight);
+      prop.position.x += (pose.x - prop.position.x) * smoothing;
+      prop.position.y += (pose.y - prop.position.y) * smoothing;
+      prop.position.z += (pose.z - prop.position.z) * smoothing;
+      normal.set(-pose.slopeX, 1, -pose.slopeZ).normalize();
+      tilt.setFromUnitVectors(up, normal);
+      heading.setFromAxisAngle(up, angle + pose.yaw);
+      tilt.multiply(heading);
+      prop.quaternion.slerp(tilt, smoothing);
+    }
     renderer.render(scene, camera);
     const prop = props[region];
     if (prop) {
@@ -250,6 +270,7 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
     host.dataset.rippleSequence = String(rippleSequence);
     host.dataset.dragging = String(dragId !== null);
     host.dataset.flow = flow.toArray().map(v => v.toFixed(3)).join(',');
+    host.dataset.scrollWake = scrollWake.toArray().map(v => v.toFixed(4)).join(',');
     host.dataset.region = region;
     host.dataset.moving = String(!!journey);
     host.dataset.camera = camera.position.toArray().map(v => v.toFixed(3)).join(',');
@@ -261,7 +282,7 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
   function tick(now) {
     frame = 0;
     if (!canRun()) return;
-    const interacting = waterEnabled() && (inputPending || now - lastInputTime < 180 || flow.z > .02 || waterTime - lastRippleTime < RIPPLE_LIFETIME);
+    const interacting = waterEnabled() && (pendingScroll !== 0 || Math.abs(scrollWake.y) > .02 || inputPending || now - lastInputTime < 180 || flow.z > .02 || waterTime - lastRippleTime < RIPPLE_LIFETIME);
     const interval = 1000 / (journey || interacting ? 60 : 30);
     if (interval !== frameInterval) { frameInterval = interval; renderDeadline = now; }
     if (now + .5 < renderDeadline) {
@@ -296,6 +317,7 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
     width = Math.max(1, host.clientWidth);
     height = Math.max(1, host.clientHeight);
     renderer.setSize(width, height);
+    waterMaterial.uniforms.viewportHeight.value = renderer.domElement.height;
     camera.aspect = width / height;
     camera.fov = width < 760 ? 66 : 58;
     camera.updateProjectionMatrix();
@@ -365,6 +387,8 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
   }
   function motionChange() {
     endDrag();
+    pendingScroll = 0;
+    scrollWake.set(.68, 0);
     moveCamera(false);
   }
   function lost(event) {
@@ -395,14 +419,21 @@ export function createGarden(host, onFailure, { paper = true } = {}) {
       if (!Object.hasOwn(VIEWS, id) || region === id) return;
       region = id;
       endDrag();
+      pendingScroll = 0;
+      scrollWake.set(.68, 0);
       moveCamera(true);
     },
     setStill(value) {
       if (still === value) return;
       still = value;
-      if (still) endDrag();
+      if (still) { endDrag(); pendingScroll = 0; scrollWake.set(.68, 0); }
       lastTime = performance.now();
       wake();
+    },
+    scroll(delta) {
+      if (!waterEnabled() || !canRun() || journey || !Number.isFinite(delta)) return;
+      pendingScroll = Math.max(-120, Math.min(120, pendingScroll + delta));
+      wake(true);
     },
     dispose() {
       disposed = true;

@@ -1,0 +1,67 @@
+/* All routes share one transparent reading surface and one fixed navigation. */
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.site-shell.article-page .scene-page { background: #0b1216; }
+.site-shell.article-page .garden-reading { mask-image: none; -webkit-mask-image: none; }
+.site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
+.site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
+.site-shell .route-content { min-width: 0; }
+.site-shell .detail-reading { width: min(920px, calc(100% - 64px)); bottom: 126px; }
+.site-shell .site-back-top { position: absolute; right: 18px; bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #a2c4d6; font: 1.4rem var(--f-n); }
+.site-page-title { margin: 6px 0 16px; font: 400 1.65rem/1.4 var(--f-h); color: #bfd3de; }
+.site-intro { margin: 10px 0 24px; color: #9fb7c4; font-size: .88rem; }
+.site-shell .preview-entry { padding: 12px 0; }
+.site-shell .preview-entry > .entry-title { display: block; font: 400 1.1rem/1.45 var(--f-n); }
+.site-shell .list-section { margin: 22px 0; }
+.site-shell .list-section > h2, .site-shell .catalog-group > h2 { margin: 0 0 12px; font: 400 1.15rem/1.5 var(--f-n); color: #abc6d5; }
+.site-shell .catalog { margin-top: 30px; padding-top: 18px; border-top: 1px solid #314652; }
+.site-shell .catalog-group { margin: 20px 0; }
+.site-shell .catalog-item { display: block; padding: 12px 0; border-bottom: 1px solid #2b3e48; }
+.site-shell .catalog-item strong { font: 400 1.1rem var(--f-n); }
+.site-shell .catalog-item p { margin: 5px 0 0; color: #a4bac6; font-size: .82rem; }
+.site-shell .article-heading h1 { margin: 6px 0 14px; font: 400 clamp(1.5rem, 3vw, 2.15rem)/1.5 var(--f-h); color: #c2d7e2; overflow-wrap: anywhere; }
+.site-shell .article-description { margin: 0 0 18px; color: #91afbf; font-size: .9rem; }
+.site-shell .article-meta-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 20px; margin: 14px 0 22px; color: #91aab8; font: .75rem/1.6 var(--f-n); }
+.site-shell .article-meta-row a, .site-shell .article-bottom-back a { display: inline-flex; align-items: center; min-height: 44px; }
+.site-shell .article-toc { margin-bottom: 24px; border-block: 1px solid #2d4350; padding: 9px 0; }
+.site-shell .article-toc nav { display: grid; padding: 6px 0; }
+.site-shell .article-toc button { padding: 8px; min-height: 36px; border: 0; background: transparent; text-align: left; color: #b0cad8; font: .8rem/1.5 var(--f-b); }
+.site-shell .article-toc button.nested { padding-left: 24px; color: #8fa9b8; }
+.site-shell .article-prose { min-width: 0; color: #b6c9d3; overflow-wrap: anywhere; font-size: .95rem; line-height: 1.8; }
+.site-shell .article-prose :is(h2, h3, h4) { color: #bdd5e2; scroll-margin-top: 20px; font-family: var(--f-h); font-weight: 400; }
+.site-shell .article-prose h2 { margin: 30px 0 14px; padding-bottom: 8px; border-bottom: 1px solid #304650; font-size: 1.4rem; }
+.site-shell .article-prose h3 { margin: 24px 0 10px; font-size: 1.15rem; }
+.site-shell .article-prose h4 { margin: 20px 0 8px; font-size: 1rem; }
+.site-shell .article-prose p { margin: 12px 0; line-height: 1.8; }
+.site-shell .article-prose strong { color: #c5dce7; }
+.site-shell .article-prose em { color: #a6c4d7; }
+.site-shell .article-prose a { color: #abd4e9; }
+.site-shell .article-prose :is(ul, ol) { padding-left: 1.5em; margin: 12px 0; }
+.site-shell .article-prose li { margin: 5px 0; }
+.site-shell .article-prose img { margin: 18px auto; }
+.site-shell .article-prose blockquote { border-left: 2px solid #64899d; padding: 4px 18px; margin: 18px 0; color: #8faebf; background: transparent; }
+.site-shell .article-prose hr { margin: 24px 0; border: 0; border-top: 1px solid #304650; }
+.site-shell .article-prose table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin: 20px 0; font-size: .82rem; }
+.site-shell .article-prose :is(th, td) { padding: 9px 12px; border: 1px solid #304650; text-align: left; }
+.site-shell .article-prose th { color: #c5dce7; background: rgb(140 166 180 / 6%); }
+.site-shell .article-bottom-back { margin: 24px 0; }
+.site-shell .article-prose summary { cursor: pointer; padding-block: 8px; }
+@supports (interpolate-size: allow-keywords) {
+  .site-shell .article-prose details::details-content { interpolate-size: allow-keywords; height: 0; overflow: clip; transition: height 200ms var(--motion-ease), content-visibility 200ms allow-discrete; }
+  .site-shell .article-prose details[open]::details-content { height: auto; }
+}
+.site-shell .about-content { padding-bottom: 12px; }
+/* Theme article diagrams without altering the source documents or their data. */
+.site-shell .article-prose :is(.architecture-hero, .architecture-figure, .measurement-details) { background: transparent; border-radius: 0; border-color: #3b5665; }
+.site-shell .article-prose :is(.architecture-figure figcaption > span, .figure-note, .dependency-arrow, .mode-label, .protocol-link, .schedule-divider, .measurement-details summary) { color: #91afbf; }
+.site-shell .article-prose :is(.dependency-layers button, .execution-flow li, .scheduler section, .render-layers span, .authoring-flow section, .article-links a) { background: transparent; border-color: #3b5665; color: #b6c9d3; }
+.site-shell .article-prose .dependency-layers button.selected { background: transparent; color: #d5e7ef; text-shadow: var(--selection-glow); }
+.site-shell .article-prose .bench-compare strong { color: #b9dced; }
+.site-shell .article-prose .haku-figure { --hf-primary: #9fc3d5; --hf-on-surface: #b6c9d3; --hf-on-muted: #91afbf; --hf-surface: transparent; --hf-container: rgb(115 150 170 / 6%); --hf-container-high: rgb(115 150 170 / 9%); }
+.site-shell .article-prose :is(.chart-values) { color: #a9c4d3; }
+@media (hover: hover) { .site-shell .article-prose :is(a, button, summary):hover { background-color: var(--hover-wash); } }
+@media (max-width: 759px) {
+  .site-shell .detail-reading { width: calc(100% - 32px); padding-inline: 18px; }
+  .site-shell .page-section { font-size: 1.25rem; }
+  .site-shell .article-heading h1 { font-size: 1.5rem; }
+  .site-shell .site-back-top { right: 4px; bottom: 110px; }
+}

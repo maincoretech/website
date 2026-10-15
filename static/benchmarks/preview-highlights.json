@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "machine": { "chip": "Apple M5 Pro", "memory_gib": 24, "os": "macOS 27.0.1" },
+  "keine": {
+    "version": "0.16.0",
+    "commit": "83b00c2091bb447f40bf8d262cc94165b52346df",
+    "date": "2026-10-14",
+    "timezone": "Asia/Shanghai",
+    "source_file": "keine-0160-results.json",
+    "source_sha256": "6003e0112ddc989a4481e371baab6e828a2b4f344989b5cfa103692470c1d58e",
+    "idle_cpu_percent": 0.3661581122033233,
+    "idle_rss_mib": 210.53794642857142,
+    "motion_frame_p95_ms": 16.66666753590107,
+    "comparison": {
+      "source_file": "tday-extended-results.json",
+      "source_sha256": "3e7a25178849a412f168ef2c54a8f4064d4f4a5d1f4d3aa7d2b43fbca58def57",
+      "resource_summary": "/posts/keine-tday/summary.json",
+      "suika_metal_p95_ms": [18.50288100540638, 18.40318739414215, 18.511834181845185],
+      "frame_source": "profiles.suika-frames.json.windows[*].layers[0].on_glass_interval.p95_ms; median of three windows",
+      "frame_exclusions": "Chromium presentation feedback and RenPy draw completion use different clocks; ONScripter uses a different discrete motion workload. Missing comparable timings are not zero."
+    },
+    "protocol": "tday development-filesystem checkpoint; 1920x1080; 10s warmup, three consecutive 30s windows, CPU/RSS sampled every 5s; median of window summaries. CPU 100% means one logical core. RSS sums the main and observed child processes. Metal frame intervals use a separate profiling pass.",
+    "limits": "Not a whole-game or packaged Hakutaku measurement. Consecutive windows are not independent process runs. Shared RSS pages may be counted repeatedly. Excludes WindowServer and driver overhead. Frame intervals are not input latency. No power or battery-life claim."
+  },
+  "hakutaku": {
+    "version": "0.2.0 integrated worktree",
+    "date": "2026-10-13",
+    "timezone": "UTC",
+    "baseline": "reviewed v1 archive",
+    "source_file": "target/v2-review/summary.json",
+    "source_sha256": "ff21bba138f4d83bb4839fda66a1a86f3e5ecb0fc193fb9e4f1b641caed325c7",
+    "documentation": "https://github.com/maincoretech/hakutaku/blob/f1aeff80b9076b56b6ef835bf51980f19c041af9/docs/PERFORMANCE.md#integrated-v2-results",
+    "catalog_assets": 100000,
+    "catalog_open_ms": [9.484667, 9.206042, 9.355291],
+    "audio_seek_v1_ms": [300.53775, 301.369625, 300.421166],
+    "audio_seek_v2_ms": [130.089042, 133.010375, 130.815167],
+    "catalog_snapshot_v1_bytes": [8888257, 8890722, 8888370],
+    "catalog_snapshot_v2_bytes": [6304768, 6304204, 6307004],
+    "audio_backend_calls": { "v1": 2175, "v2": 3600 },
+    "real_snapshot_bytes": { "v1": 42113, "v2": 73907 },
+    "real_sequential64k_ms": { "v1": 49.418084, "v2": 49.693041 },
+    "protocol": "Rust 1.99.0 release/bench; warm filesystem cache; three process runs alternating v1/v2 order, no concurrent compilation. Catalog timing: median of three seven-pass medians. Real tday content: 83 files / 80907088 logical bytes, synthetic 4KiB audio seek traces, median of three five-pass medians. Read tests trim package caches and verify returned bytes.",
+    "limits": "Not cold-storage performance, decoder CPU or playback latency. Catalog and real-content fixtures differ. Audio backend calls increase; real-content snapshot size increases; sequential reading is effectively unchanged. No universal speedup claim."
+  }
+}

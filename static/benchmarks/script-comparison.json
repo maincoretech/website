@@ -1,0 +1,1184 @@
+{
+  "schema_version": 1,
+  "measured_at_utc": "2026-10-15T19:10:12.458405+00:00",
+  "machine": {
+    "cpu": "Apple M5 Pro",
+    "memory_bytes": 25769803776,
+    "logical_cpus": 15,
+    "os": "macOS 27.0.1 (26A434)",
+    "arch": "aarch64"
+  },
+  "keine": {
+    "version": "0.16.3",
+    "commit": "d636898951c9bdb2cd3e5b015e1a4cb4b11d1fff",
+    "worktree_clean": true,
+    "rustc": "1.99.0 (b940084d7 2026-09-28)",
+    "build": "cargo build --offline --release --manifest-path target/performance/parser-comparison-0163/Cargo.toml --target-dir target",
+    "profile": "opt-level=3 (Cargo release default), lto=true, codegen-units=1, panic=abort, strip=true",
+    "binary": "/Users/shiftz/dev/keine/target/release/parser-evidence",
+    "binary_sha256": "cefd20e814c0ad5a666973cbfbee203d54545aaa6c2023cc832eae592add6794",
+    "preserved_binary": "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/bin/parser-evidence"
+  },
+  "tyranoscript": {
+    "commit": "c8dbfd492afd3d79b0954fcf4477236f5c6c4830",
+    "source_url": "https://github.com/ShikemokuMK/tyranoscript/blob/c8dbfd492afd3d79b0954fcf4477236f5c6c4830/tyrano/plugins/kag/kag.parser.js",
+    "version_identity": "Pinned source commit; kag.js internal version field 520; not claiming packaged 602c release",
+    "node": "v24.22.0",
+    "v8": "13.6.233.17-node.57",
+    "entry": "parseScenario",
+    "host_adapter": "Original parser unchanged; jQuery-compatible trim helper, translation callback no-op; warnings/errors throw. No tags or translations used."
+  },
+  "protocol": {
+    "input": "10000 and 100000 identical numbered Chinese/Latin text records, grammar-specific wrappers; all decoded texts and counts validated outside timing",
+    "processes_per_engine_and_size": 3,
+    "warmup_iterations_per_stage": 5,
+    "measured_iterations_per_process": 10,
+    "ordering": "alternate engine order across process runs; no concurrent benchmark or own compilation",
+    "statistic": "median of three process medians; min/max describe spread, not confidence interval",
+    "timing": "warm in-memory source -> native output, includes allocation; excludes input IO/generation, full-output validation and output destruction; Rust drops after clock; Node explicit GC before each sample outside timer, allocation-triggered GC may occur inside",
+    "separate_stages": [
+      "parse",
+      "parse_program (parse plus Program construction total, not incremental subtraction)",
+      "core_comments",
+      "core_mixed_dialogue"
+    ],
+    "core": "Program installed and State initialized before timer; excludes setup/destruction. Mixed 1000 turns: string-expression assignment + conditional Comment + interpolated Say, immediate advance; copied from existing script-runtime benchmark."
+  },
+  "limitations": [
+    "Text record content/count equivalence only, not identical parser work or whole runtime semantics. Tyrano plain text records have no explicit wait tags.",
+    "Kene lowers typed IR and performs diagnostics/stable dialogue IDs; Tyrano returns tag/text objects; JS string ownership/ropes and GC differ from Rust owned strings and drops.",
+    "Not a general fastest-engine ranking; no competitor pure execution measurement.",
+    "No expressions, branches, error recovery, media, UI, cold IO, startup or full project timing in cross-parser group.",
+    "Node V8 is not the packaged Tyrano Electron runtime.",
+    "Small focused single-machine sample; normal desktop background activity not isolated; other concurrent tasks not ruled out.",
+    "Current timings exclude output destruction and use custom single-invocation sampling; do not compare as speedup against historical Criterion including destruction.",
+    "Historical Core mixed test uses generic Action::Set/Flow/Say string expressions; do not label strict EYS compiled-AST VM throughput."
+  ],
+  "results": [
+    {
+      "engine": "keine",
+      "stage": "parse",
+      "units": 10000,
+      "unit": "text_records",
+      "median_ms": 6.695104,
+      "process_medians_ms": [
+        6.927833,
+        6.695104,
+        6.672625
+      ],
+      "process_range_ms": [
+        6.672625,
+        6.927833
+      ],
+      "units_per_second": 1493628.7770884517,
+      "raw_files": [
+        "keine-10000-0.jsonl",
+        "keine-10000-1.jsonl",
+        "keine-10000-2.jsonl"
+      ],
+      "input_bytes": 328905,
+      "input_mib_per_second": 46.85039262087604
+    },
+    {
+      "engine": "keine",
+      "stage": "parse_program",
+      "units": 10000,
+      "unit": "text_records",
+      "median_ms": 7.4155625,
+      "process_medians_ms": [
+        7.7012085,
+        7.402583,
+        7.4155625
+      ],
+      "process_range_ms": [
+        7.402583,
+        7.7012085
+      ],
+      "units_per_second": 1348515.3688610943,
+      "raw_files": [
+        "keine-10000-0.jsonl",
+        "keine-10000-1.jsonl",
+        "keine-10000-2.jsonl"
+      ],
+      "input_bytes": 328905,
+      "input_mib_per_second": 42.298645724798035
+    },
+    {
+      "engine": "keine",
+      "stage": "core_comments",
+      "units": 100000,
+      "unit": "comments",
+      "median_ms": 1.0447085,
+      "process_medians_ms": [
+        0.9085625,
+        1.0447085,
+        1.0760205
+      ],
+      "process_range_ms": [
+        0.9085625,
+        1.0760205
+      ],
+      "units_per_second": 95720480.88055184,
+      "raw_files": [
+        "keine-10000-0.jsonl",
+        "keine-10000-1.jsonl",
+        "keine-10000-2.jsonl"
+      ]
+    },
+    {
+      "engine": "keine",
+      "stage": "core_mixed_dialogue",
+      "units": 1000,
+      "unit": "dialogue_turns",
+      "median_ms": 4.336146,
+      "process_medians_ms": [
+        4.336146,
+        4.319104,
+        4.404646
+      ],
+      "process_range_ms": [
+        4.319104,
+        4.404646
+      ],
+      "units_per_second": 230619.54094719136,
+      "raw_files": [
+        "keine-10000-0.jsonl",
+        "keine-10000-1.jsonl",
+        "keine-10000-2.jsonl"
+      ]
+    },
+    {
+      "engine": "keine",
+      "stage": "parse",
+      "units": 100000,
+      "unit": "text_records",
+      "median_ms": 80.0717295,
+      "process_medians_ms": [
+        80.0717295,
+        82.658396,
+        78.961521
+      ],
+      "process_range_ms": [
+        78.961521,
+        82.658396
+      ],
+      "units_per_second": 1248880.2305687675,
+      "raw_files": [
+        "keine-100000-0.jsonl",
+        "keine-100000-1.jsonl",
+        "keine-100000-2.jsonl"
+      ],
+      "input_bytes": 3388905,
+      "input_mib_per_second": 40.36270578170442
+    },
+    {
+      "engine": "keine",
+      "stage": "parse_program",
+      "units": 100000,
+      "unit": "text_records",
+      "median_ms": 85.8077295,
+      "process_medians_ms": [
+        85.126021,
+        85.8077295,
+        87.348625
+      ],
+      "process_range_ms": [
+        85.126021,
+        87.348625
+      ],
+      "units_per_second": 1165396.1779748525,
+      "raw_files": [
+        "keine-100000-0.jsonl",
+        "keine-100000-1.jsonl",
+        "keine-100000-2.jsonl"
+      ],
+      "input_bytes": 3388905,
+      "input_mib_per_second": 37.66457495231502
+    },
+    {
+      "engine": "tyranoscript",
+      "stage": "parse",
+      "units": 10000,
+      "unit": "text_records",
+      "median_ms": 2.5804785,
+      "process_medians_ms": [
+        2.5804785,
+        2.522062,
+        2.64975
+      ],
+      "process_range_ms": [
+        2.522062,
+        2.64975
+      ],
+      "units_per_second": 3875250.268506403,
+      "raw_files": [
+        "tyranoscript-10000-0.jsonl",
+        "tyranoscript-10000-1.jsonl",
+        "tyranoscript-10000-2.jsonl"
+      ],
+      "input_bytes": 298890,
+      "input_mib_per_second": 110.4615738633994
+    },
+    {
+      "engine": "tyranoscript",
+      "stage": "parse",
+      "units": 100000,
+      "unit": "text_records",
+      "median_ms": 30.9077505,
+      "process_medians_ms": [
+        31.220188,
+        30.1178955,
+        30.9077505
+      ],
+      "process_range_ms": [
+        30.1178955,
+        31.220188
+      ],
+      "units_per_second": 3235434.426067339,
+      "raw_files": [
+        "tyranoscript-100000-0.jsonl",
+        "tyranoscript-100000-1.jsonl",
+        "tyranoscript-100000-2.jsonl"
+      ],
+      "input_bytes": 3088890,
+      "input_mib_per_second": 95.30926746688026
+    }
+  ],
+  "historical_sources": [
+    {
+      "path": "/Users/shiftz/dev/keine/target/performance/theoretical-0143/summary.json",
+      "sha256": "a5797e39fdbd48dd4d5e52f4309eec5f78bfb23e341d11794a9a7ee21a47bfe6"
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/target/performance/parser-0143/summary.json",
+      "sha256": "2d35eb09b14cb1c0570aef8d85009f78bd8e98e2b2fe61a6088deadb570e222f"
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/target/performance/parser-0143/criterion-before.log",
+      "sha256": "ee77d30fde62f10a46480c6b6968c88d81f9be105d6b4a0ebd273efcd4615d98"
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/target/performance/parser-0143/criterion-after.log",
+      "sha256": "c0147e8cbab9f9ba560cd2424db616b8ce3d5c9fa282e75882ddd969448e3871"
+    }
+  ],
+  "evidence_files": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "b3f1685ac0b525dab40380232aa48f31bf2ed8f546d1201985cb1a97106ab579",
+      "bytes": 14535
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "d9a92d7e66ebed10f036e9778106a2b89e7be283b13258fa0c522a4bc8c97a90",
+      "bytes": 288
+    },
+    {
+      "path": "build.log",
+      "sha256": "66492c874ee0682bca1cd90cc58c6a74f84f0772d7428d645557384736ef285b",
+      "bytes": 964
+    },
+    {
+      "path": "commands.json",
+      "sha256": "3bcca3543c246e33257473a8f3cb8f24d98bc039288f94231a3625afb90d66ff",
+      "bytes": 4343
+    },
+    {
+      "path": "generate.py",
+      "sha256": "a70db3cde639b2b1e0dd85fbf2e76777445a64baccc0b396a85c77a2a21c6b19",
+      "bytes": 329
+    },
+    {
+      "path": "kag.js",
+      "sha256": "7fd85a963ab22ddd50dbc651e1fd257fffda9290ee88356686428a6ebf49c904",
+      "bytes": 149959
+    },
+    {
+      "path": "kag.parser.js",
+      "sha256": "535146d50c86408e46b8927932b01cc75797172000a0caacc8cf886e6e9d6480",
+      "bytes": 23508
+    },
+    {
+      "path": "kag.tag_system.js",
+      "sha256": "173f25da2c6fd7c7bf1d9356d4027f9de6449b4e421ce469761cdfc431907092",
+      "bytes": 143983
+    },
+    {
+      "path": "keine-10000-0.jsonl",
+      "sha256": "68545a692f335db856bb9b732cc65b1927e553f6b8baf254dbe5a5df618ee4f8",
+      "bytes": 770
+    },
+    {
+      "path": "keine-10000-0.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "keine-10000-1.jsonl",
+      "sha256": "3383a3f29e12fec9473a42603a07bde5ef3e9a9c570fe4901487efac56efe0e8",
+      "bytes": 775
+    },
+    {
+      "path": "keine-10000-1.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "keine-10000-2.jsonl",
+      "sha256": "9b5542d636d8a21227305a48f8c3580dfdcbe9ae660e7b7627e02b286785e8be",
+      "bytes": 775
+    },
+    {
+      "path": "keine-10000-2.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "keine-100000-0.jsonl",
+      "sha256": "af1a78d0294265327c1a4f922e373cc4604e2ff3a275e7df3d256221d7e2b391",
+      "bytes": 420
+    },
+    {
+      "path": "keine-100000-0.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "keine-100000-1.jsonl",
+      "sha256": "e45f8b693e231593eaa561463c974e7c1c0809aa1e1ac892fb1e5451df146e86",
+      "bytes": 420
+    },
+    {
+      "path": "keine-100000-1.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "keine-100000-2.jsonl",
+      "sha256": "fab5b8f6a50b0f1255fbfde94639480313de55fbf3e4f627c425f90954751374",
+      "bytes": 420
+    },
+    {
+      "path": "keine-100000-2.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "run.py",
+      "sha256": "129dbc59c493e6cf6d1358d305c7ac5a0ac1e0a1116507ce6fd0247a963540c9",
+      "bytes": 992
+    },
+    {
+      "path": "src/main.rs",
+      "sha256": "9e7eff44d490864c2034b5987a8a08899c7866bbdf3f145ebb340b58e0b837c5",
+      "bytes": 2846
+    },
+    {
+      "path": "summarize.py",
+      "sha256": "ada196c4264dc3e8bbb3a4da0bc203dfff3b93605fdb4ac5ad59de935e51e4c0",
+      "bytes": 5720
+    },
+    {
+      "path": "text-10000.ks",
+      "sha256": "434fc67350c6886bd219c99a0814f5a36494a51649ac78a051bd70d303540084",
+      "bytes": 298890
+    },
+    {
+      "path": "text-10000.shou",
+      "sha256": "f432872ce56b1b230774e067e1037d96d42d2a0015dd6381d321a30aa6582acf",
+      "bytes": 328905
+    },
+    {
+      "path": "text-100000.ks",
+      "sha256": "9fa4e659ce315130000e7174e02f7130df41ccb0f42968065440316cfb2e13f9",
+      "bytes": 3088890
+    },
+    {
+      "path": "text-100000.shou",
+      "sha256": "82dc47528b2c943f2087b6ef023f24f420b18fbc935c63227f22b424c923d57d",
+      "bytes": 3388905
+    },
+    {
+      "path": "tyrano-tree.json",
+      "sha256": "8038bbd0b24322160c40db7d9f3d9c8c313a7a2e040b81ab8fdc75d7ae55cffa",
+      "bytes": 104320
+    },
+    {
+      "path": "tyrano.cjs",
+      "sha256": "31d64f7c9af68cefe26f5bd8cc87561c45fb7b2eec3532efe54fb80b98f57b3c",
+      "bytes": 1317
+    },
+    {
+      "path": "tyranoscript-10000-0.jsonl",
+      "sha256": "53334007474634898e6ab660d3723207ce00e88282065d668fffaca79b814419",
+      "bytes": 246
+    },
+    {
+      "path": "tyranoscript-10000-0.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "tyranoscript-10000-1.jsonl",
+      "sha256": "de98a9bb3316e7acf99ca5f6db78232b5c2bcc483fecdc9774cc4602780cf284",
+      "bytes": 246
+    },
+    {
+      "path": "tyranoscript-10000-1.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "tyranoscript-10000-2.jsonl",
+      "sha256": "b956c3e709f65956c9b5f5e901508e20f0c8dac6b6ab021f33fffdbcfdbacd11",
+      "bytes": 246
+    },
+    {
+      "path": "tyranoscript-10000-2.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "tyranoscript-100000-0.jsonl",
+      "sha256": "9e89813254b89b8816008c6475aa81e77ae61b37db7e7e122886fc60db92cbf4",
+      "bytes": 258
+    },
+    {
+      "path": "tyranoscript-100000-0.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "tyranoscript-100000-1.jsonl",
+      "sha256": "dac0bd21d69e2d69641979f6095e8366966f225a0aceaf664684b162c432cc5b",
+      "bytes": 258
+    },
+    {
+      "path": "tyranoscript-100000-1.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "tyranoscript-100000-2.jsonl",
+      "sha256": "1fff623f36131825b16c7b550813e52eec323dcef1ff0dfbf217558a0fee055f",
+      "bytes": 258
+    },
+    {
+      "path": "tyranoscript-100000-2.jsonl.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/Cargo.toml",
+      "sha256": "3db32426fed746a34cb15ab0e11e6640157ef5f1a8b1b20d8b86a980a18d0244",
+      "bytes": 10839
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/Cargo.lock",
+      "sha256": "413cbe114d67cc24dc12e7f6903c5792f97bdc55d96b61f5b1d0ea5ca531ed8c",
+      "bytes": 297542
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/crates/loader/src/adapter/script/native.rs",
+      "sha256": "dc925c385e6ae1e2b984df9e11442373bc18fc946e4e0502d0ccaa8047e41f6d",
+      "bytes": 190560
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/crates/core/src/runtime/step.rs",
+      "sha256": "fd1d01d930feed33c18762f5e3ea2e47a44d6d278b16152f186f166270a67265",
+      "bytes": 176100
+    },
+    {
+      "path": "/Users/shiftz/dev/keine/tests/bench/core/script/runtime.rs",
+      "sha256": "901faf7bded2f739d2643b34592ade578631405ebce0d6a0fef889043aeb8aef",
+      "bytes": 8186
+    }
+  ],
+  "historical_comparison": {
+    "version": "0.14.3",
+    "baseline_commit": "1bb2b339a2a914fe9ea311ab2b3042cb3ff38bee",
+    "after_identity": "uncommitted parser changes identified by after_parser_sha256 in historical summary",
+    "statistic": "Criterion 10 samples, mean point estimate rounded from saved console logs",
+    "timing": "includes output allocation and destruction; separate from current protocol",
+    "results": [
+      {
+        "workload": "100000 text actions parse",
+        "before_ms": 126.41,
+        "after_ms": 115.36,
+        "criterion_change_percent": -8.7364
+      },
+      {
+        "workload": "100001 mixed actions parse",
+        "before_ms": 135.82,
+        "after_ms": 132.22,
+        "criterion_change_percent": -2.6482
+      },
+      {
+        "workload": "tday 172394 bytes / 14 scenes / 2665 actions parse",
+        "before_ms": 3.0109,
+        "after_ms": 2.8519,
+        "criterion_change_percent": -5.3765
+      },
+      {
+        "workload": "mixed parse plus Program",
+        "before_ms": 142.8,
+        "after_ms": 141.77,
+        "criterion_change_percent": -0.7249,
+        "significant": false
+      }
+    ]
+  },
+  "raw_samples": {
+    "keine-10000-0.jsonl": [
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          6965542,
+          6738416,
+          6677833,
+          6924000,
+          7334667,
+          7228959,
+          6846708,
+          7003167,
+          6876209,
+          6931666
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          7763084,
+          7840750,
+          7638916,
+          7664250,
+          7738167,
+          7632333,
+          7628916,
+          7781792,
+          7802000,
+          7624750
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          947833,
+          899125,
+          871167,
+          862958,
+          887584,
+          879000,
+          1181209,
+          977375,
+          918000,
+          1221958
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_comments",
+        "units": 100000
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          4336792,
+          4325750,
+          4402750,
+          4335500,
+          4317500,
+          4285125,
+          4411000,
+          4356916,
+          4413250,
+          4319458
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_mixed_dialogue",
+        "units": 1000
+      }
+    ],
+    "keine-10000-1.jsonl": [
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          6767541,
+          6796583,
+          6698666,
+          6732250,
+          6691542,
+          6611166,
+          6592958,
+          6704375,
+          6556666,
+          6576000
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          7415083,
+          7479542,
+          7459708,
+          7331917,
+          7238125,
+          7382375,
+          7390083,
+          7422333,
+          7367792,
+          7467208
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          1064792,
+          960959,
+          1024625,
+          1087625,
+          1155208,
+          1173833,
+          1188083,
+          1007000,
+          956625,
+          928958
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_comments",
+        "units": 100000
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          4337708,
+          4356958,
+          4326458,
+          4311750,
+          4307708,
+          4335750,
+          4292834,
+          4365750,
+          4293916,
+          4307750
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_mixed_dialogue",
+        "units": 1000
+      }
+    ],
+    "keine-10000-2.jsonl": [
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          6679750,
+          6665500,
+          6860209,
+          6802666,
+          6597292,
+          6579917,
+          6703958,
+          6842875,
+          6627166,
+          6592292
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 10000,
+        "engine": "keine",
+        "input_bytes": 328905,
+        "samples_ns": [
+          7622792,
+          7415334,
+          7372208,
+          7380833,
+          7415791,
+          7652292,
+          7575625,
+          7308209,
+          7358125,
+          7737958
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          922667,
+          987208,
+          1078291,
+          1197875,
+          1213291,
+          1188666,
+          1173250,
+          1073750,
+          1035541,
+          877417
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_comments",
+        "units": 100000
+      },
+      {
+        "engine": "keine",
+        "samples_ns": [
+          4409834,
+          4418000,
+          4310917,
+          4482000,
+          4364375,
+          4383292,
+          4417459,
+          4399458,
+          4335000,
+          4427334
+        ],
+        "setup_and_destruction_timed": false,
+        "stage": "core_mixed_dialogue",
+        "units": 1000
+      }
+    ],
+    "keine-100000-0.jsonl": [
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          77751666,
+          82213292,
+          80610709,
+          79532750,
+          77172833,
+          77349916,
+          76944167,
+          80616167,
+          80699625,
+          81127250
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          87250834,
+          85561208,
+          84690834,
+          84199458,
+          86340834,
+          85938542,
+          85693708,
+          82974708,
+          83147166,
+          84305416
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      }
+    ],
+    "keine-100000-1.jsonl": [
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          80664500,
+          78461875,
+          77889042,
+          78618459,
+          82312375,
+          87343833,
+          85924166,
+          84937667,
+          84840875,
+          83004417
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          85221625,
+          87992375,
+          87386708,
+          86393834,
+          84240083,
+          83835250,
+          84900166,
+          86822042,
+          88407208,
+          84714500
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      }
+    ],
+    "keine-100000-2.jsonl": [
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          77208458,
+          78335959,
+          77717666,
+          79510083,
+          80662584,
+          80384792,
+          77255875,
+          83561458,
+          78412959,
+          79828292
+        ],
+        "stage": "parse",
+        "validated_all_texts": true
+      },
+      {
+        "actions": 100000,
+        "engine": "keine",
+        "input_bytes": 3388905,
+        "samples_ns": [
+          89569708,
+          90149708,
+          88619375,
+          85242292,
+          85157000,
+          87130167,
+          87567083,
+          88439625,
+          85913500,
+          85458709
+        ],
+        "stage": "parse_program",
+        "validated_all_texts": true
+      }
+    ],
+    "tyranoscript-10000-0.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 10000,
+        "input_bytes": 298890,
+        "samples_ns": [
+          2892292,
+          2552625,
+          2560791,
+          2516083,
+          2507042,
+          2600166,
+          2627000,
+          2624708,
+          2608041,
+          2541292
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ],
+    "tyranoscript-10000-1.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 10000,
+        "input_bytes": 298890,
+        "samples_ns": [
+          2669917,
+          2582083,
+          2516834,
+          2519833,
+          2524291,
+          2517000,
+          2575334,
+          2484125,
+          2594375,
+          2440000
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ],
+    "tyranoscript-10000-2.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 10000,
+        "input_bytes": 298890,
+        "samples_ns": [
+          2903166,
+          2738625,
+          2668792,
+          2657875,
+          2599959,
+          2720958,
+          2641625,
+          2577792,
+          2559500,
+          2619917
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ],
+    "tyranoscript-100000-0.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 100000,
+        "input_bytes": 3088890,
+        "samples_ns": [
+          31224459,
+          31174458,
+          31113250,
+          31215917,
+          31022917,
+          31103125,
+          31470667,
+          31659208,
+          32398417,
+          31689666
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ],
+    "tyranoscript-100000-1.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 100000,
+        "input_bytes": 3088890,
+        "samples_ns": [
+          29489667,
+          29835041,
+          30011083,
+          29387458,
+          30224834,
+          29788583,
+          30278875,
+          30224708,
+          31158667,
+          31441625
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ],
+    "tyranoscript-100000-2.jsonl": [
+      {
+        "engine": "tyranoscript",
+        "stage": "parse",
+        "actions": 100000,
+        "input_bytes": 3088890,
+        "samples_ns": [
+          31272750,
+          31203458,
+          31219917,
+          31199375,
+          31006459,
+          30365875,
+          30633917,
+          30693875,
+          30605584,
+          30809042
+        ],
+        "validated_all_texts": true,
+        "node": "v24.22.0",
+        "v8": "13.6.233.17-node.57"
+      }
+    ]
+  },
+  "source_summary_sha256": "f4bdba23fb7dc72028fc0e949d546f82f419e983dc5dfd3c707b57cfdb08b005",
+  "commands": [
+    {
+      "repeat": 0,
+      "engine": "keine",
+      "count": 10000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-10000.shou",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:12.458405+00:00",
+      "exit_code": 0,
+      "raw": "keine-10000-0.jsonl"
+    },
+    {
+      "repeat": 0,
+      "engine": "tyranoscript",
+      "count": 10000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:12.805444+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-10000-0.jsonl"
+    },
+    {
+      "repeat": 0,
+      "engine": "keine",
+      "count": 100000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-100000.shou",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:12.899178+00:00",
+      "exit_code": 0,
+      "raw": "keine-100000-0.jsonl"
+    },
+    {
+      "repeat": 0,
+      "engine": "tyranoscript",
+      "count": 100000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:15.515589+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-100000-0.jsonl"
+    },
+    {
+      "repeat": 1,
+      "engine": "tyranoscript",
+      "count": 10000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:16.097228+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-10000-1.jsonl"
+    },
+    {
+      "repeat": 1,
+      "engine": "keine",
+      "count": 10000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-10000.shou",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:16.191567+00:00",
+      "exit_code": 0,
+      "raw": "keine-10000-1.jsonl"
+    },
+    {
+      "repeat": 1,
+      "engine": "tyranoscript",
+      "count": 100000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:16.531884+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-100000-1.jsonl"
+    },
+    {
+      "repeat": 1,
+      "engine": "keine",
+      "count": 100000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-100000.shou",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:17.095108+00:00",
+      "exit_code": 0,
+      "raw": "keine-100000-1.jsonl"
+    },
+    {
+      "repeat": 2,
+      "engine": "keine",
+      "count": 10000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-10000.shou",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:19.776277+00:00",
+      "exit_code": 0,
+      "raw": "keine-10000-2.jsonl"
+    },
+    {
+      "repeat": 2,
+      "engine": "tyranoscript",
+      "count": 10000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "10000"
+      ],
+      "started_utc": "2026-10-15T19:10:20.119602+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-10000-2.jsonl"
+    },
+    {
+      "repeat": 2,
+      "engine": "keine",
+      "count": 100000,
+      "command": [
+        "/Users/shiftz/dev/keine/target/release/parser-evidence",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/text-100000.shou",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:20.214642+00:00",
+      "exit_code": 0,
+      "raw": "keine-100000-2.jsonl"
+    },
+    {
+      "repeat": 2,
+      "engine": "tyranoscript",
+      "count": 100000,
+      "command": [
+        "node",
+        "--expose-gc",
+        "/Users/shiftz/dev/keine/target/performance/parser-comparison-0163/tyrano.cjs",
+        "100000"
+      ],
+      "started_utc": "2026-10-15T19:10:22.879413+00:00",
+      "exit_code": 0,
+      "raw": "tyranoscript-100000-2.jsonl"
+    }
+  ]
+}

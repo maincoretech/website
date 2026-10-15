@@ -21,6 +21,18 @@ function tokenize(s) {
   return tokens;
 }
 
+function escapeHtml(value) {
+  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+}
+
+function plainText(raw) {
+  return raw.replace(/^---[\s\S]*?---/, '')
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[#*>\x60\[\]()!_\-|~]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
 let idx;
 
 function build() {
@@ -38,7 +50,7 @@ function build() {
     const slug = path.split('/').pop()?.replace('.md', '') ?? '';
     const raw = mod.default;
     const title = raw.match(/title:\s*(.+)/)?.[1] ?? slug;
-    const text = raw.replace(/---[\s\S]*?---/, '').replace(/[#*>`\[\]()!_\-|~]/g, ' ').replace(/\s+/g, ' ').trim();
+    const text = plainText(raw);
     docs.push({ id: `blog/${slug}`, title, text, slug: `/blog/${slug}`, kind: 'blog' });
   }
 
@@ -46,7 +58,7 @@ function build() {
     const slug = path.split('/').pop()?.replace('.md', '') ?? '';
     const raw = mod.default;
     const title = raw.match(/title:\s*(.+)/)?.[1] ?? slug;
-    const text = raw.replace(/---[\s\S]*?---/, '').replace(/[#*>`\[\]()!_\-|~]/g, ' ').replace(/\s+/g, ' ').trim();
+    const text = plainText(raw);
     docs.push({ id: `news/${slug}`, title, text, slug: `/news/${slug}`, kind: 'news' });
   }
 
@@ -60,8 +72,10 @@ function highlight(doc, term) {
   const esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`(${esc})`, 'gi');
 
+  const mark = value => value.split(re).map((part, index) => index % 2 ? '<mark>' + escapeHtml(part) + '</mark>' : escapeHtml(part)).join('');
+
   if (doc.title.toLowerCase().includes(term.toLowerCase())) {
-    return { inTitle: true, html: doc.title.replace(re, '<mark>$1</mark>') };
+    return { inTitle: true, html: mark(doc.title) };
   }
 
   const t = doc.text || '';
@@ -73,9 +87,9 @@ function highlight(doc, term) {
     let frag = t.slice(s, e);
     if (s > 0) frag = '…' + frag;
     if (e < t.length) frag += '…';
-    return { inTitle: false, html: frag.replace(re, '<mark>$1</mark>') };
+    return { inTitle: false, html: mark(frag) };
   }
-  return { inTitle: false, html: t.slice(0, len) + '…' };
+  return { inTitle: false, html: escapeHtml(t.slice(0, len)) + '…' };
 }
 
 export function search(term) {

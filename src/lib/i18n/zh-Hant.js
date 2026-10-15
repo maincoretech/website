@@ -20,7 +20,7 @@ const zhHant = {
   },
 
   pages: {
-    news: { subtitle: '開發進度 & 最新動態', section: 'Latest', intro: '這裡是 maincore 的官方站點，我們會在這裡發布最新的開發進度、產品資訊和各類文章。' },
+    news: { subtitle: '開發進度 & 最新動態', section: '近況', intro: '這裡是 maincore 的官方站點，我們會在這裡發布最新的開發進度、產品資訊和各類文章。' },
     blog: { subtitle: '一些閒話', empty: '暫無文章。', empty_hint: '在 src/lib/posts/ 目錄下建立 .md 檔案即可自動渲染。' },
     product: { subtitle: '我們的產品' },
     about: { subtitle: '關於 maincore' }

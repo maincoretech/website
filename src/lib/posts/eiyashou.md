@@ -1,6 +1,6 @@
 ---
 title: Eiyashou v2.0 语法与用例参考
-date: 2026-10-05
+date: 2026-10-08
 author: maincore
 description: 按 Kēne 当前实现整理的 Eiyashou v2.0 完整语法、命令、参数与演出用例
 priority: 2
@@ -9,7 +9,7 @@ category: tech
 
 Eiyashou 是 Kēne 的原生视觉小说脚本。故事、分支、资源调度和镜头演出都写在 UTF-8 的 `.shou` 文件里。本文先按制作顺序写出一幕，再列出当前解析器接受的语法、命令、字段和对应用例，方便照着写与回查。
 
-本文对应 **Kēne 0.13.0 / Eiyashou v2.0（核对提交 `2baff735c21f8d5581b6d174ca937c884d9ecf64`）**，包含原生动态序列与粒子参数；不是旧版本引擎的兼容说明。工程写 `script.version: 2`，省略时也默认 2，显式旧版本会被拒绝。已合并的旧命令没有别名。示例中的 `room`、`rin_smile` 等都是资源 ID，不是文件路径；把它们用于自己的工程前，请先在资源清单中登记对应文件。
+本文对应 **Kēne 0.13.1 / Eiyashou v2.0，截至 2026-10-08 的本地实现**，包含动态序列、统一音效命令与雨雪参数；不是旧版本引擎的兼容说明。工程写 `script.version: 2`，省略时也默认 2，显式旧版本会被拒绝。已合并的旧命令没有别名。示例中的 `room`、`rin_smile` 等都是资源 ID，不是文件路径；把它们用于自己的工程前，请先在资源清单中登记对应文件。
 
 阅读顺序：先看工程、基础语法和独立用例，再按“完整命令参考”查询参数。后文另列旧写法到 v2 的转换及当前实现边界。
 
@@ -76,6 +76,8 @@ videos:
   opening: assets/opening.webm
 particles:
   snow_texture: assets/snow.webp
+luts:
+  warm: assets/warm-lut.webp
 ```
 
 `characters.yaml` 登记说话者：
@@ -85,7 +87,13 @@ characters:
   rin:
     name: 凛
     color: '#BAEBFF'
+    avatar: rin_smile
+    expressions:
+      smile: [rin_smile]
+      blink: [rin_smile, rin_sad, rin_smile]
 ```
+
+`avatar` 和 `expressions` 是 Editor 的人物素材预设，引用 `figures` 资源 ID；不会自动显示头像、切换立绘或驱动口型。运行时对白使用 `name` 和 `color`。多帧表情保留帧顺序，真正播放仍须插入下面的 `sprite.sequence` 命令。
 
 资源清单里的 `particles` 是纹理资源；`particle.show` 的第一个参数是实例 ID，第二个是预设 ID。下文各段是**独立用例**：放入自己的 `scene ... { ... }`，并按需调整资源和变量。例子中展示 `rin_*` 的地方是立绘槽位 ID 前缀，不是文件名通配符。
 
@@ -363,13 +371,13 @@ sprite.sequence(eyes, mode: blink, interval: 3s, fps: 10) {
   frame(rin_smile), frame(rin_sad), frame(rin_smile)
 },
 sprite(mouth, rin_neutral),
-sprite.sequence(mouth, mode: talk, speaker: "凛", fps: 12) {
+sprite.sequence(mouth, mode: talk, speaker: "rin", fps: 12) {
   frame(rin_neutral), frame(rin_smile)
 },
 rin: "说话时播放嘴部帧。"
 ```
 
-实际制作时将示例整张立绘换成登记好的透明眼睛/嘴部素材。动态模式至少两帧，第一帧是静止帧；`blink` 间隔默认 3s，必须为正，不能写 `speaker`；`talk` 必须写角色**显示姓名字符串**，不能写 `interval`。说话序列跟随逐字显示而非音频口型识别，文字完成后回到第一帧。两种动态模式都不能写 `loop`，也可用统一的逐帧 `duration` 替代 `fps`；换图或隐藏会清理序列。
+实际制作时将示例整张立绘换成登记好的透明眼睛/嘴部素材。动态模式至少两帧，第一帧是静止帧；`blink` 间隔默认 3s，必须为正，不能写 `speaker`；`talk` 的 `speaker` 必须是字符串，可写角色 ID `"rin"` 或显示姓名 `"凛"`，不能写 `interval`。Loader 将已登记的角色 ID 解析成显示姓名，运行时据此匹配当前对白。说话序列跟随逐字显示而非音频口型识别，文字完成后回到第一帧。两种动态模式都不能写 `loop`，也可用统一的逐帧 `duration` 替代 `fps`；换图或隐藏会清理序列。
 
 ### 立绘环境光照
 
@@ -389,7 +397,7 @@ layout:
 ```shou
 camera.move(scene, x: 120, scale_x: 1.05, blur_amount: 2, tween: [x, blur_amount], duration: 1s),
 camera.shake(all, amplitude: 8, frequency: 12, amplitude_randomness: 0.3, frequency_randomness: 0.2, duration: 300ms),
-camera.effect(scene, bloom_intensity: 0.4, lut_preset: "warm", duration: 300ms),
+camera.effect(scene, bloom_intensity: 0.4, lut_preset: "warm", lut_intensity: 0.8, duration: 300ms),
 camera.effect(scene, focal_distance: none, tween: [], duration: 300ms),
 camera.bind(rin_stage, distance: 1.5),
 camera.unbind(rin_stage, distance: 1.5)
@@ -405,7 +413,19 @@ camera.move(all, x: 20, shake: shake(amplitude: 4, frequency: 2),
 camera.reset(all, duration: 300ms, easing: ease_out, blocking: true)
 ```
 
-嵌套 `shake` 的时长省略时沿用外层 `duration`；振幅、频率与时长必须齐全。`tween` 的 `shake_amplitude` / `shake_frequency` 从当前震动值补间，没有震动时从 0 开始；频率变化连续积累相位。`camera.reset` 同步恢复目标镜头变换与全部特效，并立即停止震动；不修改视差或镜头绑定。省略时长为立即恢复，阻塞只在整组末尾等待一次。
+嵌套 `shake` 的时长省略时沿用外层 `duration`；振幅、频率与时长必须齐全。已有震动时，`tween` 的 `shake_amplitude` / `shake_frequency` 从当前值补间，频率变化连续积累相位；首次震动直接使用指定振幅与频率，时长控制持续时间，不是从 0 渐强所需的时间。`camera.reset` 同步恢复目标镜头变换与全部特效，并立即停止震动；不修改视差或镜头绑定。省略时长为立即恢复，阻塞只在整组末尾等待一次。
+
+### 时长、阻塞与关闭效果
+
+`camera.move` / `camera.effect` 的 `duration` 是到达目标值的过渡时长，不是效果的寿命；完成后保留目标值。省略或写 `0ms` 立即应用。`blocking: false` 允许剧情并行推进，但紧接着给同一镜头下另一条命令会替换当前补间；需要先淡入再淡出时，显式阻塞、插入 `wait` 或使用时间轴。
+
+```shou
+camera.effect(scene, bloom_intensity: 0.6, duration: 500ms, blocking: true),
+wait(1s),
+camera.effect(scene, bloom_intensity: 0, duration: 500ms, blocking: true)
+```
+
+`tween` 只插值已提供的数值字段，未列出的字段立即应用；LUT、色调预设和布尔开关是离散值，不自动交叉混合。关闭连续效果通常把强度渐变到 0。`lut_preset: "warm"` 引用 `assets.yaml` 的 `luts.warm`，还需非零 `lut_intensity` 才会加载并生效。当前着色器读取 256×16 的 16³ LUT 横向图集，不是任意图片或 `.cube` 文件：R 沿格内横轴、G 沿纵轴、B 为从左到右的 16 个切片。
 
 遮罩可限制到某个立绘，或覆盖整个舞台。这里的 `targets` 是 ID 列表：
 
@@ -441,12 +461,12 @@ stage.animate(opening, duration: 2s, repeat: 1, playback_rate: 1, blocking: true
 
 ## 音效、视频、粒子
 
-一次性音效用 `se`，持续环境音用有实例 ID 的 `se.loop`。背景音乐用 `bgm`；`none` 停止相应播放。视频的 `mixed` 模式可与场景混合，`fullscreen` 是默认模式。
+单次与循环音效统一使用 `se`；持续环境音写 `loop: true` 并提供实例 `id`，不再支持 `se.loop`。背景音乐用 `bgm`；`none` 停止相应播放。视频的 `mixed` 模式可与场景混合，`fullscreen` 是默认模式。
 
 ```shou
 bgm(theme, volume: 0.7, fade: 500ms, loop: true),
-se(bell, id: bell_once, volume: 0.8, fade: 100ms),
-se.loop(rain_loop, rain, volume: 0.4, fade: 200ms),
+se(bell, id: bell_once, volume: 0.8, fade: 100ms, fade_out: 200ms),
+se(rain, id: rain_loop, loop: true, volume: 0.4, fade: 200ms),
 se.stop(bell_once, fade: 100ms),
 se.stop(rain_loop, fade: 300ms),
 vocal.play(rin_hello, volume: 0.8),
@@ -456,7 +476,13 @@ video.stop(op, fade: 300ms),
 bgm(none, fade: 500ms)
 ```
 
-`video(opening)` 保留为全屏、非循环、阻塞的简写。`se` 有 `id` 也仍然只播放一次；`se.stop(id)` 可停止该 ID 的单次或循环音效。`se.stop(*)` 立即停止所有**单次**音效，不停止循环且不接受非零 `fade`，循环必须按 ID 关闭；`video.stop(*)` 停止全部视频。粒子可以按实例关闭，也可清空图层：
+`video(opening)` 保留为全屏、非循环、阻塞的简写。`se` 默认 `loop: false`，有 `id` 也仍只播放一次；`se.stop(id)` 停止该 ID 的单次或循环音效。`se.stop(*, fade: 300ms)` 或 `se(none, fade: 300ms)` 淡出所有单次与循环音效；`se(none, id: rain_loop, fade: 300ms)` 只关闭指定实例。省略 `fade` 或写 `0ms` 为立即停止；`video.stop(*)` 停止全部视频。粒子可以按实例关闭，也可清空图层：
+
+```shou
+video(opening, skippable: true),
+se(none, id: rain_loop, fade: 300ms),
+se(none, fade: 300ms)
+```
 
 ```shou
 particle.show(snow, LIGHT_SNOW, texture: snow_texture, count: 120, wind: -4,
@@ -464,6 +490,21 @@ particle.show(snow, LIGHT_SNOW, texture: snow_texture, count: 120, wind: -4,
   drag: 0.2, color: rgba(1, 0.95, 0.9, 1)),
 particle.hide(snow, duration: 300ms),
 particle.layers.clear()
+```
+
+### 音效包络与替换
+
+播放命令的 `fade` 是淡入，停止命令的 `fade` 是淡出。淡入从音频真正开始播放时计时，资源加载等待和暂停不消耗它。单次音效的 `fade_out` 在样本自然末尾应用包络，不把声音提前截断；大于总长时覆盖全段。当前正式 Opus 资源有可用时长元数据，开发兼容解码无法取得时长时会警告并保留原播放。
+
+`fade_out` 只允许非循环、非 `none` 的 `se`；循环音效用显式停止来淡出。同 ID 的循环音效替换会等新资源可播放，再按新命令的 `fade` 交叉淡变；暂停中的替换不先关闭旧声音，显式停止会一起清理待播放实例。同一帧先停止再播放仍按源码顺序生效。
+
+```shou
+se(rain, id: ambience, loop: true, volume: 0.3, fade: 1s),
+wait(2s),
+se(rain, id: ambience, loop: true, volume: 0.6, fade: 500ms),
+wait(1s),
+se.stop(*, fade: 1s),
+se(bell, fade_out: 200ms)
 ```
 
 ## 输入、界面和加载
@@ -576,12 +617,12 @@ pop(items, into: target) / pop(items, index, into: target)
 
 `sprite.animate` / `sprite.transition` 的内建预设有 `enter`、`exit`、`shake`、`enter_from_bottom`、`enter_from_left`、`enter_from_right`、`move_front_and_back`、`blur`、`old_film`、`dot_film`、`reflection_film`、`glitch_film`、`rgb_film`、`godray_film`、`remove_film`、`shockwave_in`、`shockwave_out`；自定义预设用带引号的 ID，`sprite.transition` 的 `enter: none` / `exit: none` 可清除对应预设。`sprite.keyframes` 的 `frame` 必须有 `duration`，另接受 `easing` 与九字段 `x`、`y`、`alpha`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`；空变换帧会在该段时长内保持先前状态。`sprite.focus.configure` 的三组 `style(...)` 分别可写 `scale`、`brightness`、`saturation`、`contrast`、`blur`、`alpha`。
 
-| 序列模式      | 参数和计时                                                      | 用例                     |
-| ------------- | --------------------------------------------------------------- | ------------------------ |
-| 普通序列      | 不写 `mode`；`fps` 默认 12 且必须为正，`loop` 默认 false        | 循环雨滴、一次切图动画   |
-| 逐帧时长      | 不写 `fps`，每帧都写 `duration`，不可只给部分帧                 | 不规则节奏、停顿帧       |
-| `mode: blink` | 至少两帧；`interval` 默认 3s 且必须为正；拒绝 `loop`、`speaker` | 周期眨眼                 |
-| `mode: talk`  | 至少两帧；必填 `speaker: "显示姓名"`；拒绝 `loop`、`interval`   | 随角色逐字显示切换嘴部帧 |
+| 序列模式      | 参数和计时                                                            | 用例                     |
+| ------------- | --------------------------------------------------------------------- | ------------------------ |
+| 普通序列      | 不写 `mode`；`fps` 默认 12 且必须为正，`loop` 默认 false              | 循环雨滴、一次切图动画   |
+| 逐帧时长      | 不写 `fps`，每帧都写 `duration`，不可只给部分帧                       | 不规则节奏、停顿帧       |
+| `mode: blink` | 至少两帧；`interval` 默认 3s 且必须为正；拒绝 `loop`、`speaker`       | 周期眨眼                 |
+| `mode: talk`  | 至少两帧；必填 `speaker: "角色ID或显示姓名"`；拒绝 `loop`、`interval` | 随角色逐字显示切换嘴部帧 |
 
 动态模式仍可二选一使用 FPS 或每帧时长。没有 `mode` 时，`interval` / `speaker` 不合法。
 
@@ -719,19 +760,19 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 
 ## 完整命令参考：音视频与粒子
 
-| 写法                                       | 用例                               | 命名参数与约束                                                                                               |
-| ------------------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `bgm(theme)` / `bgm(none)`                 | 播放、换曲或停止 BGM               | `volume`、`fade`、`loop`；默认音量 1、淡变 0ms、循环 true                                                    |
-| `se(bell)` / `se(none)`                    | 播放一次性音效或停止单次音效       | `volume`、`id`、`fade`；默认音量 1、淡变 0ms                                                                 |
-| `se.loop(rain_loop, rain)`                 | 开始带实例 ID 的循环音效           | `volume`、`fade`                                                                                             |
-| `se.stop(rain_loop)` / `se.stop(*)`        | 按 ID 停止音效 / 停止全部单次音效  | `fade`；`*` 不停止循环且不接受非零 fade                                                                      |
-| `vocal.play(rin_hello)` / `vocal.stop()`   | 播放或停止语音                     | `volume` 仅用于 `vocal.play`                                                                                 |
-| `video(opening)`                           | 全屏非循环视频，等待播放结束或跳过 | `skippable`；不接受 `loop`、`wait`                                                                           |
-| `video.play(op, opening)`                  | 控制视频实例                       | `loop`、`muted`、`alpha`、`skippable`、`wait`、`mode`                                                        |
-| `video.stop(op)` / `video.stop(*)`         | 停止单个或全部视频                 | `fade`                                                                                                       |
-| `particle.show(snow, LIGHT_SNOW)`          | 显示粒子实例与预设                 | `texture`、`count`、`wind`、`gravity`、`fade_in`、`size`、`speed`、`alpha`、`spin`、`drift`、`drag`、`color` |
-| `particle.hide(snow)` / `particle.hide(*)` | 隐藏单个或全部粒子                 | `duration`                                                                                                   |
-| `particle.layers.clear()`                  | 清空粒子图层                       | 无                                                                                                           |
+| 写法                                       | 用例                                | 命名参数与约束                                                                                               |
+| ------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `bgm(theme)` / `bgm(none)`                 | 播放、换曲或停止 BGM                | `volume`、`fade`、`loop`；默认音量 1、淡变 0ms、循环 true                                                    |
+| `se(bell)` / `se(none)`                    | 播放单次音效 / 停止音效             | `volume`、`id`、`loop`、`fade`、`fade_out`；默认音量 1、非循环、淡变 0ms；`none` 可按 ID 或全局停止          |
+| `se(rain, id: rain_loop, loop: true)`      | 开始带实例 ID 的循环音效            | `volume`、`fade`；必须有 `id`，不能用 `none`，不能提供 `fade_out`                                            |
+| `se.stop(rain_loop)` / `se.stop(*)`        | 按 ID 停止 / 停止全部单次与循环音效 | `fade`；全局停止也接受淡出                                                                                   |
+| `vocal.play(rin_hello)` / `vocal.stop()`   | 播放或停止语音                      | `volume` 仅用于 `vocal.play`                                                                                 |
+| `video(opening)`                           | 全屏非循环视频，等待播放结束或跳过  | `skippable`；不接受 `loop`、`wait`                                                                           |
+| `video.play(op, opening)`                  | 控制视频实例                        | `loop`、`muted`、`alpha`、`skippable`、`wait`、`mode`                                                        |
+| `video.stop(op)` / `video.stop(*)`         | 停止单个或全部视频                  | `fade`                                                                                                       |
+| `particle.show(snow, LIGHT_SNOW)`          | 显示粒子实例与预设                  | `texture`、`count`、`wind`、`gravity`、`fade_in`、`size`、`speed`、`alpha`、`spin`、`drift`、`drag`、`color` |
+| `particle.hide(snow)` / `particle.hide(*)` | 隐藏单个或全部粒子                  | `duration`                                                                                                   |
+| `particle.layers.clear()`                  | 清空粒子图层                        | 无                                                                                                           |
 
 所有音量值在 0–1。`video.play` 的 `alpha` 在 0–1；`mode` 为 `fullscreen` 或 `mixed`，默认全屏；默认 `loop: false`、`muted: false`、`alpha: 1`、`skippable: true`、`wait: true`。`wait: true` 等待视频结束；`skippable` 控制是否允许跳过。
 
@@ -748,10 +789,10 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 | `color`           | `rgba(r, g, b, a)`     |
 | `wind`、`gravity` | 数值风力与重力覆盖     |
 
-省略参数沿用预设，大小和速度仍保留预设的透视层差异。这些新参数只在 `particle.show` 中提供；当前 `event.particle` 仍只有时间轴表里列出的原字段，不接受 `size` 等新选项。
+省略参数沿用预设，大小和速度仍保留预设的透视层差异。雨雪省略 `wind` 时有低频阵风；显式 `wind` 使用固定横向速度并关闭阵风与风速散布，`wind: 0` 即无横向风。雪的 `drift` 控制轻微摆动，旋转与翻面使近远层更自然；雨丝倾角跟随实际速度。雨雪预设的重力与阻力默认 0，维持稳定下落，需要加速或减速时显式覆盖 `gravity` / `drag`。这些字段只在 `particle.show` 中提供；当前 `event.particle` 仍只有时间轴表里列出的原字段，不接受 `size` 等新选项。
 
 ```shou
-se.stop(*),
+se.stop(*, fade: 300ms),
 video.play(op_overlay, opening, loop: true, muted: true, alpha: 0.5, skippable: false, wait: false, mode: mixed),
 video.stop(*, fade: 200ms),
 particle.show(snow_front, snow, texture: snow_texture, count: 80, wind: -4, gravity: 2, fade_in: 200ms),
@@ -791,7 +832,15 @@ assets.loading(mode: auto, lookahead: 8, blocking: false) {
 
 ## 工程清单与迁移映射
 
-`assets.yaml` 的全部命名空间是 `backgrounds`、`figures`、`voices`、`bgm`、`se`、`videos`、`particles`。每项可写工程相对路径，也可写 `{ path: ..., tags: [...] }`。`characters.yaml` 的每个人物需要 `name`，可选 `color`。脚本中的人物、素材、对象 ID 分属不同命名空间；引用图片时写清单键，不能直接在命令里嵌入文件路径。
+`assets.yaml` 的全部命名空间是 `backgrounds`、`figures`、`voices`、`bgm`、`se`、`videos`、`particles`、`luts`。每项可写工程相对路径，也可写 `{ path: ..., tags: [...] }`。`characters.yaml` 的每个人物需要 `name`，可选 `color`（`#RRGGBB`）、`avatar` 和 `expressions`。脚本中的人物、素材、对象 ID 分属不同命名空间；引用图片时写清单键，不能直接在命令里嵌入文件路径。
+
+### 在 Editor 中使用人物与源代码
+
+在 Characters 中维护稳定角色 ID、显示姓名、颜色、头像与单帧/多帧表情，可选资源或多选导入。选择脚本插入位置后，Show 插入 `sprite`；Change、Blink、Talk 操作已有实例，所以先 Show，再指定同一个舞台 ID。Insert avatar 显式插入头像命令。按钮生成的动态序列默认 10 fps，Blink 默认间隔 3s；这不改变解析器省略帧率时的默认 12 fps。
+
+预设修改不会重写已有剧本，只有预设引用但剧本从未使用的图片也不会因此自动进入发行资源白名单。人物源修改可撤销，按 Ctrl+S 保存；GUI 无法定位的非标准 YAML 结构应在源文件中编辑。
+
+Text、Blocks 与 Inspector 编辑同一份源码。补全菜单用方向键选择、Enter 接受、Esc 关闭；Ctrl+Space 或 Alt+/ 手动触发（macOS 为 Option+/），灰色行内补全用 Right 接受。IME 组合输入确认后才查询补全。编辑后保存、校验，再在 Preview 检查演出；仅看到 Inspector 数值改变不等于保存和重开已通过。
 
 原生新工程通常不需要 `objects.yaml`。如果迁移旧工程时必须把作者 ID 映射回原引擎对象 ID，在 `config.yaml` 的 `script` 下增加 `objects: objects.yaml`，并写：
 
@@ -814,6 +863,7 @@ prefixes:
 | `sprite.offset(id, x: 20, duration: 300ms)`                   | `sprite.transform(id, x: 20, duration: 300ms)`                       |
 | `sprite.filter(id, brightness: 0.7)`                          | `sprite.transform(id, brightness: 0.7)`                              |
 | `sprite.sequence.timed(id) { frame(asset, duration: 100ms) }` | `sprite.sequence(id) { frame(asset, duration: 100ms) }`              |
+| `se.loop(rain_loop, rain, fade: 200ms)`                       | `se(rain, id: rain_loop, loop: true, fade: 200ms)`                   |
 | `camera.effect.v2(all, ...)`                                  | `camera.effect(all, ...)`；只写要修改的字段                          |
 | `input.simple(name, title: "名字", button: "确定")`           | `input.request(name, title: "名字", confirm_text: "确定")`           |
 | `position: right, anchor_offset: 500, y: 20`                  | `position: right(x: 500, y: 20)`；顶层 y 现在是变换偏移              |
@@ -835,22 +885,27 @@ cargo dev /path/to/new-project
 
 生成 `config.yaml`、`assets.yaml`、`characters.yaml`、`objects.yaml`、`scripts/` 与引用资源副本，按实际源文件分组，保留控制流；适配器生成的入口/调度可放在入口脚本。资源复制不转码，先在临时目录生成并验证，成功才安装到目标。不能无损表达的命令会明确失败，不承诺全部上游扩展兼容。旧格式资源后续仍需按正式发行要求转换成 WebP/Opus，并用实际媒体复验。
 
+LetsGal v2 的 `characters.json` 中，中心锚点的 `left` / `top` 按画布百分比换算：水平位置转为 `center(x: ...)`，垂直位置从自上而下转为 Kēne 自下而上的偏移，并结合表情、角色、全局高度的优先级扣除半高。显示、更新与序列使用同一换算，distance 缩放保留中心；非中心的 v2 锚点明确拒绝，不猜测。无版本的旧基线继续走旧规则；场景层布局另行处理，不能把角色换算直接套给它。
+
 ### 常见诊断怎样改
 
-| 错误写法                                                         | 应改为                                             | 原因                           |
-| ---------------------------------------------------------------- | -------------------------------------------------- | ------------------------------ |
-| `return()`                                                       | `return`                                           | 返回是控制语句，不是带括号命令 |
-| `let items = []`                                                 | `let items = list(string)`                         | 空列表必须说明元素类型         |
-| `if (score > 0 and ready)`                                       | `if ((score > 0) and ready)`                       | 比较和逻辑运算混用时显式分组   |
-| `background(none, x: 10)`                                        | `background(none)`                                 | 清背景不能再设置初始变换       |
-| `video(opening, loop: true)`                                     | `video.play(op, opening, loop: true)`              | 简写视频固定非循环             |
-| `camera.effect.v2(scene, speed_lines_intensity: 1)`              | `camera.effect(scene, speed_lines_intensity: 1)`   | 旧命令已删除，新命令是稀疏更新 |
-| `sprite(id, asset, layout: viewport_height)`                     | `sprite(id, asset, layout: viewport(height: 0.8))` | 布局采用分组值                 |
-| `sprite(id, asset, scale: 1.2, scale_x: 1)`                      | 只选整体 scale 或独立两轴                          | 两种缩放写法不能混用           |
-| `sprite.transform(id, brightness: 0.7, duration: 300ms)`         | 去掉 duration，或同时提供要补间的变换              | 纯颜色/光照更新即时应用        |
-| `sprite.sequence(id, fps: 12) { frame(asset, duration: 100ms) }` | 去掉 fps，所有帧写 duration                        | 序列计时不能混用               |
-| `sprite.sequence(id, mode: talk, loop: true)`                    | 删除 loop，提供 speaker 和至少两帧                 | 动态模式自行控制播放           |
-| `se.stop(*, fade: 300ms)`                                        | `se.stop(effect_id, fade: 300ms)`                  | 淡出停止需要具体 ID            |
+| 错误写法                                                         | 应改为                                                | 原因                           |
+| ---------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------ |
+| `return()`                                                       | `return`                                              | 返回是控制语句，不是带括号命令 |
+| `let items = []`                                                 | `let items = list(string)`                            | 空列表必须说明元素类型         |
+| `if (score > 0 and ready)`                                       | `if ((score > 0) and ready)`                          | 比较和逻辑运算混用时显式分组   |
+| `background(none, x: 10)`                                        | `background(none)`                                    | 清背景不能再设置初始变换       |
+| `video(opening, loop: true)`                                     | `video.play(op, opening, loop: true)`                 | 简写视频固定非循环             |
+| `camera.effect.v2(scene, speed_lines_intensity: 1)`              | `camera.effect(scene, speed_lines_intensity: 1)`      | 旧命令已删除，新命令是稀疏更新 |
+| `sprite(id, asset, layout: viewport_height)`                     | `sprite(id, asset, layout: viewport(height: 0.8))`    | 布局采用分组值                 |
+| `sprite(id, asset, scale: 1.2, scale_x: 1)`                      | 只选整体 scale 或独立两轴                             | 两种缩放写法不能混用           |
+| `sprite.transform(id, brightness: 0.7, duration: 300ms)`         | 去掉 duration，或同时提供要补间的变换                 | 纯颜色/光照更新即时应用        |
+| `sprite.sequence(id, fps: 12) { frame(asset, duration: 100ms) }` | 去掉 fps，所有帧写 duration                           | 序列计时不能混用               |
+| `sprite.sequence(id, mode: talk, loop: true)`                    | 删除 loop，提供 speaker 和至少两帧                    | 动态模式自行控制播放           |
+| `se.loop(effect_id, rain)`                                       | `se(rain, id: effect_id, loop: true)`                 | 旧循环命令已删除               |
+| `se(rain, loop: true)`                                           | `se(rain, id: ambience, loop: true)`                  | 循环音效必须有实例 ID          |
+| `se(rain, id: ambience, loop: true, fade_out: 1s)`               | 播放时删除 fade_out；用 `se.stop(ambience, fade: 1s)` | 自然尾部包络仅用于单次音效     |
+| `se(bell, fade: 200)`                                            | `se(bell, fade: 200ms)`                               | 时长必须有单位且不得为负       |
 
 ## 当前实现边界与校验
 
@@ -858,4 +913,4 @@ cargo dev /path/to/new-project
 
 素材驱动的片段需要把示例 ID 换成工程实际资源；含 `goto` / `call` 的片段需要补齐目标 scene。解析成功只能确认作者语法和静态类型，不证明媒体存在、视觉/听觉效果或完整剧情正确。先 `cargo validate` 检查全项目引用与入口控制流，再在 Preview 验收分支、动画、音视频及存档回退。
 
-脚本版本 2 与存档版本不是同一个概念：当前仍是 Save v11，要求 Program fingerprint 匹配；修改脚本后不能假定旧存档继续加载。旧编译内容需按当前 IR schema v6 重新编译。以当前 Kēne 解析器、typed model 和 `dev/docs/language.md` 为最终依据；更新引擎后重新检查这份参考与工程。
+脚本版本 2 与存档版本不是同一个概念：当前仍是 Save v11，要求 Program fingerprint 匹配；修改脚本后不能假定旧存档继续加载。当前 IR schema v7 包含统一音效与尾部淡出字段，旧编译内容需重新编译；Editor–Engine authoring 协议仍为 v9。以当前 Kēne 解析器、typed model 和 `dev/docs/language.md` 为最终依据；更新引擎后重新检查这份参考与工程。引擎开发、平台依赖、试玩导出与正式发行见 [开发与发布指南](/blog/keine-development-and-release)。
