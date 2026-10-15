@@ -17,8 +17,8 @@
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
     const theme = dev
-      ? 'https://cdn.jsdelivr.net/gh/maincoretech/website@a68ed5d14166b4e2ff7adc260bd45c9a511fbde6/static/giscus-theme.css'
-      : window.location.origin + '/giscus-theme.css?v=4';
+      ? 'dark'
+      : window.location.origin + '/giscus-theme.css?v=5';
     script.setAttribute('data-theme', theme);
     script.setAttribute('data-lang', 'zh-CN');
     script.setAttribute('data-loading', 'lazy');

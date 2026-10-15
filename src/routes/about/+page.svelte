@@ -2,14 +2,9 @@
   import { t } from '$lib/i18n/index.js';
   import Content from '$lib/about.md';
 </script>
-
-<div id="toc-body">
-  <div class="grad-bar grad-bar--toc sec-header" style="margin-bottom:20px">
-    <div class="title">About</div>
-    <div class="subtitle">{$t('pages.about.subtitle')}</div>
-  </div>
-
-  <div class="toc-section" style="margin-top:0">
-    <div class="section-body"><Content /></div>
-  </div>
-</div>
+<svelte:head>
+  <title>{$t('nav.about')} · maincore</title>
+  <meta name="description" content={$t('pages.about.subtitle')} />
+</svelte:head>
+<h1 class="site-page-title">{$t('pages.about.subtitle')}</h1>
+<div class="article-prose about-content"><Content /></div>

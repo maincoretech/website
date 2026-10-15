@@ -1,4 +1,4 @@
-/* Shared hover treatment for the preview and its interactive detail page. */
+/* Shared hover and selection treatment across the site. */
 .home-preview {
   --hover-wash: rgb(180 180 180 / 7%);
   --selection-glow: 0 0 8px rgb(100 175 220 / 65%), 0 0 22px rgb(100 175 220 / 35%);
@@ -12,8 +12,7 @@
   --c-hv: var(--hover-wash);
 }
 
-/* Bottom navigation stays transparent; other controls use a subtle hover wash. */
-.home-preview .garden-navigation { --hover-wash: transparent; }
+/* Navigation shares the subtle hover wash; selection alone keeps a clear background. */
 :is(.home-preview, .home-preview .preview-sheet) :is(a, button) {
   --control-glow: var(--idle-glow);
   text-decoration: none;
@@ -24,10 +23,10 @@
 /* Keep dates and descriptions crisp: compound controls glow only at the label. */
 .home-preview :is(
   .preview-entry, .search-item, .keine-brand, .keine-chapters a, .keine-reading a,
-  .architecture-nodes button, .garden-navigation button, .lang-btn
+  .architecture-nodes button, .garden-navigation a, .lang-btn
 ) { text-shadow: none; }
 .home-preview :is(
-  .entry-title, .s-title, .architecture-nodes strong, .garden-navigation button > span,
+  .entry-title, .s-title, .architecture-nodes strong, .garden-navigation a > span,
   .lang-label, .keine-brand > span, .keine-chapters a > span, .keine-reading a > span
 ) {
   text-shadow: var(--control-glow);

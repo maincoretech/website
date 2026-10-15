@@ -1,4 +1,4 @@
-// Prefer the newer article when present, but keep this preview branch standalone.
+// Prefer the architecture article when available in the content collection.
 export const postModules = import.meta.glob('/src/lib/posts/*.md', { eager: true, import: 'metadata' });
 export const architectureSlug = postModules['/src/lib/posts/keine-architecture.md']
   ? 'keine-architecture'

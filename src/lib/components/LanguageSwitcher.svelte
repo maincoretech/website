@@ -11,24 +11,33 @@
   ];
 
   let open = $state(false);
+  let trigger;
 
   function pick(code) {
     open = false;
-    transitionContent(document.querySelector('.garden-reading, .keine-content, #toc-container'), () => setLang(code));
+    transitionContent(document.querySelector('.route-content'), () => setLang(code));
   }
 
   function toggle() { open = !open; }
   function close() { open = false; }
+  function onKeydown(event) {
+    if (event.key === 'Escape' && open) {
+      close();
+      trigger?.focus();
+    }
+  }
 </script>
 
-<svelte:window onclick={close} />
+<svelte:window onclick={close} onkeydown={onKeydown} />
 
 <span class="lang-wrap">
   <button
     class="lang-btn"
+    bind:this={trigger}
     class:lang-btn--open={open}
     onclick={(e) => { e.stopPropagation(); toggle(); }}
     aria-label="语言"
+    aria-expanded={open}
   >
     {@html Translate}
     <span class="lang-label">{langs.find(l => l.code === $lang)?.label ?? $lang}</span>

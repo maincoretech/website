@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "measurement_dates": {
+    "keine": "2026-10-14",
+    "other_engines": "2026-10-12–13",
+    "timezone": "Asia/Shanghai"
+  },
+  "source_sha256": "3e7a25178849a412f168ef2c54a8f4064d4f4a5d1f4d3aa7d2b43fbca58def57",
+  "machine": {
+    "chip": "Apple M5 Pro",
+    "memory_bytes": "25769803776",
+    "logical_cpus": "15",
+    "macos": "27.0.1",
+    "architecture": "arm64"
+  },
+  "protocol": {
+    "viewport_pixels": [
+      1920,
+      1080
+    ],
+    "warmup_seconds": 10,
+    "consecutive_windows": 3,
+    "window_seconds": 30,
+    "sample_period_seconds": 5,
+    "cpu_unit": "100% = one logical core",
+    "resource_scope": "Main process plus observed child processes; median of three consecutive window summaries; summed RSS may count shared pages repeatedly.",
+    "motion": "300 ms in each direction, continuous linear interpolation; ONScripter uses approximately 20 ms discrete steps without dialogue overlay and is excluded from the motion chart.",
+    "audio": "Shared 44.1 kHz stereo Vorbis fixture; developer compatibility input, not the production Opus format.",
+    "frame_scope": "Separate profiling pass; OS Metal on-glass frame intervals; median of three window summaries."
+  },
+  "engines": [
+    {
+      "id": "keine",
+      "label": "Kēne",
+      "version": "0.16.0",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 0.3661581122033233,
+          "rss_mib": 210.53794642857142,
+          "rss_peak_mib": 210.578125,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 21.93590031685715,
+          "rss_mib": 212.22544642857142,
+          "rss_peak_mib": 212.296875,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 1.032000454591007,
+          "rss_mib": 218.54464285714286,
+          "rss_peak_mib": 218.609375,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 1.6645684596465724,
+          "rss_mib": 233.76785714285714,
+          "rss_peak_mib": 233.796875,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "renpy",
+      "label": "Ren’Py",
+      "version": "8.5.3.26051504",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 3.329927552805814,
+          "rss_mib": 300.6205357142857,
+          "rss_peak_mib": 300.625,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 23.02557800242088,
+          "rss_mib": 179.77232142857142,
+          "rss_peak_mib": 232.09375,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 4.027387013872805,
+          "rss_mib": 307.0625,
+          "rss_peak_mib": 307.203125,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 3.4944755495907565,
+          "rss_mib": 294.953125,
+          "rss_peak_mib": 295.890625,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "suika",
+      "label": "Suika3",
+      "version": "26.07.13",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 7.8538338621033725,
+          "rss_mib": 129.91741071428572,
+          "rss_peak_mib": 129.96875,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 7.485870440254929,
+          "rss_mib": 267.78125,
+          "rss_peak_mib": 267.78125,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 7.422691924911061,
+          "rss_mib": 204.59375,
+          "rss_peak_mib": 268.53125,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 6.588795122468046,
+          "rss_mib": 210.69866071428572,
+          "rss_peak_mib": 210.71875,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "webgal",
+      "label": "WebGAL",
+      "version": "4.6.6",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 7.121580292643874,
+          "rss_mib": 572.7522321428571,
+          "rss_peak_mib": 576.6875,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 33.54500901371431,
+          "rss_mib": 617.421875,
+          "rss_peak_mib": 627.0,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 7.787949824133153,
+          "rss_mib": 471.75223214285717,
+          "rss_peak_mib": 473.609375,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 7.8880499658373795,
+          "rss_mib": 538.875,
+          "rss_peak_mib": 542.609375,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "tyrano",
+      "label": "TyranoScript",
+      "version": "602c",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 5.260275869841134,
+          "rss_mib": 407.9575892857143,
+          "rss_peak_mib": 499.21875,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 32.20951830287947,
+          "rss_mib": 409.9263392857143,
+          "rss_peak_mib": 410.28125,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 2.3629119339147238,
+          "rss_mib": 622.9776785714286,
+          "rss_peak_mib": 623.703125,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 2.2298956363555336,
+          "rss_mib": 720.3950892857143,
+          "rss_peak_mib": 720.59375,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "letsgal",
+      "label": "LetsGal 前端",
+      "version": "Studio 2.0.0 export frontend",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 18.338182477015323,
+          "rss_mib": 459.47544642857144,
+          "rss_peak_mib": 461.234375,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 25.35171403363772,
+          "rss_mib": 656.734375,
+          "rss_peak_mib": 659.5625,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 13.379914333065537,
+          "rss_mib": 744.6852678571429,
+          "rss_peak_mib": 749.5625,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 13.147224696719354,
+          "rss_mib": 717.8794642857143,
+          "rss_peak_mib": 723.625,
+          "completed_windows": 3
+        }
+      }
+    },
+    {
+      "id": "onscripter",
+      "label": "ONS 私有构建",
+      "version": "20230825 private ARM64",
+      "workloads": {
+        "idle": {
+          "cpu_percent": 1.5970887113339394,
+          "rss_mib": 198.71428571428572,
+          "rss_peak_mib": 198.71875,
+          "completed_windows": 3
+        },
+        "motion": {
+          "cpu_percent": 13.018928864963907,
+          "rss_mib": 178.81026785714286,
+          "rss_peak_mib": 191.953125,
+          "completed_windows": 3
+        },
+        "audio": {
+          "cpu_percent": 1.5637507146465521,
+          "rss_mib": 203.01785714285714,
+          "rss_peak_mib": 203.078125,
+          "completed_windows": 3
+        },
+        "mix": {
+          "cpu_percent": 1.563731692138144,
+          "rss_mib": 199.18526785714286,
+          "rss_peak_mib": 199.234375,
+          "completed_windows": 3
+        }
+      }
+    }
+  ],
+  "previous_keine": {
+    "id": "keine",
+    "label": "Kēne",
+    "version": "0.15.5",
+    "workloads": {
+      "idle": {
+        "cpu_percent": 0.3993676246627916,
+        "rss_mib": 211.234375,
+        "rss_peak_mib": 211.28125,
+        "completed_windows": 3
+      },
+      "motion": {
+        "cpu_percent": 29.781904327753683,
+        "rss_mib": 207.86607142857142,
+        "rss_peak_mib": 207.9375,
+        "completed_windows": 3
+      },
+      "audio": {
+        "cpu_percent": 1.0983870795707456,
+        "rss_mib": 185.5625,
+        "rss_peak_mib": 185.609375,
+        "completed_windows": 3
+      },
+      "mix": {
+        "cpu_percent": 1.7972350661778773,
+        "rss_mib": 234.85491071428572,
+        "rss_peak_mib": 234.890625,
+        "completed_windows": 3
+      }
+    }
+  },
+  "keine_metal": {
+    "current": {
+      "fps": 59.93344852390915,
+      "p95_ms": 16.66666753590107,
+      "p99_ms": 16.666708514094353,
+      "gpu_mean_ms": 2.3947143790995
+    },
+    "previous": {
+      "fps": 59.868907309341594,
+      "p95_ms": 31.638324074447148,
+      "p99_ms": 33.70029255747795,
+      "gpu_mean_ms": 1.9041746328690807
+    }
+  },
+  "limitations": [
+    "Checkpoint variants only; full-game cross-engine equivalence was not verified.",
+    "Other engines retained from the earlier round; version differences do not identify the cause of a performance change.",
+    "LetsGal is the Studio 2.0.0 exported frontend with private Electron 41.1.1, not the official desktop bytecode entry.",
+    "CPU/RSS measurements exclude WindowServer and driver overhead; no power measurement.",
+    "Metal timings are not input latency; profiling can change scheduling; no zero-dropped-frames claim.",
+    "ONScripter uses private dependencies and pre-scaled PNG; decoding load differs from WebP paths."
+  ]
+}

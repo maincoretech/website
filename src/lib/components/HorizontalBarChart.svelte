@@ -15,10 +15,10 @@
   const colors = {
     primary: '#6090a0',
     secondary: '#6d91a5',
-    text: '#334755',
-    muted: '#506473',
-    track: 'rgba(51, 71, 85, .09)',
-    tooltip: '#d7e4eb'
+    text: '#bdd1dc',
+    muted: '#91afbf',
+    track: 'rgba(145, 173, 189, .09)',
+    tooltip: '#14232c'
   };
 
   const textStyle = {
@@ -101,7 +101,7 @@
     grid-template-rows: repeat(var(--item-count), minmax(0, 1fr));
     align-items: center;
     justify-items: end;
-    color: #506473;
+    color: #91afbf;
     font: 0.72rem var(--f-m);
     font-variant-numeric: tabular-nums;
     pointer-events: none;

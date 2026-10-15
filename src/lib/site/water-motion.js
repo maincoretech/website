@@ -8,6 +8,40 @@ const BEND_X = 19;
 const BEND_Z = 31;
 export const RIPPLE_COUNT = 4;
 export const RIPPLE_LIFETIME = 1.2;
+export const SCROLL_WAKE_WIDTH = .18;
+export const SCROLL_WAKE_GAIN = 1.6;
+const SCROLL_WAKE_DECAY = 2.3;
+
+// Same screen-space band as the water shader, sampled at each prop's footprint.
+export function scrollDisturbance(screenY, wake) {
+  const distance = (screenY - wake.x) / SCROLL_WAKE_WIDTH;
+  const envelope = Math.max(0, 1 - Math.abs(distance));
+  return (1 - 3 * distance) * envelope * envelope * wake.y * SCROLL_WAKE_GAIN;
+}
+
+// One screen-aligned wake, updated by the existing frame loop. Scroll events only
+// accumulate a bounded impulse; they never allocate ripples or trigger rendering.
+export function advanceScrollWake(wake, delta, dt) {
+  if (Math.abs(delta) > .01) {
+    if (Math.abs(wake.y) < .01) wake.x = .68;
+    wake.y = Math.max(-.8, Math.min(.8, wake.y + Math.max(-120, Math.min(120, delta)) * .005));
+  }
+  const decay = Math.exp(-dt * SCROLL_WAKE_DECAY);
+  wake.x = Math.max(.56, Math.min(.92, wake.x + wake.y * (1 - decay) / SCROLL_WAKE_DECAY * .36));
+  wake.y *= decay;
+  if (Math.abs(wake.y) < .001) wake.y = 0;
+  return wake;
+}
+
+export const SCROLL_WAKE_GLSL = `
+  uniform vec2 scrollWake;
+  uniform float viewportHeight;
+  float scrollDisturbance(float screenY) {
+    float distance = (screenY - scrollWake.x) / ${SCROLL_WAKE_WIDTH.toFixed(2)};
+    float envelope = max(0., 1. - abs(distance));
+    return (1. - 3. * distance) * envelope * envelope * scrollWake.y * ${SCROLL_WAKE_GAIN.toFixed(2)};
+  }
+`;
 
 function rippleAmplitude(age, strength) {
   if (age < 0 || age >= RIPPLE_LIFETIME) return 0;
@@ -93,21 +127,23 @@ export function waveHeight(x, z, time) {
   return Math.sin(phase) * .026;
 }
 
-function surfaceHeight(x, z, time, ripples, flow, prepared) {
-  return waveHeight(x, z, time) + Math.tanh(disturbanceHeight(x, z, time, ripples, flow, prepared)) * .03;
+function surfaceHeight(x, z, time, ripples, flow, prepared, scrollHeight) {
+  return waveHeight(x, z, time)
+    + Math.tanh(disturbanceHeight(x, z, time, ripples, flow, prepared)) * .03
+    + Math.tanh(scrollHeight ? scrollHeight(x, z) : 0) * .045;
 }
 
-export function sampleFloat(homeX, homeZ, time, pose, ripples = [], flow, prepared = false) {
+export function sampleFloat(homeX, homeZ, time, pose, ripples = [], flow, prepared = false, scrollHeight) {
   // Bounded drift keeps the paper within its composition instead of leaving the page.
   const phase = (homeX - homeZ) * .37;
   pose.x = homeX + Math.sin(time * SPEED * .3 + phase) * .065;
   pose.z = homeZ - Math.sin(time * SPEED * .24 + phase) * .1;
   // Saturation limits overlapping gestures so the paper keeps its navigation clearance.
-  pose.y = .035 + surfaceHeight(pose.x, pose.z, time, ripples, flow, prepared);
+  pose.y = .035 + surfaceHeight(pose.x, pose.z, time, ripples, flow, prepared, scrollHeight);
   // Sample across the paper's footprint, smoothing the short waves into a small tilt.
   const reach = .55;
-  pose.slopeX = (surfaceHeight(pose.x + reach, pose.z, time, ripples, flow, prepared) - surfaceHeight(pose.x - reach, pose.z, time, ripples, flow, prepared)) / (2 * reach);
-  pose.slopeZ = (surfaceHeight(pose.x, pose.z + reach, time, ripples, flow, prepared) - surfaceHeight(pose.x, pose.z - reach, time, ripples, flow, prepared)) / (2 * reach);
+  pose.slopeX = (surfaceHeight(pose.x + reach, pose.z, time, ripples, flow, prepared, scrollHeight) - surfaceHeight(pose.x - reach, pose.z, time, ripples, flow, prepared, scrollHeight)) / (2 * reach);
+  pose.slopeZ = (surfaceHeight(pose.x, pose.z + reach, time, ripples, flow, prepared, scrollHeight) - surfaceHeight(pose.x, pose.z - reach, time, ripples, flow, prepared, scrollHeight)) / (2 * reach);
   pose.yaw = Math.sin(time * SPEED * .3 + phase) * .045;
   return pose;
 }

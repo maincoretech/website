@@ -1,0 +1,96 @@
+<script>
+  import { onMount, tick } from 'svelte';
+  import { beforeNavigate, afterNavigate } from '$app/navigation';
+  import { page } from '$app/stores';
+  import Header from '$lib/components/Header.svelte';
+  import WaterScene from './WaterScene.svelte';
+  import { siteConfig } from '$lib/siteConfig.js';
+  import { t } from '$lib/i18n/index.js';
+  import { motionDuration } from '$lib/motion.js';
+  import './site.css';
+  import './hover.css';
+  import './reading.css';
+
+  let { children } = $props();
+  let panel;
+  let waterScene = $state.raw(null);
+  let pageHeading;
+  let previousScrollTop = 0;
+  let reducedMotion = $state(true);
+  let showTop = $state(false);
+  const scrollPositions = new Map();
+  const sections = siteConfig.nav.filter(section => section.label !== 'news');
+  const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
+  const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? 'news');
+  const article = $derived(/^\/(blog|news)\/[^/]+/.test(path));
+  const detail = $derived(article || path === '/product/keine');
+  const backHref = $derived(path.startsWith('/blog/') ? '/blog' : path.startsWith('/product/') ? '/product' : '/');
+
+  function onScroll() {
+    waterScene?.scroll(panel.scrollTop - previousScrollTop);
+    previousScrollTop = panel.scrollTop;
+    const next = panel.scrollTop > 280;
+    if (next !== showTop) showTop = next;
+  }
+  function backToTop() {
+    panel.scrollTo({ top: 0, behavior: motionDuration(200) ? 'smooth' : 'instant' });
+  }
+  beforeNavigate(({ from }) => {
+    if (from && panel) scrollPositions.set(from.url.pathname + from.url.search, panel.scrollTop);
+  });
+  afterNavigate(async ({ to, type }) => {
+    await tick();
+    // Let the new reading width settle before restoring the nested scroll area.
+    // Article and list routes use different widths, including during View Transitions.
+    await new Promise(requestAnimationFrame);
+    if (!panel || !to || to.url.href !== $page.url.href) return;
+    const top = type === 'popstate' ? scrollPositions.get(to.url.pathname + to.url.search) ?? 0 : 0;
+    panel.scrollTop = top;
+    previousScrollTop = panel.scrollTop;
+    showTop = panel.scrollTop > 280;
+    if (to.url.hash) {
+      let id;
+      try { id = decodeURIComponent(to.url.hash.slice(1)); } catch { id = to.url.hash.slice(1); }
+      document.getElementById(id)?.scrollIntoView({ block: 'start' });
+    } else if (type !== 'enter' && type !== 'popstate') pageHeading?.focus({ preventScroll: true });
+  });
+  onMount(() => {
+    const media = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => reducedMotion = media.matches;
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  });
+</script>
+
+<svelte:head>
+  <link rel="canonical" href={`https://${siteConfig.domain}${path === '/' ? '' : path}`} />
+</svelte:head>
+
+<div class="home-preview garden-preview site-shell" class:reading-detail={detail} class:article-page={article}>
+  <a class="skip-link" href="#site-content">跳到内容</a>
+  <div class="scene-page">
+    {#if !article}<WaterScene bind:this={waterScene} {region} still={reducedMotion} />{/if}
+    <div class="garden-brand">
+      <a class="brand-home" href="/" aria-label="maincore，返回首页"><img class="brand-logo" src="/favicon.png" width="42" height="42" alt="" /></a>
+      <div><span class="brand-name">maincore</span><p>games &amp; software</p></div>
+    </div>
+    {#if !article}
+      <nav id="garden-navigation" class="garden-navigation" aria-label="主导航">
+        {#each sections as section}
+          <a href={section.href} class:active={region === section.label} aria-current={region === section.label ? 'page' : undefined}><span>{$t('nav.' + section.label)}</span></a>
+        {/each}
+      </nav>
+    {/if}
+    <main id="site-content" class="garden-reading preview-sheet" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
+      <div class="reading-heading" hidden={path === '/'}>
+        <span class="page-section" tabindex="-1" bind:this={pageHeading}>{$t('nav.' + region)}</span>
+        <a class="reading-back" href={backHref} aria-label={backHref === '/' ? $t('back.home') : '返回栏目'}>←</a>
+      </div>
+      <div class="route-content">{@render children()}</div>
+    </main>
+    <footer class="site-copyright">{siteConfig.copyright}</footer>
+    {#if showTop}<button class="site-back-top" aria-label={$t('a11y.back_to_top')} onclick={backToTop}>↑</button>{/if}
+  </div>
+  <Header />
+</div>

@@ -10,8 +10,7 @@ export function motionDuration(ms) {
 }
 
 export function popup(node) {
-  const upwards = !!node.closest('.home-preview');
-  return fly(node, { y: upwards ? 5 : -5, duration: motionDuration(160), easing: cubicOut });
+  return fly(node, { y: -5, duration: motionDuration(160), easing: cubicOut });
 }
 
 export function reveal(node) {

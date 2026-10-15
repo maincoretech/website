@@ -3,7 +3,12 @@
   import { products } from '$lib/products.js';
   import { transitionContent } from '$lib/motion.js';
   import { architectureHref } from './content.js';
-  let { view = 'all', active = true, standalone = false } = $props();
+  import BenchmarkHighlights from './BenchmarkHighlights.svelte';
+  let { view = 'all', product = 'all', active = true, standalone = false, intro = true } = $props();
+  const instanceId = $props.id();
+  const sectionId = name => product === 'all' ? name : `${instanceId}-${name}`;
+  const revealStep = 95;
+  const revealDuration = 480;
   const catalog = products.flatMap((group) => group.items);
   const engine = catalog.find((item) => item.name === 'Kēne');
   const archive = catalog.find((item) => item.name === 'Hakutaku');
@@ -117,13 +122,16 @@
   });
 </script>
 
-<section hidden={view !== 'all' && view !== 'live'} id="live" class="preview-section" aria-labelledby="live-title">
+<section hidden={view !== 'all' && view !== 'live'} id={sectionId('live')} class="preview-section" aria-labelledby={sectionId('live-title')}>
         {#if standalone}<p class="demo-eyebrow">01 / EIYASHOU</p>{/if}
         <div class="section-heading">
-          <h2 id="live-title" class="sec-title-box"><span class="sec-title-box__title">一小段故事</span></h2>
+          <h2 id={sectionId('live-title')} class="sec-title-box"><span class="sec-title-box__title">一小段故事</span></h2>
           <span class="section-aside">Eiyashou · live</span>
         </div>
-        <div class="editor-window" bind:this={demoElement}>
+        <div class="editor-window" bind:this={demoElement}
+          style:--reveal-state={playing ? 'running' : 'paused'}
+          style:--reveal-duration={`${revealDuration}ms`}
+          style:--progress-duration={`${(codeLines.length - 1) * revealStep + revealDuration}ms`}>
           <div class="editor-tabs" role="group" aria-label="选择代码示例">
             {#each examples as item, index}<button
                 type="button"
@@ -131,6 +139,7 @@
                 aria-pressed={exampleIndex === index}
                 onclick={() => selectExample(index)}>{item.file}<small>{item.name}</small></button
               >{/each}
+            {#key replay}<span class="code-progress" class:revealing={mounted && !reducedMotion && !complete} aria-hidden="true"></span>{/key}
           </div>
           <div class="code-surface" bind:this={codeSurface}>
             <pre class="sr-only" aria-label="完整 Eiyashou 示例">{example.source}</pre>
@@ -139,7 +148,7 @@
                   class="code-line"
                 >
                   <span class="line-number">{String(index + 1).padStart(2, '0')}</span><span class="line-code"
-                    style:--reveal-delay={`${index * 95}ms`}
+                    style:--reveal-delay={`${index * revealStep}ms`}
                     onanimationend={(event) => { if (event.animationName === 'code-reveal' && index === codeLines.length - 1) complete = true; }}
                     >{#each line as token}<span class={token.kind}>{token.value}</span
                       >{/each}</span
@@ -148,9 +157,6 @@
             </div>{/key}
           </div>
           <div class="editor-controls">
-            <span class="playback-state" aria-live="polite"
-              >{complete ? '示例已显示' : paused ? '已暂停' : '正在展开'}</span
-            >
             <button
                 type="button"
                 class="playback-button"
@@ -167,21 +173,24 @@
         </div>
       </section>
 
-      <section hidden={view !== 'all' && view !== 'projects'} id="projects" class="preview-section" aria-labelledby="projects-title">
-        <div class="section-heading" hidden={standalone}>
-          <h2 id="projects-title" class="sec-title-box"><span class="sec-title-box__title">正在做的</span></h2>
+      <section hidden={view === 'live'} id={sectionId('projects')} class="preview-section" aria-label="项目介绍">
+        <div class="section-heading" hidden={standalone || product !== 'all'}>
+          <h2 id={sectionId('projects-title')} class="sec-title-box"><span class="sec-title-box__title">正在做的</span></h2>
           <a class="section-aside" href="/product">全部项目 ↗</a>
         </div>
-        <article id="architecture" class="project-note">
+        <article id={sectionId('architecture')} class="project-note" hidden={product !== 'all' && product !== 'keine'}>
+          {#if intro}
           {#if standalone}
             <p class="demo-eyebrow">02 / ARCHITECTURE</p>
             <h3>从剧本到舞台。</h3>
             <p>点击一个模块，看看它在引擎中承担的工作。</p>
           {:else}
-            <h3><a href="/preview/keine">Kēne</a></h3>
+            <h3><a href="/product/keine">Kēne</a></h3>
             <p>{engine.desc}。</p>
           {/if}
-          <div class="architecture-demo">
+          {/if}
+          <div hidden={view !== 'all' && view !== 'performance'}><BenchmarkHighlights product="keine" /></div>
+          <div class="architecture-demo" hidden={view !== 'all' && view !== 'architecture' && view !== 'projects'}>
             <div class="architecture-nodes" role="group" aria-label="查看 Kēne 架构层">
               {#each layers as item, index}<button
                   type="button"
@@ -196,7 +205,7 @@
             </div>
           </div>
           <div class="project-actions">
-            {#if !standalone}<a href="/preview/keine">交互介绍 ↗</a>{/if}
+            {#if !standalone}<a href="/product/keine">交互介绍 ↗</a>{/if}
             <a href={architectureHref}>架构笔记 ↗</a><a
               href={engine.link}
               target="_blank"
@@ -204,13 +213,16 @@
             >
           </div>
         </article>
-        <article id="resources" class="project-note">
+        <article id={sectionId('resources')} class="project-note" hidden={product !== 'all' && product !== 'hakutaku'}>
+          {#if intro}
           {#if standalone}<p class="demo-eyebrow">03 / RESOURCES</p>{/if}
           <h3>{standalone ? '只更新改变的那一部分。' : 'Hakutaku'}</h3>
           <p>{standalone ? "Hakutaku 用签名快照引用内容寻址的数据段。点击更新，查看新快照与旧数据的复用关系。" : archive.desc + "。"}</p>
-          <div class="resource-demo" bind:this={resourceDemo}>
+          {/if}
+          <div hidden={view !== 'all' && view !== 'performance'}><BenchmarkHighlights product="hakutaku" /></div>
+          <div class="resource-demo" bind:this={resourceDemo} hidden={view !== 'all' && view !== 'resources' && view !== 'projects'}>
             <div class="resource-toolbar">
-              <span>game.haku <small>/ v{updated ? '2' : '1'}</small></span><button
+              <span>game.haku <small>/ release {updated ? '2' : '1'}</small></span><button
                 type="button"
                 aria-pressed={updated}
                 onclick={() => transitionContent(resourceDemo, () => (updated = !updated))}>{updated ? '还原版本' : '更新一次剧本'}</button

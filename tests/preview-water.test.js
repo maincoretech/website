@@ -1,6 +1,75 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RIPPLE_LIFETIME, prepareRipples, disturbanceHeight, sampleFloat, waveHeight } from '../src/routes/preview/water-motion.js';
+import { RIPPLE_LIFETIME, SCROLL_WAKE_WIDTH, SCROLL_WAKE_GAIN, prepareRipples, disturbanceHeight, sampleFloat, waveHeight, advanceScrollWake, scrollDisturbance } from '../src/lib/site/water-motion.js';
+
+test('scroll surface matches the shader band and reverses with scroll direction', () => {
+  for (const strength of [-.8, -.2, 0, .2, .8]) {
+    const wake = { x: .68, y: strength };
+    for (let y = 0; y <= 1; y += .005) {
+      const distance = (y - wake.x) / SCROLL_WAKE_WIDTH;
+      const envelope = Math.max(0, 1 - Math.abs(distance));
+      assert(Math.abs(scrollDisturbance(y, wake) - (1 - 3 * distance) * envelope ** 2 * strength * SCROLL_WAKE_GAIN) < 1e-12);
+    }
+    assert.equal(scrollDisturbance(wake.x, wake), strength * SCROLL_WAKE_GAIN);
+    assert.equal(Math.abs(scrollDisturbance(.3, wake)), 0);
+  }
+});
+
+test('scroll waves lift and tilt props locally, then return to ambient motion', () => {
+  const time = .4;
+  const baseline = sampleFloat(0, 0, time, {});
+  const wake = { x: .68, y: .8 };
+  const surface = (x, z) => scrollDisturbance(.68 + (z - baseline.z) * .08, wake);
+  const forward = sampleFloat(0, 0, time, {}, [], undefined, true, surface);
+  assert(forward.y - baseline.y > .02);
+  assert(Math.abs(forward.slopeZ - baseline.slopeZ) > .01);
+  wake.y = -.8;
+  const reverse = sampleFloat(0, 0, time, {}, [], undefined, true, surface);
+  assert(Math.abs(forward.y + reverse.y - 2 * baseline.y) < 1e-12);
+  assert(Math.abs(forward.slopeZ + reverse.slopeZ - 2 * baseline.slopeZ) < 1e-12);
+  wake.x = .2;
+  assert.deepEqual(sampleFloat(0, 0, time, {}, [], undefined, true, surface), baseline);
+  wake.y = 0;
+  assert.deepEqual(sampleFloat(0, 0, time, {}, [], undefined, true, surface), baseline);
+});
+
+test('combined scroll and pointer gestures keep the extra motion bounded', () => {
+  const sources = Array.from({ length: 4 }, () => ({ x: 0, y: 0, z: 0, w: .85 }));
+  for (const direction of [-1, 1]) {
+    const wake = { x: .68, y: 0 };
+    for (let frame = 0; frame < 600; frame++) {
+      advanceScrollWake(wake, direction * 10000, 1 / 60);
+      const pose = sampleFloat(0, 0, frame / 60, {}, sources, { x: 0, y: 0, z: .75 }, false,
+        (x, z) => scrollDisturbance(.68 + z * .08, wake));
+      assert(Math.abs(pose.y - .035 - waveHeight(pose.x, pose.z, frame / 60)) <= .075);
+      assert(Object.values(pose).every(Number.isFinite));
+    }
+  }
+});
+
+test('scroll wake responds immediately in either direction and remains bounded', () => {
+  for (const direction of [-1, 1]) {
+    const wake = { x: .68, y: 0 };
+    advanceScrollWake(wake, direction * 50, 1 / 60);
+    assert(wake.y * direction > .1);
+    assert((wake.x - .68) * direction > 0);
+    for (let frame = 0; frame < 600; frame++) {
+      advanceScrollWake(wake, direction * 10000, 1 / 60);
+      assert(Math.abs(wake.y) <= .8);
+      assert(wake.x >= .56 && wake.x <= .92);
+    }
+    for (let frame = 0; frame < 180; frame++) advanceScrollWake(wake, 0, 1 / 60);
+    assert.equal(wake.y, 0);
+  }
+});
+
+test('scroll wake decay is independent of render cadence', () => {
+  const a = { x: .68, y: .6 }, b = { ...a };
+  for (let i = 0; i < 30; i++) advanceScrollWake(a, 0, 1 / 30);
+  for (let i = 0; i < 60; i++) advanceScrollWake(b, 0, 1 / 60);
+  assert(Math.abs(a.y - b.y) < 1e-10);
+  assert(Math.abs(a.x - b.x) < 1e-10);
+});
 
 test('a click opens immediately and expands on the next frame', () => {
   const sources = [{ x: 0, y: 0, z: 0, w: .85 }];

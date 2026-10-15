@@ -8,7 +8,7 @@ import { siteConfig } from '$lib/siteConfig.js';
 export async function GET() {
   const base = `https://${siteConfig.domain}`;
 
-  const pages = ['', '/news', '/product', '/blog', '/about'];
+  const pages = ['', '/news', '/product', '/product/keine', '/blog', '/about'];
 
   const postModules = import.meta.glob('$lib/posts/*.md', { eager: true });
   const blogSlugs = Object.keys(postModules).map((p) => '/blog/' + p.split('/').pop()?.replace('.md', ''));
