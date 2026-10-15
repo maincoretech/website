@@ -7,25 +7,39 @@
   import { onNavigate } from '$app/navigation';
   import { onMount } from 'svelte';
   import { initLang } from '$lib/i18n/index.js';
+  import { page } from '$app/stores';
+  import { motionDuration, reveal } from '$lib/motion.js';
 
   let { children } = $props();
 
   let drawerOpen = $state(false);
+  let routeTransition;
+  let isPreview = $derived($page.url.pathname === '/preview' || $page.url.pathname.startsWith('/preview/'));
 
   onMount(initLang);
 
   onNavigate((navigation) => {
     drawerOpen = false;
-    if (!document.startViewTransition) return;
+    routeTransition?.skipTransition();
+    if (!motionDuration(180)) return;
+    if (!document.startViewTransition) {
+      return () => reveal(document.querySelector('.home-preview, #toc-container'));
+    }
     return new Promise((resolve) => {
-      document.startViewTransition(async () => {
+      routeTransition = document.startViewTransition(async () => {
         resolve();
         await navigation.complete;
       });
+      routeTransition.finished.catch(() => {});
+      routeTransition.ready.catch(() => {});
+      routeTransition.updateCallbackDone.catch(() => resolve());
     });
   });
 </script>
 
+{#if isPreview}
+  {@render children()}
+{:else}
 <Header ontoggle={() => drawerOpen = !drawerOpen} />
 <SideDrawer open={drawerOpen} onclose={() => drawerOpen = false} />
 
@@ -37,3 +51,4 @@
 
 <BackToTop />
 <Footer />
+{/if}

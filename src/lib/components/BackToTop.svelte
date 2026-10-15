@@ -2,6 +2,7 @@
   import { t } from '$lib/i18n/index.js';
   import { cubicIn, cubicOut } from 'svelte/easing';
   import { scale } from 'svelte/transition';
+  import { motionDuration } from '$lib/motion.js';
 
   let visible = $state(false);
 
@@ -11,7 +12,8 @@
 
   function scrollUp() {
     const start = window.scrollY;
-    const duration = 200;
+    const duration = motionDuration(200);
+    if (!duration) { window.scrollTo(0, 0); return; }
     const startTime = performance.now();
     function step(now) {
       const elapsed = now - startTime;
@@ -28,7 +30,7 @@
 
 {#if visible}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <button class="btt" onclick={scrollUp} aria-label={$t('a11y.back_to_top')} in:scale={{ start: 0.8, duration: 140, easing: cubicOut }} out:scale={{ start: 0.8, duration: 140, easing: cubicIn }}>▲</button>
+  <button class="btt" onclick={scrollUp} aria-label={$t('a11y.back_to_top')} in:scale={{ start: 0.8, duration: motionDuration(140), easing: cubicOut }} out:scale={{ start: 0.8, duration: motionDuration(140), easing: cubicIn }}>▲</button>
 {/if}
 
 <style>

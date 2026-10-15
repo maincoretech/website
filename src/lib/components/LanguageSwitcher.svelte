@@ -1,7 +1,7 @@
 <script>
   import { lang, setLang } from '$lib/i18n/index.js';
   import { Translate } from '$lib/icons.js';
-  import { fly } from 'svelte/transition';
+  import { popup, transitionContent } from '$lib/motion.js';
 
   const langs = [
     { code: 'zh', label: '简' },
@@ -13,8 +13,8 @@
   let open = $state(false);
 
   function pick(code) {
-    setLang(code);
     open = false;
+    transitionContent(document.querySelector('.garden-reading, .keine-content, #toc-container'), () => setLang(code));
   }
 
   function toggle() { open = !open; }
@@ -35,7 +35,7 @@
   </button>
 
   {#if open}
-    <ul class="lang-drop" transition:fly={{ y: -4, duration: 150 }}>
+    <ul class="lang-drop" transition:popup>
       {#each langs as l}
         <li>
           <button

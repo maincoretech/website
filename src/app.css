@@ -25,6 +25,7 @@
   --f-b: "Lato","Helvetica","Arial",sans-serif; --f-d: "Alfa Slab One",serif;
   --f-h: "Oswald","Bookman Old Style",serif; --f-n: "Roboto Condensed","Bookman Old Style",serif;
   --f-m: "Inconsolata",monospace;
+  --motion-fast: 160ms; --motion-ease: cubic-bezier(.22,1,.36,1);
   --bg-n: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='32'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='1.0 0.01' numOctaves='2' seed='16807' stitchTiles='stitch'/%3E%3CfeBlend mode='color-dodge' in='SourceGraphic' in2='noise'/%3E%3C/filter%3E%3Crect width='160' height='32' filter='url(%23f)' fill='%23bcd5e8' opacity='.30'/%3E%3C/svg%3E");
   --g-body: linear-gradient(90deg,rgb(136,168,179) 5%,rgb(158,180,188) 28% 72%,rgb(136,168,179) 95%);
   --g-toc: linear-gradient(90deg,#5a7a8a 1%,#6090a0 1% 6%,rgb(130,170,185) 6% 11%,rgb(185,200,210) 11% 89%,rgb(130,170,185) 89% 94%,#6090a0 94% 99%,#5a7a8a 99%);
@@ -37,6 +38,7 @@ html{font:max(min(.825vw,19px),15px) var(--f-b)}
 body{display:flex;flex-direction:column;min-height:100vh;color:var(--c-t);background-image:var(--bg-n),var(--g-body)}
 a{text-decoration:none;color:var(--c-l);transition:background .15s,color .15s}
 a:hover,[role="button"]:hover,.top-link:hover{background:var(--c-hv)}
+:where(a,button,input,[role="button"],[role="link"]){transition:color var(--motion-fast) var(--motion-ease),background-color var(--motion-fast) var(--motion-ease),border-color var(--motion-fast) var(--motion-ease),box-shadow var(--motion-fast) var(--motion-ease),opacity var(--motion-fast) var(--motion-ease)}
 img{display:block;max-width:100%;margin:15px auto}
 hr{border:0}
 p{line-height:1.65;margin:16px auto}
@@ -47,10 +49,17 @@ pre code{display:inline;margin:0;padding:0;background:none;border:none;color:inh
 
 /* --- View Transitions --- */
 @view-transition{navigation:auto}
-::view-transition-old(main-content){animation:vt-out .15s ease forwards}
-::view-transition-new(main-content){animation:vt-in .2s ease forwards}
-@keyframes vt-out{to{opacity:0;filter:blur(4px)}}
-@keyframes vt-in{from{opacity:0;filter:blur(4px)}}
+::view-transition-group(*){animation-duration:200ms;animation-timing-function:var(--motion-ease)}
+::view-transition-old(main-content){animation:vt-out 140ms ease-out forwards}
+::view-transition-new(main-content){animation:vt-in 200ms var(--motion-ease) both}
+::view-transition-old(root),::view-transition-new(root){animation-duration:180ms}
+@keyframes vt-out{to{opacity:0;transform:translateY(-3px)}}
+@keyframes vt-in{from{opacity:0;transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:0s!important;scroll-behavior:auto!important}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+}
 
 /* --- Shared utilities --- */
 .grad-bar{margin:0 -20px 30px;box-shadow:0 4px 7px rgba(120,150,160,.73)}

@@ -1,0 +1,428 @@
+import * as THREE from 'three';
+import { createOrigami } from './origami.js';
+import { WATER_PHASE_GLSL, RIPPLE_GLSL, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
+
+const BACKGROUND = 0x0b1216;
+const VIEWS = { news: 0, product: Math.PI / 2, blog: Math.PI, about: -Math.PI / 2 };
+const EYE = new THREE.Vector3(0, 1.65, 1.6);
+
+// A composed backdrop, not a free camera: only section changes travel through 3D.
+// Water and a small folded-paper accent share the existing lightweight render loop.
+export function createGarden(host, onFailure, { paper = true } = {}) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'low-power' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setClearColor(BACKGROUND);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.domElement.setAttribute('aria-hidden', 'true');
+  host.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(BACKGROUND, 0.041);
+  const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 60);
+  const geometries = new Set();
+  const materials = new Set();
+  const preference = matchMedia('(prefers-reduced-motion: reduce)');
+  const direction = new THREE.Vector3();
+  let region = 'news';
+  let still = false;
+  let visible = true;
+  let disposed = false;
+  let width = 1;
+  let height = 1;
+  let yaw = 0;
+  let pitch = 0;
+  let yawVelocity = 0;
+  let pitchVelocity = 0;
+  let journey = null;
+  let frame = 0;
+  let renderDeadline = 0;
+  let frameInterval = 0;
+  let lastTime = 0;
+  let waterTime = 0;
+  const ripples = Array.from({ length: RIPPLE_COUNT }, () => new THREE.Vector4(0, 0, -100, 0));
+  const rippleField = Array.from({ length: RIPPLE_COUNT }, () => new THREE.Vector4());
+  const raycaster = new THREE.Raycaster();
+  const waterPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -.012);
+  const touchPoint = new THREE.Vector2();
+  const waterHit = new THREE.Vector3();
+  const flow = new THREE.Vector3();
+  const flowTarget = new THREE.Vector3();
+  const input = new THREE.Vector2();
+  let inputPending = false;
+  let inputRect;
+  let lastInputTime = -1000;
+  let dragId = null;
+  let rippleIndex = 0;
+  let rippleSequence = 0;
+  let lastRippleTime = -1;
+  const previousTouchAction = host.style.touchAction;
+  if (paper) host.style.touchAction = 'none';
+
+  const geometry = (value) => (geometries.add(value), value);
+  const material = (value) => (materials.add(value), value);
+  const waterMaterial = material(new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    uniforms: {
+      time: { value: 0 },
+      ripples: { value: rippleField },
+      flow: { value: flow },
+      deep: { value: new THREE.Color(0x10242c) },
+      light: { value: new THREE.Color(0x638898) }
+    },
+    vertexShader: `
+      varying vec2 surfaceUv;
+      varying vec2 waterPoint;
+      void main() {
+        surfaceUv = uv;
+        waterPoint = (modelMatrix * vec4(position, 1.)).xz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+      }
+    `,
+    fragmentShader: `
+      varying vec2 surfaceUv;
+      varying vec2 waterPoint;
+      uniform float time;
+      uniform vec3 deep;
+      uniform vec3 light;
+      ${WATER_PHASE_GLSL}
+      ${RIPPLE_GLSL}
+      void main() {
+        vec2 p = surfaceUv - .5;
+        float radius = length(p) * 2.;
+        float edge = 1. - smoothstep(.82, 1., radius);
+        float ripple = disturbance(waterPoint, time);
+        float wave = sin(waterPhase(waterPoint, time) + ripple * 1.4);
+        float sheen = pow(max(0., wave), 14.) * .075;
+        float reflection = exp(-pow((p.x - .08 + sin(p.y * 16. - time * .18) * .035) * 5., 2.));
+        vec3 colour = mix(deep, light, .08 + reflection * .16 + sheen * reflection + abs(ripple) * .09);
+        gl_FragColor = vec4(colour, edge * .94);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }
+    `
+  }));
+  const disc = geometry(new THREE.PlaneGeometry(2, 2));
+  scene.add(new THREE.HemisphereLight(0xb5d5e2, 0x10171c, 2.3));
+  const key = new THREE.DirectionalLight(0xa6c7d7, 3.2);
+  key.position.set(-6, 10, -4);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x78b3cb, 2.4);
+  rim.position.set(5, 4, -12);
+  scene.add(rim);
+  const fill = new THREE.DirectionalLight(0x8b9da6, 0.5);
+  fill.position.set(3, 2, 5);
+  scene.add(fill);
+
+  function pool(x, z, sx, sz) {
+    const mesh = new THREE.Mesh(disc, waterMaterial);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(x, .012, z);
+    mesh.scale.set(sx, sz, 1);
+    scene.add(mesh);
+  }
+  const ground = new THREE.Mesh(
+    geometry(new THREE.PlaneGeometry(90, 90)),
+    material(new THREE.MeshStandardMaterial({ color: BACKGROUND, roughness: 1 }))
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -.055;
+  scene.add(ground);
+
+  // Four paper accents share one material; no textures, shadows or model downloads.
+  const paperMaterial = material(new THREE.MeshStandardMaterial({
+    vertexColors: true, roughness: .9, side: THREE.DoubleSide
+  }));
+  const props = {};
+  for (const [id, angle] of Object.entries(VIEWS)) {
+    const x = Math.sin(angle);
+    const z = -Math.cos(angle);
+    pool(EYE.x + x * 5, EYE.z + z * 5, 7, 6);
+    if (!paper) continue;
+    const prop = new THREE.Mesh(geometry(createOrigami(id)), paperMaterial);
+    prop.position.set(EYE.x + x * 5.4, .025, EYE.z + z * 5.4);
+    prop.rotation.y = -angle;
+    prop.userData.home = prop.position.clone();
+    prop.userData.angle = -angle;
+    props[id] = prop;
+    scene.add(prop);
+  }
+  const propProjection = new THREE.Vector3();
+  const propCorners = Array.from({ length: 8 }, () => new THREE.Vector3());
+  const floatingProps = Object.values(props);
+  const pose = {};
+  const up = new THREE.Vector3(0, 1, 0);
+  const normal = new THREE.Vector3();
+  const tilt = new THREE.Quaternion();
+  const heading = new THREE.Quaternion();
+  function destination() {
+    return { yaw: VIEWS[region] ?? 0, pitch: .015 };
+  }
+  function moveCamera(animate) {
+    const target = destination();
+    target.yaw = yaw + Math.atan2(Math.sin(target.yaw - yaw), Math.cos(target.yaw - yaw));
+    if (animate && !preference.matches) journey = { target };
+    else {
+      yaw = target.yaw;
+      pitch = target.pitch;
+      journey = null;
+      yawVelocity = pitchVelocity = 0;
+    }
+    wake();
+  }
+  function waterEnabled() {
+    return !still && !preference.matches;
+  }
+  function draw(now) {
+    const dt = Math.min((now - lastTime) / 1000, .1);
+    lastTime = now;
+    if (waterEnabled()) waterTime += dt;
+    if (inputPending) {
+      inputPending = false;
+      disturb(input.x, input.y);
+    }
+    if (dragId === null || now - lastInputTime > 160) flowTarget.z = 0;
+    if (waterEnabled()) {
+      flow.lerp(flowTarget, 1 - Math.exp(-dt * 12));
+      if (flowTarget.z === 0 && flow.z < .002) flow.z = 0;
+    }
+    waterMaterial.uniforms.time.value = waterTime;
+    prepareRipples(waterTime, ripples, rippleField);
+    const smoothing = !waterEnabled() ? 1 : 1 - Math.exp(-dt * 14);
+    for (const prop of floatingProps) {
+      const { home, angle } = prop.userData;
+      sampleFloat(home.x, home.z, waterTime, pose, rippleField, flow, true);
+      prop.position.x += (pose.x - prop.position.x) * smoothing;
+      prop.position.y += (pose.y - prop.position.y) * smoothing;
+      prop.position.z += (pose.z - prop.position.z) * smoothing;
+      normal.set(-pose.slopeX, 1, -pose.slopeZ).normalize();
+      tilt.setFromUnitVectors(up, normal);
+      heading.setFromAxisAngle(up, angle + pose.yaw);
+      tilt.multiply(heading);
+      prop.quaternion.slerp(tilt, smoothing);
+    }
+    if (journey) {
+      // Exact critically damped response preserves velocity when retargeted.
+      const decay = Math.exp(-12 * dt);
+      const yawDelta = yaw - journey.target.yaw;
+      const pitchDelta = pitch - journey.target.pitch;
+      const yawStep = yawVelocity + 12 * yawDelta;
+      const pitchStep = pitchVelocity + 12 * pitchDelta;
+      yaw = journey.target.yaw + (yawDelta + yawStep * dt) * decay;
+      pitch = journey.target.pitch + (pitchDelta + pitchStep * dt) * decay;
+      yawVelocity = (yawVelocity - 12 * yawStep * dt) * decay;
+      pitchVelocity = (pitchVelocity - 12 * pitchStep * dt) * decay;
+      if (Math.abs(yaw - journey.target.yaw) < .001 && Math.abs(yawVelocity) < .01) {
+        yaw = journey.target.yaw;
+        pitch = journey.target.pitch;
+        yawVelocity = pitchVelocity = 0;
+        journey = null;
+      }
+    }
+    camera.position.copy(EYE);
+    direction.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
+    camera.lookAt(direction.add(camera.position));
+    renderer.render(scene, camera);
+    const prop = props[region];
+    if (prop) {
+      const { min, max } = prop.geometry.boundingBox;
+      prop.geometry.boundingBox.getCenter(propProjection);
+      prop.localToWorld(propProjection).project(camera);
+      host.dataset.propPosition = ((propProjection.x + 1) * width / 2).toFixed(1) + ',' + ((1 - propProjection.y) * height / 2).toFixed(1);
+      propCorners.forEach((corner, i) => {
+        corner.set(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z);
+        prop.localToWorld(corner).project(camera);
+        corner.set((corner.x + 1) * width / 2, (1 - corner.y) * height / 2, 0);
+      });
+      host.dataset.propBounds = [
+        Math.min(...propCorners.map(p => p.x)), Math.min(...propCorners.map(p => p.y)),
+        Math.max(...propCorners.map(p => p.x)), Math.max(...propCorners.map(p => p.y))
+      ].map(v => v.toFixed(1)).join(',');
+      host.dataset.propKind = { news: 'envelope', product: 'lily', blog: 'book', about: 'crane' }[region];
+      host.dataset.propPose = [...prop.position.toArray(), ...prop.quaternion.toArray()].map(v => v.toFixed(4)).join(',');
+    }
+    host.dataset.frames = String(renderer.info.render.frame);
+    host.dataset.drawCalls = String(renderer.info.render.calls);
+    host.dataset.triangles = String(renderer.info.render.triangles);
+    host.dataset.waterTime = waterTime.toFixed(3);
+    host.dataset.ripples = String(ripples.filter(r => waterTime - r.z < RIPPLE_LIFETIME).length);
+    host.dataset.rippleSequence = String(rippleSequence);
+    host.dataset.dragging = String(dragId !== null);
+    host.dataset.flow = flow.toArray().map(v => v.toFixed(3)).join(',');
+    host.dataset.region = region;
+    host.dataset.moving = String(!!journey);
+    host.dataset.camera = camera.position.toArray().map(v => v.toFixed(3)).join(',');
+    host.dataset.view = yaw.toFixed(3) + ',' + pitch.toFixed(3);
+  }
+  function canRun() {
+    return !disposed && visible && !document.hidden;
+  }
+  function tick(now) {
+    frame = 0;
+    if (!canRun()) return;
+    const interacting = waterEnabled() && (inputPending || now - lastInputTime < 180 || flow.z > .02 || waterTime - lastRippleTime < RIPPLE_LIFETIME);
+    const interval = 1000 / (journey || interacting ? 60 : 30);
+    if (interval !== frameInterval) { frameInterval = interval; renderDeadline = now; }
+    if (now + .5 < renderDeadline) {
+      frame = requestAnimationFrame(tick);
+      return;
+    }
+    renderDeadline += interval;
+    if (renderDeadline < now) renderDeadline = now + interval;
+    draw(now);
+    if (journey || waterEnabled()) {
+      // One display-synchronised clock: 60 fps during interaction, 30 when idle.
+      // Avoid the timer + RAF phase mismatch that produced uneven frame spacing.
+      frame = requestAnimationFrame(tick);
+    }
+  }
+  function wake(immediate = false) {
+    if (immediate) renderDeadline = 0;
+    if (canRun() && !frame) { renderDeadline = 0; frame = requestAnimationFrame(tick); }
+  }
+  function stop() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+  }
+  function visibility() {
+    if (canRun()) {
+      lastTime = performance.now();
+      wake();
+    } else { endDrag(); stop(); }
+  }
+  function resize() {
+    endDrag();
+    width = Math.max(1, host.clientWidth);
+    height = Math.max(1, host.clientHeight);
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.fov = width < 760 ? 66 : 58;
+    camera.updateProjectionMatrix();
+    // Bring the paper closer/lower on the water and reduce its footprint,
+    // reserving more of the composition for reading above it.
+    const distance = height < 650 ? 5.4 : height < 800 ? 5.45 : 5.05;
+    for (const [id, prop] of Object.entries(props)) {
+      const angle = VIEWS[id];
+      const left = id === 'product' ? .22 : 0;
+      prop.userData.home.set(
+        EYE.x + Math.sin(angle) * distance - Math.cos(angle) * left,
+        .025,
+        EYE.z - Math.cos(angle) * distance - Math.sin(angle) * left
+      );
+      prop.scale.setScalar(height < 650 ? .8 : .88);
+    }
+    moveCamera(false);
+  }
+  function pointerMove(event) {
+    if (event.pointerId !== dragId) return;
+    // Keep only the newest input; projection and sampling run once per rendered frame.
+    input.set(event.clientX, event.clientY);
+    inputPending = true;
+    lastInputTime = performance.now();
+    wake();
+  }
+  function disturb(clientX, clientY, first = false) {
+    if (!waterEnabled() || journey || !props[region]) return false;
+    touchPoint.set((clientX - inputRect.left) / width * 2 - 1, 1 - (clientY - inputRect.top) / height * 2);
+    raycaster.setFromCamera(touchPoint, camera);
+    if (!raycaster.ray.intersectPlane(waterPlane, waterHit)) return false;
+    const home = props[region].userData.home;
+    if (Math.hypot(waterHit.x - home.x, waterHit.z - home.z) > 2.8) {
+      flowTarget.z = 0;
+      return false;
+    }
+    if (first && flow.z < .02) flow.set(waterHit.x, waterHit.z, 0);
+    flowTarget.set(waterHit.x, waterHit.z, .75);
+    // Drag trails are rate-limited; a new press always gets its own immediate impulse.
+    // Very rapid taps recycle the oldest of four slots, keeping work bounded.
+    if (first || waterTime - lastRippleTime >= RIPPLE_LIFETIME / RIPPLE_COUNT + .02) {
+      ripples[rippleIndex].set(waterHit.x, waterHit.z, waterTime, .85);
+      rippleIndex = (rippleIndex + 1) % RIPPLE_COUNT;
+      rippleSequence++;
+      lastRippleTime = waterTime;
+    }
+    return true;
+  }
+  function startDrag(event) {
+    // Only bare scenery receives gestures; reading, links and navigation stay native.
+    if (dragId !== null || event.button !== 0 || !event.isPrimary) return;
+    inputRect = host.getBoundingClientRect();
+    if (!disturb(event.clientX, event.clientY, true)) return;
+    dragId = event.pointerId;
+    lastInputTime = performance.now();
+    host.setPointerCapture(dragId);
+    host.style.cursor = 'grabbing';
+    wake(true);
+  }
+  function endDrag() {
+    const id = dragId;
+    dragId = null;
+    inputPending = false;
+    flowTarget.z = 0;
+    if (id !== null && host.hasPointerCapture(id)) host.releasePointerCapture(id);
+    host.style.cursor = '';
+  }
+  function motionChange() {
+    endDrag();
+    moveCamera(false);
+  }
+  function lost(event) {
+    event.preventDefault();
+    stop();
+    onFailure();
+  }
+
+  const resizeObserver = new ResizeObserver(resize);
+  resizeObserver.observe(host);
+  const observer = new IntersectionObserver(([entry]) => {
+    visible = entry.isIntersecting;
+    visibility();
+  });
+  observer.observe(host);
+  document.addEventListener('visibilitychange', visibility);
+  preference.addEventListener('change', motionChange);
+  host.addEventListener('pointermove', pointerMove);
+  host.addEventListener('pointerdown', startDrag);
+  host.addEventListener('pointerup', endDrag);
+  host.addEventListener('pointercancel', endDrag);
+  host.addEventListener('lostpointercapture', endDrag);
+  renderer.domElement.addEventListener('webglcontextlost', lost);
+  resize();
+
+  return {
+    select(id) {
+      if (!Object.hasOwn(VIEWS, id) || region === id) return;
+      region = id;
+      endDrag();
+      moveCamera(true);
+    },
+    setStill(value) {
+      if (still === value) return;
+      still = value;
+      if (still) endDrag();
+      lastTime = performance.now();
+      wake();
+    },
+    dispose() {
+      disposed = true;
+      endDrag();
+      stop();
+      resizeObserver.disconnect();
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', visibility);
+      preference.removeEventListener('change', motionChange);
+      host.removeEventListener('pointermove', pointerMove);
+      host.removeEventListener('pointerdown', startDrag);
+      host.removeEventListener('pointerup', endDrag);
+      host.removeEventListener('pointercancel', endDrag);
+      host.removeEventListener('lostpointercapture', endDrag);
+      host.style.touchAction = previousTouchAction;
+      renderer.domElement.removeEventListener('webglcontextlost', lost);
+      geometries.forEach(value => value.dispose());
+      materials.forEach(value => value.dispose());
+      renderer.dispose();
+      renderer.domElement.remove();
+    }
+  };
+}

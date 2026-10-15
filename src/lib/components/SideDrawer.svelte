@@ -1,6 +1,7 @@
 <script>
   import { page } from '$app/stores';
   import { t } from '$lib/i18n/index.js';
+  import { motionDuration } from '$lib/motion.js';
 
   let { open, onclose } = $props();
 
@@ -23,14 +24,14 @@
           <span
             onclick={() => {
               const el = document.querySelectorAll('.section-body h2, .section-body h3')[i];
-              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              el?.scrollIntoView({ behavior: motionDuration(200) ? 'smooth' : 'instant', block: 'start' });
               close();
             }}
             onkeydown={(e) =>
               e.key === 'Enter' &&
               (() => {
                 const el = document.querySelectorAll('.section-body h2, .section-body h3')[i];
-                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                el?.scrollIntoView({ behavior: motionDuration(200) ? 'smooth' : 'instant', block: 'start' });
                 close();
               })()}
             role="link"

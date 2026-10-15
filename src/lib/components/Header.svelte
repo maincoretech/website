@@ -6,6 +6,7 @@
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
   import { cubicIn, cubicOut } from 'svelte/easing';
   import { scale } from 'svelte/transition';
+  import { motionDuration, popup } from '$lib/motion.js';
 
   let { ontoggle } = $props();
 
@@ -93,7 +94,7 @@
         {/if}
       </span>
       {#if focused && query}
-        <div class="search-drop">
+        <div class="search-drop" transition:popup>
           {#if results.length > 0}
             {#each results as r}
               <a href={r.slug} class="search-item">
@@ -124,7 +125,7 @@
 
 {#if showHamburger && headerHidden}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')} in:scale={{ start: 0.8, duration: 140, easing: cubicOut }} out:scale={{ start: 0.8, duration: 140, easing: cubicIn }}>☰</span>
+  <span class="floating-hamburger" onclick={() => ontoggle?.()} onkeydown={(e) => e.key === 'Enter' && ontoggle?.()} role="button" tabindex="0" aria-label={$t('a11y.menu')} in:scale={{ start: 0.8, duration: motionDuration(140), easing: cubicOut }} out:scale={{ start: 0.8, duration: motionDuration(140), easing: cubicIn }}>☰</span>
 {/if}
 
 <style>
@@ -161,9 +162,7 @@
     position: absolute; top: 100%; right: 0; z-index: 150; margin-top: 4px; margin-right: 4px; width: 320px;
     background: rgb(225,235,242); border: 1px solid #8aa0b0; border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0,0,0,.12); max-height: 260px; overflow-y: auto; width: 320px; max-width: 90vw;
-    animation: drop-in .18s ease;
   }
-  @keyframes drop-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
   .search-item { display: block; padding: 8px 12px; font: .85rem/1.4 var(--f-b); color: var(--c-t); overflow-wrap: anywhere; }
   .search-item:hover { background: var(--c-hv); }
   .s-kind { font-size: .72rem; color: rgb(100,120,135); white-space: nowrap; }
