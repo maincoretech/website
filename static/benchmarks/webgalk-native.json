@@ -1,0 +1,1628 @@
+{
+  "schema": 1,
+  "date": "2026-10-16",
+  "label": "WebGAL_k",
+  "version": "0.1.4 · hexz 后端",
+  "commit": "b5a6fa0812f390513768644e92e66e75153c4052",
+  "source": "https://github.com/maincoretech/WebGAL_k/tree/b5a6fa0812f390513768644e92e66e75153c4052",
+  "machine": {
+    "os": "27.0.1",
+    "chip": "Apple M5 Pro",
+    "memory_bytes": 25769803776
+  },
+  "viewport": {
+    "css": [
+      960,
+      540
+    ],
+    "dpr": 2,
+    "physical": [
+      1920,
+      1080
+    ]
+  },
+  "method": "每种负载一次启动；采样前预热 10 秒，连续三个 30 秒窗口。CPU 为各窗口均值的中位数；RSS 为各窗口中位数的中位数。",
+  "limitations": [
+    "100% CPU 为一个逻辑核；合计 app + WebKit XPC 的 RSS，可能重复计入共享页，不含 WindowServer。",
+    "静态、位移、单轨、双轨全部通过 18/18 前台检查；音频两组通过 36/36 CoreAudio 输出检查。",
+    "与历史其他引擎的场景布局、资源后端和日期不同，单独展示，不追加到旧引擎排行。",
+    "位移自动推进脚本，静态停在对白；BGM 重采较晚，不能将场景间差值解释为动画/音频的因果开销。",
+    "背景路径解析缺陷未修引擎，夹具显式使用 hexz:// 地址；BGM 实际增益 0.125，环境音 0.2。",
+    "使用前台保持脚本；未计它的进程开销。未测冷启动、功耗与统一呈现帧率。"
+  ],
+  "unavailable": {
+    "frame_time": "本机缺少 xctrace / Metal 追踪",
+    "gpu": "未采集"
+  },
+  "tests": {
+    "parser_passed": 25,
+    "embedded_passed": 7,
+    "hexz_passed": 17,
+    "regression_failed": 2,
+    "detail": "新增 changeBg / unlockCg 背景路径回归失败：枚举值 0 被真假判断跳过。隔离克隆绕过缺失 tsconfig 引用后运行测试；原 build 最后一步缺少 rimraf。"
+  },
+  "workloads": [
+    {
+      "name": "idle",
+      "cpu_percent": 9.716264310009498,
+      "rss_mib": 462.59375,
+      "windows": [
+        {
+          "cpu_percent_mean": 9.716264310009498,
+          "rss_mib_median": 462.3203125
+        },
+        {
+          "cpu_percent_mean": 9.674806032292741,
+          "rss_mib_median": 462.59375
+        },
+        {
+          "cpu_percent_mean": 9.773185267576952,
+          "rss_mib_median": 463.03125
+        }
+      ],
+      "samples": [
+        {
+          "window": 0,
+          "cpu_percent": 9.463984387713822,
+          "rss_mib": 462.234375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 9.647132028237172,
+          "rss_mib": 462.34375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 9.25939262559204,
+          "rss_mib": 462.234375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 10.040879252121906,
+          "rss_mib": 462.296875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 10.23897782156246,
+          "rss_mib": 462.359375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 9.647219744829592,
+          "rss_mib": 462.421875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 9.068229746494747,
+          "rss_mib": 462.453125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 9.645148865914724,
+          "rss_mib": 462.53125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 9.644380119643836,
+          "rss_mib": 462.5625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 10.223011210909597,
+          "rss_mib": 462.625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 9.852899749913822,
+          "rss_mib": 462.6875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 9.61516650087972,
+          "rss_mib": 462.75,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 9.453449538414839,
+          "rss_mib": 462.8125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 10.449658227237267,
+          "rss_mib": 462.9375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 10.385796852892673,
+          "rss_mib": 463,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 10.193518335314232,
+          "rss_mib": 463.0625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 9.084556051759158,
+          "rss_mib": 463.0625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 9.072132599843549,
+          "rss_mib": 463.125,
+          "foreground": true,
+          "audio_active": false
+        }
+      ]
+    },
+    {
+      "name": "motion",
+      "cpu_percent": 28.964363212428946,
+      "rss_mib": 475.40625,
+      "windows": [
+        {
+          "cpu_percent_mean": 28.964363212428946,
+          "rss_mib_median": 469.65625
+        },
+        {
+          "cpu_percent_mean": 29.12246125710652,
+          "rss_mib_median": 475.40625
+        },
+        {
+          "cpu_percent_mean": 28.431123021166666,
+          "rss_mib_median": 476.59375
+        }
+      ],
+      "samples": [
+        {
+          "window": 0,
+          "cpu_percent": 29.17781247589926,
+          "rss_mib": 470.96875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 29.902969926800182,
+          "rss_mib": 465.53125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 28.85519074808679,
+          "rss_mib": 466.203125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 29.900162152919695,
+          "rss_mib": 468.6875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 28.17099999597213,
+          "rss_mib": 470.625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 0,
+          "cpu_percent": 27.779043974895618,
+          "rss_mib": 474.015625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 28.797545212206412,
+          "rss_mib": 475.203125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 29.890879245442942,
+          "rss_mib": 475.515625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 29.335336776262793,
+          "rss_mib": 475.53125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 29.516070994253173,
+          "rss_mib": 474.78125,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 28.98732420546652,
+          "rss_mib": 475.296875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 1,
+          "cpu_percent": 28.20761110900727,
+          "rss_mib": 475.90625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 30.12943974662554,
+          "rss_mib": 476.671875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 28.261601090839775,
+          "rss_mib": 476.4375,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 28.762215172592178,
+          "rss_mib": 476.1875,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 27.498092758726717,
+          "rss_mib": 476.515625,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 26.813602637069526,
+          "rss_mib": 479.5,
+          "foreground": true,
+          "audio_active": false
+        },
+        {
+          "window": 2,
+          "cpu_percent": 29.12178672114626,
+          "rss_mib": 483.859375,
+          "foreground": true,
+          "audio_active": false
+        }
+      ]
+    },
+    {
+      "name": "audio",
+      "cpu_percent": 11.129287289840866,
+      "rss_mib": 354.765625,
+      "windows": [
+        {
+          "cpu_percent_mean": 11.129287289840866,
+          "rss_mib_median": 354.7109375
+        },
+        {
+          "cpu_percent_mean": 11.038292875897858,
+          "rss_mib_median": 354.765625
+        },
+        {
+          "cpu_percent_mean": 11.571780647937068,
+          "rss_mib_median": 354.8984375
+        }
+      ],
+      "samples": [
+        {
+          "window": 0,
+          "cpu_percent": 10.826249623797088,
+          "rss_mib": 354.671875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 10.803233341607859,
+          "rss_mib": 354.734375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 11.580120836105905,
+          "rss_mib": 354.71875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 10.448856428836121,
+          "rss_mib": 354.71875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 11.154880571663627,
+          "rss_mib": 354.703125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 11.962382937034594,
+          "rss_mib": 354.703125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 10.849778901849362,
+          "rss_mib": 354.734375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 10.813334008363404,
+          "rss_mib": 354.65625,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 10.804418630994762,
+          "rss_mib": 354.6875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.396688754126833,
+          "rss_mib": 354.84375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.180126888969676,
+          "rss_mib": 354.796875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.185410071083103,
+          "rss_mib": 354.796875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.769346659449486,
+          "rss_mib": 354.859375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 10.998824920085719,
+          "rss_mib": 354.859375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.190170810485053,
+          "rss_mib": 354.84375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.7812120762059,
+          "rss_mib": 354.984375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.922421763073304,
+          "rss_mib": 354.9375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.76870765832294,
+          "rss_mib": 354.96875,
+          "foreground": true,
+          "audio_active": true
+        }
+      ]
+    },
+    {
+      "name": "mix",
+      "cpu_percent": 12.583542403872748,
+      "rss_mib": 478.0859375,
+      "windows": [
+        {
+          "cpu_percent_mean": 12.67365881937778,
+          "rss_mib_median": 478.0859375
+        },
+        {
+          "cpu_percent_mean": 12.583542403872748,
+          "rss_mib_median": 472.4765625
+        },
+        {
+          "cpu_percent_mean": 12.352551586647353,
+          "rss_mib_median": 479.7890625
+        }
+      ],
+      "samples": [
+        {
+          "window": 0,
+          "cpu_percent": 11.789777064979463,
+          "rss_mib": 482.78125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 11.930897300452099,
+          "rss_mib": 482.78125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 13.312748736772091,
+          "rss_mib": 477.984375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 12.551271138838054,
+          "rss_mib": 478.0625,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 12.336685891978057,
+          "rss_mib": 478.109375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 0,
+          "cpu_percent": 14.120572783246908,
+          "rss_mib": 472.09375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.596610175551914,
+          "rss_mib": 472.0625,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 12.37204039853022,
+          "rss_mib": 472.171875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 13.484507073649365,
+          "rss_mib": 472.5,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.767932890130185,
+          "rss_mib": 472.46875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 11.971786843011078,
+          "rss_mib": 472.484375,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 1,
+          "cpu_percent": 14.308377042363729,
+          "rss_mib": 473.046875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.937269838763767,
+          "rss_mib": 473.03125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 12.373326161835966,
+          "rss_mib": 473.0625,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 14.44605228021852,
+          "rss_mib": 479.8125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.994044570739769,
+          "rss_mib": 479.796875,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 11.211712785416061,
+          "rss_mib": 479.78125,
+          "foreground": true,
+          "audio_active": true
+        },
+        {
+          "window": 2,
+          "cpu_percent": 12.15290388291004,
+          "rss_mib": 480.40625,
+          "foreground": true,
+          "audio_active": true
+        }
+      ]
+    }
+  ],
+  "embedded": [
+    {
+      "variant": "WebGAL_k embedded/lz4/false",
+      "archive_bytes": [
+        22676312,
+        22676312,
+        22676312
+      ],
+      "metrics": {
+        "missing_1000_ms": {
+          "median": 1.4027085,
+          "process_medians": [
+            1.4394580000000001,
+            1.4027085,
+            1.320062
+          ],
+          "process_range": [
+            1.320062,
+            1.4394580000000001
+          ]
+        },
+        "open_ms": {
+          "median": 0.190083,
+          "process_medians": [
+            0.180083,
+            0.19408350000000002,
+            0.190083
+          ],
+          "process_range": [
+            0.180083,
+            0.19408350000000002
+          ]
+        },
+        "random_2000_full_file_ms": {
+          "median": 63.2717295,
+          "process_medians": [
+            62.217645999999995,
+            63.46347900000001,
+            63.2717295
+          ],
+          "process_range": [
+            62.217645999999995,
+            63.46347900000001
+          ]
+        },
+        "sequential_ms": {
+          "median": 17.108792,
+          "process_medians": [
+            17.108792,
+            17.326895999999998,
+            17.078708
+          ],
+          "process_range": [
+            17.078708,
+            17.326895999999998
+          ]
+        },
+        "pack_process_ms": {
+          "median": 180.79558300000002,
+          "process_samples": [
+            179.52354200000002,
+            200.554708,
+            180.79558300000002
+          ]
+        }
+      },
+      "source_runs": [
+        {
+          "process": 1,
+          "archive_bytes": 22676312,
+          "compression": "lz4",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.4096659999999999,
+            1.4517499999999999,
+            1.439166,
+            1.434292,
+            1.43975,
+            1.442291,
+            1.501042,
+            1.5080829999999998,
+            1.362625,
+            1.3425
+          ],
+          "open_ms": [
+            0.25091600000000003,
+            0.1815,
+            0.18025,
+            0.18837500000000001,
+            0.17633300000000002,
+            0.176291,
+            0.177625,
+            0.17895899999999998,
+            0.179916,
+            0.199167
+          ],
+          "pack_process_ms": 179.52354200000002,
+          "random_2000_full_file_ms": [
+            66.049917,
+            62.098082999999995,
+            63.274542000000004,
+            62.058,
+            61.947083,
+            60.700417,
+            62.576166,
+            62.677417,
+            62.337208999999994,
+            61.796083
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            17.640667,
+            17.592834000000003,
+            16.445958,
+            17.654333,
+            17.107125,
+            16.514666000000002,
+            17.284000000000002,
+            17.110459000000002,
+            16.330750000000002,
+            16.365958
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 2,
+          "archive_bytes": 22676312,
+          "compression": "lz4",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.52525,
+            1.582375,
+            1.438959,
+            1.394541,
+            1.389125,
+            1.394833,
+            1.401042,
+            1.404375,
+            1.397375,
+            1.4345409999999998
+          ],
+          "open_ms": [
+            0.244083,
+            0.199375,
+            0.194792,
+            0.193459,
+            0.191,
+            0.187,
+            0.19775,
+            0.18954200000000002,
+            0.19470800000000002,
+            0.188291
+          ],
+          "pack_process_ms": 200.554708,
+          "random_2000_full_file_ms": [
+            64.234916,
+            42.483459,
+            60.178583,
+            64.95862500000001,
+            64.996375,
+            61.899,
+            64.00966700000001,
+            63.517667,
+            62.554416,
+            63.409291
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            17.627083000000002,
+            17.25825,
+            16.938291,
+            16.704957999999998,
+            16.414125000000002,
+            17.438375,
+            17.487708,
+            16.646082999999997,
+            17.87925,
+            17.395542
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 3,
+          "archive_bytes": 22676312,
+          "compression": "lz4",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.399792,
+            1.323208,
+            1.303792,
+            1.316916,
+            1.301959,
+            1.3122500000000001,
+            1.307541,
+            1.3623750000000001,
+            1.390417,
+            1.365875
+          ],
+          "open_ms": [
+            0.27725,
+            0.201708,
+            0.191708,
+            0.194208,
+            0.19075,
+            0.186708,
+            0.1885,
+            0.189416,
+            0.185,
+            0.188416
+          ],
+          "pack_process_ms": 180.79558300000002,
+          "random_2000_full_file_ms": [
+            62.317458,
+            61.260374999999996,
+            60.689875,
+            60.780625,
+            63.078459,
+            64.114167,
+            66.13437499999999,
+            63.859458,
+            63.464999999999996,
+            64.9595
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            17.021874999999998,
+            17.220333,
+            16.746625,
+            18.256709,
+            17.306709,
+            17.135541,
+            16.313708,
+            18.093374999999998,
+            15.477540999999999,
+            16.984083000000002
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        }
+      ]
+    },
+    {
+      "variant": "WebGAL_k embedded/lz4/true",
+      "archive_bytes": [
+        25599572,
+        25599572,
+        25599572
+      ],
+      "metrics": {
+        "missing_1000_ms": {
+          "median": 1.5510415,
+          "process_medians": [
+            1.5510415,
+            2.2213125,
+            1.3970415
+          ],
+          "process_range": [
+            1.3970415,
+            2.2213125
+          ]
+        },
+        "open_ms": {
+          "median": 301.1566255,
+          "process_medians": [
+            288.403583,
+            306.244729,
+            301.1566255
+          ],
+          "process_range": [
+            288.403583,
+            306.244729
+          ]
+        },
+        "random_2000_full_file_ms": {
+          "median": 194.15079200000002,
+          "process_medians": [
+            190.407375,
+            224.451125,
+            194.15079200000002
+          ],
+          "process_range": [
+            190.407375,
+            224.451125
+          ]
+        },
+        "sequential_ms": {
+          "median": 58.0890625,
+          "process_medians": [
+            56.9784165,
+            64.133375,
+            58.0890625
+          ],
+          "process_range": [
+            56.9784165,
+            64.133375
+          ]
+        },
+        "pack_process_ms": {
+          "median": 289.528709,
+          "process_samples": [
+            289.528709,
+            318.792791,
+            288.98004199999997
+          ]
+        }
+      },
+      "source_runs": [
+        {
+          "process": 1,
+          "archive_bytes": 25599572,
+          "compression": "lz4",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            1.550708,
+            1.551375,
+            1.585917,
+            1.5603749999999998,
+            1.584792,
+            1.594958,
+            1.4951249999999998,
+            1.423292,
+            1.3905409999999998,
+            1.389708
+          ],
+          "open_ms": [
+            292.092792,
+            290.368,
+            287.01662500000003,
+            286.65808300000003,
+            287.37225,
+            291.229541,
+            289.147125,
+            286.62258299999996,
+            301.5805,
+            287.660041
+          ],
+          "pack_process_ms": 289.528709,
+          "random_2000_full_file_ms": [
+            191.64166699999998,
+            191.14758400000002,
+            189.67362500000002,
+            190.224709,
+            186.61849999999998,
+            189.965792,
+            189.606958,
+            190.59004099999999,
+            192.728417,
+            190.798625
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            57.427292,
+            56.942583,
+            56.268542,
+            57.703625,
+            57.453125,
+            55.826083,
+            57.014250000000004,
+            56.648209,
+            55.543209000000004,
+            57.910667
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 2,
+          "archive_bytes": 25599572,
+          "compression": "lz4",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            2.5713329999999996,
+            2.179209,
+            2.099333,
+            2.403292,
+            2.1679999999999997,
+            2.227792,
+            2.224292,
+            2.294708,
+            2.07225,
+            2.218333
+          ],
+          "open_ms": [
+            318.262916,
+            315.675167,
+            302.71049999999997,
+            338.030875,
+            308.24316699999997,
+            303.56424999999996,
+            304.665792,
+            304.924083,
+            304.401167,
+            307.56537499999996
+          ],
+          "pack_process_ms": 318.792791,
+          "random_2000_full_file_ms": [
+            208.479083,
+            209.961916,
+            227.48583299999999,
+            221.416417,
+            221.272167,
+            209.349959,
+            236.653042,
+            306.835208,
+            338.174042,
+            371.94716700000004
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            65.067,
+            66.56833400000001,
+            64.408292,
+            65.699333,
+            65.584083,
+            63.858458000000006,
+            63.457583,
+            62.540791999999996,
+            62.39625,
+            62.183625
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 3,
+          "archive_bytes": 25599572,
+          "compression": "lz4",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            1.368666,
+            1.347334,
+            1.361334,
+            1.460041,
+            1.420333,
+            1.370833,
+            1.37375,
+            1.525625,
+            1.5141250000000002,
+            1.48125
+          ],
+          "open_ms": [
+            302.96837500000004,
+            302.037167,
+            300.59595900000005,
+            301.30825,
+            299.696042,
+            301.067459,
+            300.377417,
+            301.245792,
+            299.484084,
+            301.799916
+          ],
+          "pack_process_ms": 288.98004199999997,
+          "random_2000_full_file_ms": [
+            192.516833,
+            195.547583,
+            193.15825,
+            195.19941699999998,
+            197.043333,
+            196.24195799999998,
+            195.143334,
+            192.45916699999998,
+            191.781833,
+            192.49175
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            58.833917,
+            57.627375,
+            58.018833,
+            57.586083,
+            58.159292,
+            58.392166,
+            57.92025,
+            59.189792,
+            58.63525,
+            57.64575
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        }
+      ]
+    },
+    {
+      "variant": "WebGAL_k embedded/zstd/false",
+      "archive_bytes": [
+        22597088,
+        22597088,
+        22597088
+      ],
+      "metrics": {
+        "missing_1000_ms": {
+          "median": 1.4254790000000002,
+          "process_medians": [
+            1.435271,
+            1.4254790000000002,
+            1.301396
+          ],
+          "process_range": [
+            1.301396,
+            1.435271
+          ]
+        },
+        "open_ms": {
+          "median": 0.19174999999999998,
+          "process_medians": [
+            0.1802085,
+            0.37541650000000004,
+            0.19174999999999998
+          ],
+          "process_range": [
+            0.1802085,
+            0.37541650000000004
+          ]
+        },
+        "random_2000_full_file_ms": {
+          "median": 56.1367495,
+          "process_medians": [
+            56.1367495,
+            61.7431665,
+            56.0265835
+          ],
+          "process_range": [
+            56.0265835,
+            61.7431665
+          ]
+        },
+        "sequential_ms": {
+          "median": 16.039146,
+          "process_medians": [
+            16.039146,
+            18.177791499999998,
+            15.853833
+          ],
+          "process_range": [
+            15.853833,
+            18.177791499999998
+          ]
+        },
+        "pack_process_ms": {
+          "median": 183.424,
+          "process_samples": [
+            179.228291,
+            440.7785,
+            183.424
+          ]
+        }
+      },
+      "source_runs": [
+        {
+          "process": 1,
+          "archive_bytes": 22597088,
+          "compression": "zstd",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.487042,
+            1.448583,
+            1.418667,
+            1.421959,
+            1.5145410000000001,
+            1.528416,
+            1.517625,
+            1.411291,
+            1.357292,
+            1.3526250000000002
+          ],
+          "open_ms": [
+            0.2605,
+            0.180458,
+            0.17875000000000002,
+            0.176083,
+            0.17995899999999998,
+            0.176458,
+            0.177083,
+            0.182833,
+            0.181375,
+            0.185417
+          ],
+          "pack_process_ms": 179.228291,
+          "random_2000_full_file_ms": [
+            48.707333,
+            50.135042,
+            56.974625,
+            57.390208,
+            57.40175,
+            56.501708,
+            57.876042000000005,
+            55.532584,
+            55.771791,
+            55.017542000000006
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            15.092041,
+            16.125042,
+            15.862708,
+            16.149708,
+            16.991458,
+            15.349958,
+            15.416708,
+            16.131125,
+            15.953249999999999,
+            16.561542
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 2,
+          "archive_bytes": 22597088,
+          "compression": "zstd",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.4989999999999999,
+            1.4402499999999998,
+            1.401583,
+            1.443959,
+            1.41825,
+            1.411625,
+            1.432708,
+            1.4705,
+            1.35925,
+            1.303875
+          ],
+          "open_ms": [
+            0.406459,
+            0.38816700000000004,
+            0.362666,
+            0.34691700000000003,
+            0.484625,
+            0.5735,
+            0.323875,
+            0.296625,
+            0.3995,
+            0.30770899999999995
+          ],
+          "pack_process_ms": 440.7785,
+          "random_2000_full_file_ms": [
+            68.614417,
+            63.727458,
+            62.072500000000005,
+            64.763125,
+            59.881791,
+            63.086292,
+            58.189040999999996,
+            58.526583,
+            61.413833000000004,
+            56.697625
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            22.228209,
+            18.593,
+            19.455584,
+            16.426125,
+            16.492208,
+            18.114458,
+            18.241125,
+            16.683291999999998,
+            19.741333,
+            16.526042
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 3,
+          "archive_bytes": 22597088,
+          "compression": "zstd",
+          "encrypted": false,
+          "files": 624,
+          "missing_1000_ms": [
+            1.332708,
+            1.305084,
+            1.29175,
+            1.2955,
+            1.2947499999999998,
+            1.286417,
+            1.297708,
+            1.364375,
+            1.441542,
+            1.365208
+          ],
+          "open_ms": [
+            0.317791,
+            0.20675000000000002,
+            0.189417,
+            0.191542,
+            0.188708,
+            0.186334,
+            0.19287500000000002,
+            0.191958,
+            0.18812500000000001,
+            0.194417
+          ],
+          "pack_process_ms": 183.424,
+          "random_2000_full_file_ms": [
+            56.34075,
+            54.916416000000005,
+            55.860583,
+            56.908042,
+            55.001166999999995,
+            55.784625,
+            57.161083000000005,
+            56.192584,
+            53.988334,
+            56.4165
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            16.314708,
+            14.728958,
+            16.230874999999997,
+            15.030208,
+            16.23525,
+            14.883458000000001,
+            16.349249999999998,
+            15.567833,
+            16.139833,
+            15.013667
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        }
+      ]
+    },
+    {
+      "variant": "WebGAL_k embedded/zstd/true",
+      "archive_bytes": [
+        25494623,
+        25494623,
+        25494623
+      ],
+      "metrics": {
+        "missing_1000_ms": {
+          "median": 1.398771,
+          "process_medians": [
+            1.479292,
+            1.398771,
+            1.360312
+          ],
+          "process_range": [
+            1.360312,
+            1.479292
+          ]
+        },
+        "open_ms": {
+          "median": 302.2493955,
+          "process_medians": [
+            290.69439550000004,
+            302.2493955,
+            302.68972900000006
+          ],
+          "process_range": [
+            290.69439550000004,
+            302.68972900000006
+          ]
+        },
+        "random_2000_full_file_ms": {
+          "median": 189.9842295,
+          "process_medians": [
+            194.0706045,
+            189.9842295,
+            187.9449795
+          ],
+          "process_range": [
+            187.9449795,
+            194.0706045
+          ]
+        },
+        "sequential_ms": {
+          "median": 56.5780415,
+          "process_medians": [
+            56.5780415,
+            56.746271,
+            56.560625
+          ],
+          "process_range": [
+            56.560625,
+            56.746271
+          ]
+        },
+        "pack_process_ms": {
+          "median": 311.871667,
+          "process_samples": [
+            299.491125,
+            320.8605,
+            311.871667
+          ]
+        }
+      },
+      "source_runs": [
+        {
+          "process": 1,
+          "archive_bytes": 25494623,
+          "compression": "zstd",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            1.487167,
+            1.540083,
+            1.87475,
+            1.471417,
+            1.4707080000000001,
+            2.6454999999999997,
+            1.408458,
+            1.352792,
+            1.349791,
+            1.584125
+          ],
+          "open_ms": [
+            291.275791,
+            289.0315,
+            288.79470899999995,
+            307.293,
+            307.869917,
+            306.765333,
+            293.489708,
+            289.66304199999996,
+            289.870375,
+            290.113
+          ],
+          "pack_process_ms": 299.491125,
+          "random_2000_full_file_ms": [
+            189.7595,
+            199.852958,
+            194.178292,
+            186.963292,
+            229.23399999999998,
+            192.55366700000002,
+            193.962917,
+            189.814917,
+            206.865084,
+            202.97141699999997
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            57.298333,
+            56.405042,
+            55.882833,
+            56.546458,
+            55.659792,
+            56.844166,
+            56.105584,
+            57.832042,
+            56.609624999999994,
+            65.296208
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 2,
+          "archive_bytes": 25494623,
+          "compression": "zstd",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            1.491917,
+            1.505958,
+            1.48925,
+            1.412875,
+            1.384667,
+            1.384541,
+            1.514875,
+            1.3420420000000002,
+            1.317958,
+            1.315
+          ],
+          "open_ms": [
+            305.800666,
+            310.401375,
+            309.17125,
+            306.789583,
+            300.869708,
+            298.861583,
+            298.995667,
+            300.467292,
+            299.25600000000003,
+            303.62908300000004
+          ],
+          "pack_process_ms": 320.8605,
+          "random_2000_full_file_ms": [
+            189.807667,
+            190.160792,
+            189.44549999999998,
+            189.11825,
+            186.030834,
+            187.967917,
+            194.742833,
+            192.736208,
+            192.64895800000002,
+            192.864542
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            63.418459,
+            56.241125000000004,
+            57.493875,
+            56.971584,
+            56.598,
+            55.366541,
+            56.483416,
+            56.579375,
+            56.894542,
+            57.676292
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        },
+        {
+          "process": 3,
+          "archive_bytes": 25494623,
+          "compression": "zstd",
+          "encrypted": true,
+          "files": 624,
+          "missing_1000_ms": [
+            1.5035420000000002,
+            1.4301249999999999,
+            1.395958,
+            1.30525,
+            1.301625,
+            1.302292,
+            1.3144159999999998,
+            1.409333,
+            1.377333,
+            1.343291
+          ],
+          "open_ms": [
+            301.132167,
+            302.849625,
+            306.62687500000004,
+            312.246917,
+            312.026667,
+            306.55725,
+            302.52983300000005,
+            302.5155,
+            301.507833,
+            301.937709
+          ],
+          "pack_process_ms": 311.871667,
+          "random_2000_full_file_ms": [
+            185.691875,
+            183.50245900000002,
+            187.590584,
+            188.767667,
+            188.072,
+            187.817959,
+            187.207125,
+            188.08308300000002,
+            191.995917,
+            189.24229200000002
+          ],
+          "raw_bytes": 29360128,
+          "reader": "WebGAL_k embedded src-tauri/src/hexz.rs",
+          "sequential_ms": [
+            56.374292,
+            56.677291999999994,
+            56.770624999999995,
+            56.443958,
+            57.2455,
+            56.690083,
+            56.957583,
+            55.430875,
+            55.901083,
+            56.299125
+          ],
+          "verified_files": 624,
+          "warm_cache": true
+        }
+      ]
+    }
+  ]
+}

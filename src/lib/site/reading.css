@@ -1,19 +1,31 @@
 /* All routes share one transparent reading surface and one fixed navigation. */
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-.site-shell.article-page .scene-page { background: #0b1216; }
-.site-shell.article-page .garden-reading { bottom: 48px; mask-image: none; -webkit-mask-image: none; }
+.site-shell.article-page .site-viewport { background: #0b1216; }
+.site-shell.article-page .reading-panel { bottom: 48px; mask-image: none; -webkit-mask-image: none; }
 .site-shell.article-page .site-back-top { bottom: 40px; }
 .site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
 .site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
 .site-shell .route-content { min-width: 0; }
-.site-shell .detail-reading { width: min(920px, calc(100% - 64px)); bottom: 126px; }
+.site-shell .detail-reading { bottom: 126px; }
 .site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #a2c4d6; font: 1.4rem var(--f-n); }
 .site-page-title { margin: 6px 0 16px; font: 400 1.65rem/1.4 var(--f-h); color: #bfd3de; }
 .site-intro { margin: 10px 0 24px; color: #9fb7c4; font-size: .88rem; }
-.site-shell .preview-entry { padding: 12px 0; }
-.site-shell .preview-entry > .entry-title { display: block; font: 400 1.1rem/1.45 var(--f-n); }
+.site-shell .entry-link { padding: 12px 0; }
+.site-shell .entry-link > .entry-title { display: block; font: 400 1.1rem/1.45 var(--f-n); }
 .site-shell .list-section { margin: 22px 0; }
 .site-shell .list-section > h2, .site-shell .catalog-group > h2 { margin: 0 0 12px; font: 400 1.15rem/1.5 var(--f-n); color: #abc6d5; }
+/* Every route shares the same width; only list pages use independent columns. */
+@media (min-width: 760px) {
+  .site-shell .reading-panel { width: min(80%, 2240px); padding-inline: 20px; }
+  .site-shell.wide-list .entry-link { padding: 18px 16px; align-content: start; gap: 8px; border-top: 1px solid #314652; }
+  .site-shell.wide-list .entry-title { max-width: 40ch; font-size: clamp(1.1rem, 1.2vw, 1.35rem); }
+  .site-shell.wide-list .entry-link p { max-width: 56ch; font-size: .9rem; line-height: 1.65; }
+}
+@media (min-width: 1100px) {
+  .site-shell.wide-list .entry-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(28px, 3vw, 64px); }
+  .site-shell.wide-list .entry-link { min-height: 112px; }
+  .site-shell.wide-list .list-section .entry-link { min-height: 144px; }
+}
 .site-shell .catalog { margin-top: 30px; padding-top: 18px; border-top: 1px solid #314652; }
 .site-shell .catalog-group { margin: 20px 0; }
 .site-shell .catalog-item { display: block; padding: 12px 0; border-bottom: 1px solid #2b3e48; }

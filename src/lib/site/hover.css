@@ -1,5 +1,5 @@
 /* Shared hover and selection treatment across the site. */
-.home-preview {
+.site-shell {
   --hover-wash: rgb(180 180 180 / 7%);
   --selection-glow: 0 0 8px rgb(100 175 220 / 65%), 0 0 22px rgb(100 175 220 / 35%);
   --idle-glow: 0 0 8px rgb(100 175 220 / 0%), 0 0 22px rgb(100 175 220 / 0%);
@@ -13,7 +13,7 @@
 }
 
 /* Navigation shares the subtle hover wash; selection alone keeps a clear background. */
-:is(.home-preview, .home-preview .preview-sheet) :is(a, button) {
+:is(.site-shell, .site-shell .content-surface) :is(a, button) {
   --control-glow: var(--idle-glow);
   text-decoration: none;
   text-shadow: var(--control-glow);
@@ -21,33 +21,33 @@
 }
 
 /* Keep dates and descriptions crisp: compound controls glow only at the label. */
-.home-preview :is(
-  .preview-entry, .search-item, .keine-brand, .keine-chapters a, .keine-reading a,
-  .architecture-nodes button, .garden-navigation a, .lang-btn
+.site-shell :is(
+  .entry-link, .search-item, .keine-brand, .keine-chapters a, .keine-reading a,
+  .architecture-nodes button, .site-navigation a, .lang-btn
 ) { text-shadow: none; }
-.home-preview :is(
-  .entry-title, .s-title, .architecture-nodes strong, .garden-navigation a > span,
+.site-shell :is(
+  .entry-title, .s-title, .architecture-nodes strong, .site-navigation a > span,
   .lang-label, .keine-brand > span, .keine-chapters a > span, .keine-reading a > span
 ) {
   text-shadow: var(--control-glow);
   transition: var(--hover-transition);
 }
-.home-preview :is(.entry-title, .architecture-nodes strong) { width: fit-content; max-width: 100%; }
+.site-shell :is(.entry-title, .architecture-nodes strong) { width: fit-content; max-width: 100%; }
 
-:is(.home-preview, .home-preview .preview-sheet) :is(a, button):is([aria-pressed='true'], [aria-current='page'], .active) {
+:is(.site-shell, .site-shell .content-surface) :is(a, button):is([aria-pressed='true'], [aria-current='page'], .active) {
   --control-glow: var(--selection-glow);
 }
 
-:is(.home-preview, .home-preview .preview-sheet) :is(a, button):not(:disabled):focus-visible {
+:is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled):focus-visible {
   background-color: var(--hover-wash);
 }
 
 @media (hover: hover) {
-  :is(.home-preview, .home-preview .preview-sheet) :is(a, button):not(:disabled):hover {
+  :is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled):hover {
     background-color: var(--hover-wash);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-preview { --hover-duration: 0ms; }
+  .site-shell { --hover-duration: 0ms; }
 }

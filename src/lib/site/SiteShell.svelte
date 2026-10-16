@@ -67,22 +67,22 @@
   <link rel="canonical" href={`https://${siteConfig.domain}${path === '/' ? '' : path}`} />
 </svelte:head>
 
-<div class="home-preview garden-preview site-shell" class:reading-detail={detail} class:article-page={article}>
+<div class="site-shell" class:article-page={article} class:wide-list={path === '/' || path === '/blog'}>
   <a class="skip-link" href="#site-content">跳到内容</a>
-  <div class="scene-page">
+  <div class="site-viewport">
     {#if !article}<WaterScene bind:this={waterScene} {region} still={reducedMotion} />{/if}
-    <div class="garden-brand">
-      <a class="brand-home" href="/" aria-label="maincore，返回首页"><img class="brand-logo" src="/favicon.png" width="42" height="42" alt="" /></a>
-      <div><span class="brand-name">maincore</span><p>games &amp; software</p></div>
+    <div class="site-brand">
+      <a class="site-brand-link" href="/" aria-label="maincore，返回首页"><img class="site-brand-logo" src="/favicon.png" width="42" height="42" alt="" /></a>
+      <span class="site-wordmark">maincore</span>
     </div>
     {#if !article}
-      <nav id="garden-navigation" class="garden-navigation" aria-label="主导航">
+      <nav id="site-navigation" class="site-navigation" aria-label="主导航">
         {#each sections as section}
           <a href={section.href} class:active={region === section.label} aria-current={region === section.label ? 'page' : undefined}><span>{$t('nav.' + section.label)}</span></a>
         {/each}
       </nav>
     {/if}
-    <main id="site-content" class="garden-reading preview-sheet" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
+    <main id="site-content" class="reading-panel content-surface" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
       <div class="reading-heading" hidden={path === '/'}>
         <span class="page-section" tabindex="-1" bind:this={pageHeading}>{$t('nav.' + region)}</span>
         <a class="reading-back" href={backHref} aria-label={backHref === '/' ? $t('back.home') : '返回栏目'}>←</a>

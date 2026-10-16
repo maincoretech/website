@@ -36,9 +36,9 @@
   });
 </script>
 
-<div class="garden-canvas" bind:this={host} data-status={status} out:fade|global={{ duration: motionDuration(320) }}>
+<div class="water-scene" bind:this={host} data-status={status} out:fade|global={{ duration: motionDuration(320) }}>
   {#if status === 'failed'}
-    <div class="scene-fallback" role="status">
+    <div class="water-fallback" role="status">
       <p>此设备暂时无法显示动态背景。</p>
       <small>页面内容仍可正常阅读。</small>
       <noscript>启用 JavaScript 后可以查看动态背景。</noscript>

@@ -49,9 +49,9 @@
 {#each grouped as [cat, catPosts]}
   <section class="list-section">
     <h2>{$t('cat.' + cat) || cat}</h2>
-    <div class="preview-entries">
+    <div class="entry-list">
       {#each catPosts as post}
-        <a href="/blog/{post.slug}" class="preview-entry">
+        <a href="/blog/{post.slug}" class="entry-link">
           <span class="entry-title">{post.title}</span>
           <time datetime={post.date}>{post.date}</time>
           {#if post.description}<p>{post.description}</p>{/if}

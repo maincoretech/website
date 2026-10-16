@@ -36,4 +36,9 @@
     margin-top: 40px;
     min-height: 100px;
   }
+  .giscus :global(iframe) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
 </style>

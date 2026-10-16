@@ -1,6 +1,7 @@
 <script>
   import comparison from '../../../static/posts/keine-tday/summary.json';
   import evidence from '../../../static/benchmarks/preview-highlights.json';
+  import { comparisonScale, rankedMeasurements } from './benchmark-scale.js';
 
   // Tone follows length order; a stable texture identifies each engine across metrics.
   const tones = ['#466170', '#577482', '#698895', '#7e9da9', '#96b3be', '#afcbd5', '#c9e2eb'];
@@ -16,55 +17,65 @@
     ] }
   ];
   let { data = runtimeCharts, label = '同机引擎检查点对比', columns = 3 } = $props();
-  const charts = $derived(data.map(chart => ({ ...chart, max: Math.max(...chart.rows.map(row => row.value)), rows: [...chart.rows].sort((a, b) => b.value - a.value) })));
-  let inspected = $state(null);
+  let linearCharts = $state([]);
+  const charts = $derived(data.map(chart => {
+    const rows = rankedMeasurements(chart.rows);
+    return { ...chart, scale: comparisonScale(rows, linearCharts.includes(chart.id)), rows };
+  }));
   const valueLabel = (chart, row) => `${row.value.toFixed(chart.digits)} ${chart.unit}`;
+  const shortLabel = row => row.label.replaceAll(' · ', ' ').replace('密码加密', '加密');
 </script>
 
 <div class="benchmark-comparison" aria-label={label}>
-  <div class="comparison-columns" style:--columns={columns}>
+  <div class="comparison-columns" style:--columns={Math.min(columns, 2)}>
     {#each charts as chart}
       <figure>
         <figcaption>
           <span class="comparison-title">{chart.label}</span>
           <span class="comparison-direction">↓ 越低越好</span>
-          <span class="comparison-scale">0 — {chart.max.toFixed(chart.digits)} {chart.unit}</span>
+          <span class="comparison-scale">0 — {chart.scale.max.toFixed(chart.digits)} {chart.unit}
+            {#if chart.scale.compressible}
+              · {chart.scale.compressed ? '对数压缩 · 非线性' : '线性刻度'}
+              <button type="button" class="scale-toggle"
+                aria-label={`${chart.label}：切换为${chart.scale.compressed ? '线性刻度' : '对数压缩'}`}
+                onclick={() => linearCharts = chart.scale.compressed ? [...linearCharts, chart.id] : linearCharts.filter(id => id !== chart.id)}
+              >{chart.scale.compressed ? '切回线性' : '压缩显示'}</button>
+            {/if}
+          </span>
         </figcaption>
-        <div class="comparison-bars">
+        <ol class="comparison-ranking" style:--count={chart.rows.length} aria-label={`${chart.label}，按实测值从低到高排列`}>
           {#each chart.rows as row, index}
-            {@const key = `${chart.id}-${row.id}`}
-            <button type="button" class="comparison-row" style:width={`${row.value / chart.max * 100}%`}
-              aria-label={`${row.label} ${row.version}，${chart.label} ${valueLabel(chart, row)}，越低越好${row.detail ? `，${row.detail}` : ''}`}
-              aria-expanded={inspected === key}
-              onpointerenter={() => inspected = key} onpointerleave={() => inspected = null}
-              onfocus={() => inspected = key} onblur={() => inspected = null}
-              onclick={() => inspected = key} onkeydown={event => { if (event.key === 'Escape') { event.stopPropagation(); inspected = null; } }}>
-              <span class="comparison-fill" data-pattern={row.pattern ?? patterns[row.id] ?? 'solid'} style:--bar-tone={tone(index, chart.rows.length)}></span>
-            </button>
-            <span class="comparison-tooltip" class:shown={inspected === key} aria-hidden="true">
-              <span class="comparison-swatch" data-pattern={row.pattern ?? patterns[row.id] ?? 'solid'} style:--bar-tone={tone(index, chart.rows.length)}></span>
-              <b>{row.label}</b><span>{valueLabel(chart, row)}</span><small>{row.version}</small>
-              {#if row.detail}<small>{row.detail}</small>{/if}
-            </span>
+            <li class="comparison-item" style:--amount={`${chart.scale.percent(row.value)}%`}
+              aria-label={`第 ${row.rank} 位，${row.label} ${row.version}，${valueLabel(chart, row)}${row.detail ? `，${row.detail}` : ''}`}>
+              <span class="rank-label" aria-hidden="true"><span class="rank-number">{row.rank.toString().padStart(2, '0')}</span>{shortLabel(row)}</span>
+              <span class="rank-value" aria-hidden="true">{row.value.toFixed(chart.digits)}<small>{chart.unit}</small></span>
+              <span class="rank-track" aria-hidden="true"><span class="comparison-fill" data-pattern={row.pattern ?? patterns[row.id] ?? 'solid'} style:--bar-tone={tone(chart.rows.length - 1 - index, chart.rows.length)}></span></span>
+            </li>
           {/each}
-        </div>
+        </ol>
       </figure>
     {/each}
   </div>
 </div>
 
 <style>
-  .benchmark-comparison { margin: 20px 0 16px; }
-  .comparison-columns { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 20px; }
-  figure { margin: 0; min-width: 0; }
+  .benchmark-comparison { margin: 14px 0 10px; }
+  .comparison-columns { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 16px; }
+  figure { margin: 0; min-width: 0; container-type: inline-size; }
   figcaption { color: #afc6d3; font: .74rem/1.5 var(--f-b); margin-bottom: 4px; }
   .comparison-title { display: block; }
   .comparison-direction { display: block; color: #abc3cf; font-size: .68rem; }
   .comparison-scale { display: block; color: #879ba8; font-size: .64rem; }
-  .comparison-bars { position: relative; height: 32px; isolation: isolate; }
-  .comparison-row { position: absolute; inset: 0 auto 0 0; display: flex; align-items: center; height: 32px; padding: 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; }
-  .comparison-row:focus-visible { outline: 1px solid #87a8bc; outline-offset: 2px; }
-  .comparison-fill { display: block; width: 100%; height: 14px; border-right: 1px solid #0b1216; box-sizing: border-box; transition: filter 200ms ease; }
+  .scale-toggle { margin-left: 6px; padding: 2px 4px; border: 0; background: transparent; color: #afc6d3; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .scale-toggle:hover { background: rgb(160 170 180 / 12%); }
+  .comparison-ranking { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+  .comparison-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; color: #b7ccd8; font: .72rem/1.4 var(--f-b); }
+  .rank-label { min-width: 0; overflow-wrap: anywhere; }
+  .rank-number { display: inline-block; min-width: 23px; color: #809aa8; font-variant-numeric: tabular-nums; }
+  .rank-value { white-space: nowrap; font-variant-numeric: tabular-nums; color: #c9e2eb; }
+  .rank-value small { margin-left: 4px; color: #8fa6b2; font-size: .85em; }
+  .rank-track { grid-column: 1 / -1; display: block; height: 4px; margin-left: 23px; background: rgb(100 133 150 / 10%); }
+  .comparison-fill { display: block; width: var(--amount); height: 100%; }
   [data-pattern] { --pattern-ink: rgb(7 15 20 / 85%); background-color: var(--bar-tone); }
   [data-pattern='dots'] { background-image: radial-gradient(circle, var(--pattern-ink) 1.5px, transparent 1.7px); background-size: 6px 6px; }
   [data-pattern='diagonal'] { background-image: repeating-linear-gradient(135deg, var(--pattern-ink) 0 2px, transparent 2px 7px); }
@@ -72,15 +83,21 @@
   [data-pattern='dashes'] { background-image: radial-gradient(ellipse 3px 1px, var(--pattern-ink) 95%, transparent); background-size: 9px 6px; }
   [data-pattern='cross'] { background-image: repeating-linear-gradient(45deg, var(--pattern-ink) 0 2px, transparent 2px 9px), repeating-linear-gradient(135deg, var(--pattern-ink) 0 2px, transparent 2px 9px); }
   [data-pattern='vertical'] { background-image: repeating-linear-gradient(90deg, var(--pattern-ink) 0 2px, transparent 2px 7px); }
-  .comparison-swatch { flex: 0 0 24px; height: 14px; align-self: center; }
-  .comparison-row:is(:hover, :focus-visible) .comparison-fill { filter: brightness(1.15); }
-  .comparison-tooltip { position: absolute; left: 0; bottom: calc(100% + 3px); z-index: 5; display: flex; flex-wrap: wrap; gap: 3px 8px; width: max-content; max-width: 100%; padding: 7px 9px; box-sizing: border-box; border: 1px solid #405866; background: rgb(12 24 31 / 95%); color: #c5dae5; font: .72rem/1.4 var(--f-b); pointer-events: none; opacity: 0; transform: translateY(3px); transition: opacity 160ms ease, transform 160ms ease; }
-  .comparison-tooltip.shown { opacity: 1; transform: translateY(0); }
-  .comparison-tooltip small { flex-basis: 100%; font: .62rem/1.4 var(--f-m); overflow-wrap: anywhere; color: #9fb4c1; }
-  @media (max-width: 600px) {
-    .comparison-columns { grid-template-columns: 1fr; gap: 10px; }
+  [data-pattern='grid'] { background-image: repeating-linear-gradient(90deg, var(--pattern-ink) 0 1px, transparent 1px 6px), repeating-linear-gradient(0deg, var(--pattern-ink) 0 1px, transparent 1px 6px); }
+  [data-pattern='checker'] { background-image: conic-gradient(var(--pattern-ink) 25%, transparent 0 50%, var(--pattern-ink) 0 75%, transparent 0); background-size: 8px 8px; }
+  @container (min-width: 480px) {
+    .comparison-ranking { grid-template-columns: repeat(var(--count), minmax(0, 1fr)); gap: 8px; padding-left: 130px; }
+    .comparison-item { position: relative; display: block; height: 178px; }
+    .rank-value { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: .68rem; }
+    .rank-value small { display: none; }
+    .rank-track { position: absolute; top: 20px; left: 50%; width: 10px; height: 42px; margin: 0; transform: translateX(-50%); }
+    .comparison-fill { position: absolute; bottom: 0; width: 100%; height: var(--amount); }
+    .rank-label { position: absolute; top: 69px; right: 50%; width: 160px; text-align: right; white-space: nowrap; transform: rotate(-35deg); transform-origin: top right; }
+    .rank-number { min-width: 0; margin-right: 6px; }
+  }
+  @media (max-width: 900px) {
+    .comparison-columns { grid-template-columns: 1fr; gap: 16px; }
     figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 10px; }
     .comparison-scale { flex-basis: 100%; }
   }
-  @media (prefers-reduced-motion: reduce) { .comparison-fill, .comparison-tooltip { transition: none; } }
 </style>

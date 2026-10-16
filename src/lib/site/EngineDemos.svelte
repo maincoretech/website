@@ -122,7 +122,7 @@
   });
 </script>
 
-<section hidden={view !== 'all' && view !== 'live'} id={sectionId('live')} class="preview-section" aria-labelledby={sectionId('live-title')}>
+<section hidden={view !== 'all' && view !== 'live'} id={sectionId('live')} class="demo-section" aria-labelledby={sectionId('live-title')}>
         {#if standalone}<p class="demo-eyebrow">01 / EIYASHOU</p>{/if}
         <div class="section-heading">
           <h2 id={sectionId('live-title')} class="sec-title-box"><span class="sec-title-box__title">一小段故事</span></h2>
@@ -173,7 +173,7 @@
         </div>
       </section>
 
-      <section hidden={view === 'live'} id={sectionId('projects')} class="preview-section" aria-label="项目介绍">
+      <section hidden={view === 'live'} id={sectionId('projects')} class="demo-section" aria-label="项目介绍">
         <div class="section-heading" hidden={standalone || product !== 'all'}>
           <h2 id={sectionId('projects-title')} class="sec-title-box"><span class="sec-title-box__title">正在做的</span></h2>
           <a class="section-aside" href="/product">全部项目 ↗</a>

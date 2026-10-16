@@ -32,7 +32,7 @@
         <a href="#resources"><small>03</small><span>资源更新</span></a>
       </nav>
 
-      <div class="preview-sheet keine-experience">
+      <div class="content-surface keine-experience">
         <EngineDemos standalone />
       </div>
 

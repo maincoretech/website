@@ -24,9 +24,9 @@
 </svelte:head>
 <section class="news-list">
   <h1 class="site-page-title">{$t('pages.news.section')}</h1>
-  <div class="preview-entries">
+  <div class="entry-list">
     {#each news as item}
-      <a href="/news/{item.slug}" class="preview-entry">
+      <a href="/news/{item.slug}" class="entry-link">
         <span class="entry-title">{item.title}</span>
         <time datetime={item.date}>{item.date}</time>
       </a>

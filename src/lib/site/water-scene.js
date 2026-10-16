@@ -81,6 +81,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       flow: { value: flow },
       scrollWake: { value: scrollWake },
       viewportHeight: { value: 1 },
+      fadeDepthOffset: { value: 0 },
       deep: { value: new THREE.Color(0x10242c) },
       light: { value: new THREE.Color(0x638898) }
     },
@@ -101,6 +102,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       varying vec2 waterPoint;
       varying float waterDepth;
       uniform float time;
+      uniform float fadeDepthOffset;
       uniform vec3 deep;
       uniform vec3 light;
       ${WATER_PHASE_GLSL}
@@ -112,7 +114,8 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
         float edge = 1. - smoothstep(.82, 1., radius);
         // Fade the distant water before the pool boundary becomes visible.
         // Camera depth follows every view; nearby props and waves stay crisp.
-        float farFade = 1. - smoothstep(5.8, 10.5, waterDepth);
+        float fadeDepth = waterDepth / (1. + waterDepth * fadeDepthOffset);
+        float farFade = 1. - smoothstep(5.8, 10.5, fadeDepth);
         float ripple = disturbance(waterPoint, time);
         ripple += scrollDisturbance(1. - gl_FragCoord.y / viewportHeight);
         float wave = sin(waterPhase(waterPoint, time) + ripple * 1.4);
@@ -234,6 +237,10 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     camera.position.copy(EYE);
     direction.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     camera.lookAt(direction.add(camera.position));
+    // Shift only the water fade up by 4% of the viewport (0.08 NDC).
+    // On the horizontal water plane, inverse depth is linear in screen height.
+    waterMaterial.uniforms.fadeDepthOffset.value = .08 * Math.cos(pitch)
+      / (camera.projectionMatrix.elements[5] * (EYE.y - .012));
     // Project onto the same current-camera screen band used by gl_FragCoord.
     // Reuse one matrix/vector: five height samples per prop, no extra render loop.
     camera.updateMatrixWorld();
@@ -336,15 +343,19 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     // Bring the paper closer/lower on the water and reduce its footprint,
     // reserving more of the composition for reading above it.
     const distance = height < 650 ? 5.4 : height < 800 ? 5.45 : 5.05;
+    // On narrow screens, lower every prop toward the bottom navigation while
+    // keeping its apparent size; leave the reading mask and water fade alone.
+    const placementScale = width < 760 ? .66 : .9;
+    const propDistance = distance * placementScale;
     for (const [id, prop] of Object.entries(props)) {
       const angle = VIEWS[id];
-      const left = id === 'product' ? .22 : 0;
+      // Every prop uses the same camera-centred anchor, distance and scale.
       prop.userData.home.set(
-        EYE.x + Math.sin(angle) * distance - Math.cos(angle) * left,
+        EYE.x + Math.sin(angle) * propDistance,
         .025,
-        EYE.z - Math.cos(angle) * distance - Math.sin(angle) * left
+        EYE.z - Math.cos(angle) * propDistance
       );
-      prop.scale.setScalar(height < 650 ? .8 : .88);
+      prop.scale.setScalar((height < 650 ? .8 : .88) * placementScale);
     }
     moveCamera(false);
   }

@@ -1,30 +1,14 @@
 <script>
   import evidence from '../../../static/benchmarks/script-comparison.json';
-  import BenchmarkComparison from './BenchmarkComparison.svelte';
 
   const range = result => result.process_range_ms.map(value => value.toFixed(3)).join('–');
-  const charts = [10000, 100000].map(count => ({
-    id: `parse-${count}`, label: `${count / 10000} 万条纯文本解析`, unit: 'ms', digits: 2,
-    rows: ['keine', 'tyranoscript'].map(engine => {
-      const result = evidence.results.find(row => row.engine === engine && row.stage === 'parse' && row.units === count);
-      return {
-        id: engine === 'keine' ? 'keine' : 'tyrano', label: engine === 'keine' ? 'Kēne' : 'TyranoScript',
-        version: engine === 'keine' ? `${evidence.keine.version} / ${evidence.keine.commit.slice(0, 7)} · Rust` : `${evidence.tyranoscript.commit.slice(0, 7)} · Node ${evidence.tyranoscript.node}`,
-        value: result.median_ms,
-        detail: `进程中位数范围 ${range(result)} ms`
-      };
-    })
-  }));
   const core = [
     { stage: 'core_comments', label: '10 万条非阻塞 Comment', detail: '轻负载 · 已安装 Program' },
     { stage: 'core_mixed_dialogue', label: '1000 轮赋值 / 条件 / 插值对白', detail: '通用 Action · 每轮 3 条 · 模拟推进' }
   ].map(item => ({ ...item, ...evidence.results.find(row => row.stage === item.stage) }));
 </script>
 
-<section class="script-benchmarks" aria-label="脚本解析与 Core 执行">
-  <h3>脚本解析</h3>
-  <p class="script-scope">Kēne Loader / TyranoScript · 相同文本，不同解析工作量</p>
-  <BenchmarkComparison data={charts} label="纯文本解析路径对比" columns={2} />
+<section class="script-benchmarks" aria-label="Core 脚本执行">
   <h3>脚本执行 · Core</h3>
   <p class="script-scope">Kēne {evidence.keine.version} · 不含解析 · 未测竞品执行</p>
   <dl class="benchmark-metrics core-metrics">

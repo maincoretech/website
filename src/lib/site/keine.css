@@ -1,5 +1,5 @@
 /* One continuous reading surface: a soft blur mask, not a stack of cards. */
-.keine-content { max-width: 980px; margin-inline: auto; }
+.keine-content { width: 100%; min-width: 0; margin-inline: auto; }
 .keine-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; padding: 28px 0; }
 .keine-kicker, .keine-stack { font: .73rem var(--f-m); letter-spacing: .15em; color: #7599ab; }
 .keine-wordmark h1 { margin-top: 18px; font: 400 clamp(4rem, 8vw, 7rem)/1.1 var(--f-h); letter-spacing: -.025em; color: #bdd1dc; }
@@ -13,42 +13,42 @@
 .keine-chapters a { display: flex; align-items: baseline; justify-content: center; gap: 12px; padding: 12px 0; font: 1.05rem var(--f-n); }
 .keine-chapters small { font: .7rem var(--f-m); color: #648698; }
 .keine-experience :is(#live, #architecture, #resources) { scroll-margin-top: 35px; }
-.keine-experience.preview-sheet .preview-section { margin: 0; }
+.keine-experience.content-surface .demo-section { margin: 0; }
 .keine-experience .demo-eyebrow { margin: 0 0 20px; color: #7599ab; font: .72rem var(--f-m); letter-spacing: .15em; }
-.keine-experience.preview-sheet .section-heading { margin-bottom: 25px; }
-.keine-experience.preview-sheet .sec-title-box__title { font: 400 1.7rem "Songti SC", serif; }
-.keine-experience.preview-sheet .section-aside { font-size: .82rem; }
-.keine-experience.preview-sheet .editor-window { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
-.keine-experience.preview-sheet .editor-tabs { gap: 22px; border-bottom: 1px solid rgb(113 149 169 / 24%); background: transparent; }
-.keine-experience.preview-sheet .editor-tabs button { padding: 10px 0 12px; font-size: 1rem; }
-.keine-experience.preview-sheet .editor-tabs small { display: inline; color: #7599ab; }
-.keine-experience.preview-sheet .code-surface { padding-block: 25px; background: transparent; }
-.keine-experience.preview-sheet .code-lines { font-size: clamp(13px, 1.4vw, 17px); line-height: 30px; }
-.keine-experience.preview-sheet .code-line { height: 30px; padding-inline: 0 12px; }
-.keine-experience.preview-sheet .line-number { flex-basis: 42px; font-size: 12px; }
-.keine-experience.preview-sheet .editor-controls { padding: 14px 0; border-top: 1px solid rgb(113 149 169 / 24%); font-size: .82rem; }
-.keine-experience.preview-sheet .editor-controls button { font-size: .82rem; min-height: 30px; }
-.keine-experience.preview-sheet .demo-caption { margin-top: 18px; }
-.keine-experience.preview-sheet .demo-caption small { font-size: .8rem; }
-.keine-experience.preview-sheet .project-note { margin: 40px 0 0; padding: 0; border: 0; }
-.keine-experience.preview-sheet .project-note h3 { font: 400 1.7rem/1.6 "Songti SC", serif; }
-.keine-experience.preview-sheet .project-note > p:not(.demo-eyebrow) { max-width: 650px; margin: 15px 0 28px; color: #9fb7c3; font-size: .95rem; line-height: 1.8; }
-.keine-experience.preview-sheet :is(.architecture-demo, .resource-demo) { background: transparent; padding: 0; }
-.keine-experience.preview-sheet .architecture-nodes { gap: 40px; }
-.keine-experience.preview-sheet .architecture-nodes button { position: relative; padding: 15px 0 18px; background-color: transparent; border-radius: 0; border-bottom: 1px solid transparent; }
-.keine-experience.preview-sheet .architecture-nodes strong { font-size: 1.75rem; }
-.keine-experience.preview-sheet .architecture-nodes small { margin-top: 8px; font-size: .85rem; }
-.keine-experience.preview-sheet .architecture-detail { min-height: 110px; padding: 25px 0 10px; }
-.keine-experience.preview-sheet .architecture-detail > span { font-size: .9rem; }
-.keine-experience.preview-sheet .architecture-detail p { margin-top: 9px; font-size: .95rem; }
-.keine-experience.preview-sheet .project-actions { margin-top: 16px; font-size: .88rem; }
-.keine-experience.preview-sheet .resource-toolbar { padding-block: 10px 20px; }
-.keine-experience.preview-sheet .resource-toolbar > span { font-size: 1.25rem; }
-.keine-experience.preview-sheet .resource-toolbar button { padding: 8px 0; border: 0; border-radius: 0; background-color: transparent; font-size: .88rem; }
-.keine-experience.preview-sheet .segment { margin: 0; padding: 14px 0; background: transparent; border-top: 1px solid rgb(113 149 169 / 24%); }
-.keine-experience.preview-sheet .segment.changed { background: rgb(113 165 170 / 9%); }
-.keine-experience.preview-sheet .segment-file { font-size: 1.15rem; }
-.keine-experience.preview-sheet :is(.segment-label, .segment-status) { font-size: .85rem; }
+.keine-experience.content-surface .section-heading { margin-bottom: 25px; }
+.keine-experience.content-surface .sec-title-box__title { font: 400 1.7rem "Songti SC", serif; }
+.keine-experience.content-surface .section-aside { font-size: .82rem; }
+.keine-experience.content-surface .editor-window { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.keine-experience.content-surface .editor-tabs { gap: 22px; border-bottom: 1px solid rgb(113 149 169 / 24%); background: transparent; }
+.keine-experience.content-surface .editor-tabs button { padding: 10px 0 12px; font-size: 1rem; }
+.keine-experience.content-surface .editor-tabs small { display: inline; color: #7599ab; }
+.keine-experience.content-surface .code-surface { padding-block: 25px; background: transparent; }
+.keine-experience.content-surface .code-lines { font-size: clamp(13px, 1.4vw, 17px); line-height: 30px; }
+.keine-experience.content-surface .code-line { height: 30px; padding-inline: 0 12px; }
+.keine-experience.content-surface .line-number { flex-basis: 42px; font-size: 12px; }
+.keine-experience.content-surface .editor-controls { padding: 14px 0; border-top: 1px solid rgb(113 149 169 / 24%); font-size: .82rem; }
+.keine-experience.content-surface .editor-controls button { font-size: .82rem; min-height: 30px; }
+.keine-experience.content-surface .demo-caption { margin-top: 18px; }
+.keine-experience.content-surface .demo-caption small { font-size: .8rem; }
+.keine-experience.content-surface .project-note { margin: 40px 0 0; padding: 0; border: 0; }
+.keine-experience.content-surface .project-note h3 { font: 400 1.7rem/1.6 "Songti SC", serif; }
+.keine-experience.content-surface .project-note > p:not(.demo-eyebrow) { max-width: 650px; margin: 15px 0 28px; color: #9fb7c3; font-size: .95rem; line-height: 1.8; }
+.keine-experience.content-surface :is(.architecture-demo, .resource-demo) { background: transparent; padding: 0; }
+.keine-experience.content-surface .architecture-nodes { gap: 40px; }
+.keine-experience.content-surface .architecture-nodes button { position: relative; padding: 15px 0 18px; background-color: transparent; border-radius: 0; border-bottom: 1px solid transparent; }
+.keine-experience.content-surface .architecture-nodes strong { font-size: 1.75rem; }
+.keine-experience.content-surface .architecture-nodes small { margin-top: 8px; font-size: .85rem; }
+.keine-experience.content-surface .architecture-detail { min-height: 110px; padding: 25px 0 10px; }
+.keine-experience.content-surface .architecture-detail > span { font-size: .9rem; }
+.keine-experience.content-surface .architecture-detail p { margin-top: 9px; font-size: .95rem; }
+.keine-experience.content-surface .project-actions { margin-top: 16px; font-size: .88rem; }
+.keine-experience.content-surface .resource-toolbar { padding-block: 10px 20px; }
+.keine-experience.content-surface .resource-toolbar > span { font-size: 1.25rem; }
+.keine-experience.content-surface .resource-toolbar button { padding: 8px 0; border: 0; border-radius: 0; background-color: transparent; font-size: .88rem; }
+.keine-experience.content-surface .segment { margin: 0; padding: 14px 0; background: transparent; border-top: 1px solid rgb(113 149 169 / 24%); }
+.keine-experience.content-surface .segment.changed { background: rgb(113 165 170 / 9%); }
+.keine-experience.content-surface .segment-file { font-size: 1.15rem; }
+.keine-experience.content-surface :is(.segment-label, .segment-status) { font-size: .85rem; }
 .keine-reading { margin-top: 40px; }
 .keine-reading h2 { font: 400 1.35rem "Songti SC", serif; margin-bottom: 28px; }
 .keine-reading a { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; padding: 17px 0; border-bottom: 1px solid rgb(113 149 169 / 24%); }
@@ -61,14 +61,14 @@
   .keine-introduction p { font-size: .88rem; }
   .keine-chapters { gap: 12px; margin-block: 20px 42px; }
   .keine-chapters a { gap: 8px; font-size: .9rem; }
-  .keine-experience.preview-sheet .editor-tabs { gap: 20px; }
-  .keine-experience.preview-sheet .editor-tabs small { display: none; }
-  .keine-experience.preview-sheet .code-lines { font-size: 13px; }
-  .keine-experience.preview-sheet .line-number { flex-basis: 28px; }
-  .keine-experience.preview-sheet .architecture-nodes { gap: 24px; }
-  .keine-experience.preview-sheet .architecture-nodes strong { font-size: 1.35rem; }
-  .keine-experience.preview-sheet .architecture-nodes small { font-size: .72rem; }
-  .keine-experience.preview-sheet .architecture-detail { min-height: 130px; }
-  .keine-experience.preview-sheet .project-note, .keine-reading { margin-top: 36px; }
+  .keine-experience.content-surface .editor-tabs { gap: 20px; }
+  .keine-experience.content-surface .editor-tabs small { display: none; }
+  .keine-experience.content-surface .code-lines { font-size: 13px; }
+  .keine-experience.content-surface .line-number { flex-basis: 28px; }
+  .keine-experience.content-surface .architecture-nodes { gap: 24px; }
+  .keine-experience.content-surface .architecture-nodes strong { font-size: 1.35rem; }
+  .keine-experience.content-surface .architecture-nodes small { font-size: .72rem; }
+  .keine-experience.content-surface .architecture-detail { min-height: 130px; }
+  .keine-experience.content-surface .project-note, .keine-reading { margin-top: 36px; }
   .keine-reading a { flex-direction: column; gap: 6px; }
 }
