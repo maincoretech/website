@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 950" fill="none">
+  <title>Keine — profile silhouette</title>
+  <defs>
+    <mask id="profile-cuts" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="1024">
+      <rect width="1440" height="1024" fill="white"/>
+      <g fill="black">
+        <!-- Open, tapered hair planes rather than stroked strands. -->
+        <path d="M458 302C385 418 361 555 385 691C403 796 470 884 581 906C492 861 452 790 430 700C393 550 411 402 458 302Z"/>
+        <path d="M494 307C555 394 587 520 565 644C610 553 575 383 494 307Z"/>
+        <!-- The outer lock follows the back edge, rather than cutting across the hair. -->
+        <path d="M77 681C93 813 138 940 216 1024L256 1024C179 921 124 793 77 681Z"/>
+        <!-- Keep the near horn readable where it crosses the hair. -->
+        <path d="M187 347C206 415 230 470 263 478C289 484 306 460 307 438C294 467 278 472 262 464C237 452 211 404 187 347Z"/>
+        <!-- A single tapered fold on the left ribbon wing. -->
+        <path d="M212 123Q235 116 257 127Q233 124 219 132Z"/>
+      </g>
+    </mask>
+  </defs>
+  <g fill="#c9eafa" mask="url(#profile-cuts)">
+    <!-- Rounded crown and occiput; the back hair falls as one continuous mass. -->
+    <path d="M467 278
+      C361 263 259 306 180 383
+      C93 469 51 579 63 699
+      C76 830 120 941 191 1024
+      H1440
+      V950
+      C1268 950 1171 903 1063 898
+      C941 892 879 941 778 935
+      C712 937 661 922 624 902
+      L692 899
+      C710 898 718 887 717 868
+      L716 841
+      C715 827 718 816 725 808
+      L718 800
+      C728 793 734 783 730 772
+      C722 750 726 728 737 705
+      Q740 696 729 693
+      C708 689 689 680 676 667
+      C694 646 706 620 709 591
+      C718 612 720 635 715 655
+      C742 613 743 559 726 519
+      Q744 545 756 576
+      C752 486 718 410 653 352
+      C596 301 529 278 482 282
+      Q474 278 467 278Z"/>
+    <!-- Asymmetric, slender horns: a curved near horn and a straighter far horn. -->
+    <path d="M257 330C258 228 250 125 231 26C269 98 298 199 312 302Z"/>
+    <path d="M166 29C164 169 191 302 245 377
+      C267 409 287 426 305 438
+      C303 464 284 482 263 470
+      C220 446 190 362 175 286
+      C157 196 151 101 166 29Z"/>
+    <!-- Soft fabric folds: broad left wing, narrower right wing, no pointed tips. -->
+    <path d="M260 122
+      C242 103 219 88 202 82
+      C195 79 192 83 195 92
+      C199 104 206 114 216 121
+      C206 134 211 157 225 176
+      C230 183 235 181 241 176
+      C251 165 258 154 264 145
+      C268 143 272 143 276 144
+      C287 153 296 158 302 159
+      C308 160 307 151 303 140
+      C301 132 297 126 294 122
+      C293 105 290 84 285 77
+      C282 72 279 75 277 83
+      C272 97 271 109 270 119
+      C267 120 263 121 260 122Z"/>
+  </g>
+</svg>

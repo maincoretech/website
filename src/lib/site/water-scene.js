@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { createOrigami } from './origami.js';
+import { CAMERA_VIEWS as VIEWS, createCameraAxis, advanceCameraAxis, resetCameraAxis, cameraAxisSettled } from './camera-motion.js';
 import { WATER_PHASE_GLSL, RIPPLE_GLSL, SCROLL_WAKE_GLSL, advanceScrollWake, scrollDisturbance, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
 
 const BACKGROUND = 0x0b1216;
-const VIEWS = { news: 0, product: Math.PI / 2, blog: Math.PI, about: -Math.PI / 2 };
 const EYE = new THREE.Vector3(0, 1.65, 1.6);
 
 // A composed backdrop, not a free camera: only section changes travel through 3D.
@@ -24,7 +24,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   const materials = new Set();
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
   const direction = new THREE.Vector3();
-  let region = 'news';
+  let region = 'product';
   let still = false;
   let visible = true;
   let disposed = false;
@@ -33,12 +33,11 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   let height = 1;
   let yaw = 0;
   let pitch = 0;
-  let yawVelocity = 0;
-  let pitchVelocity = 0;
+  const yawMotion = createCameraAxis();
+  const pitchMotion = createCameraAxis();
   let journey = null;
   let frame = 0;
   let renderDeadline = 0;
-  let frameInterval = 0;
   let lastTime = 0;
   let waterTime = 0;
   const ripples = Array.from({ length: RIPPLE_COUNT }, () => new THREE.Vector4(0, 0, -100, 0));
@@ -162,7 +161,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   ground.position.y = -.055;
   scene.add(ground);
 
-  // Four paper accents share one material; no textures, shadows or model downloads.
+  // Three paper accents share one material; no textures, shadows or model downloads.
   const paperMaterial = material(new THREE.MeshStandardMaterial({
     vertexColors: true, roughness: .9, side: THREE.DoubleSide
   }));
@@ -193,13 +192,13 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   }
   function moveCamera(animate) {
     const target = destination();
-    target.yaw = yaw + Math.atan2(Math.sin(target.yaw - yaw), Math.cos(target.yaw - yaw));
     if (animate && !firstFrame && !preference.matches) journey = { target };
     else {
       yaw = target.yaw;
       pitch = target.pitch;
       journey = null;
-      yawVelocity = pitchVelocity = 0;
+      resetCameraAxis(yawMotion, yaw);
+      resetCameraAxis(pitchMotion, pitch);
     }
     wake();
   }
@@ -224,20 +223,15 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     waterMaterial.uniforms.time.value = waterTime;
     prepareRipples(waterTime, ripples, rippleField);
     if (journey) {
-      // Exact critically damped response preserves velocity when retargeted.
-      const decay = Math.exp(-12 * dt);
-      const yawDelta = yaw - journey.target.yaw;
-      const pitchDelta = pitch - journey.target.pitch;
-      const yawStep = yawVelocity + 12 * yawDelta;
-      const pitchStep = pitchVelocity + 12 * pitchDelta;
-      yaw = journey.target.yaw + (yawDelta + yawStep * dt) * decay;
-      pitch = journey.target.pitch + (pitchDelta + pitchStep * dt) * decay;
-      yawVelocity = (yawVelocity - 12 * yawStep * dt) * decay;
-      pitchVelocity = (pitchVelocity - 12 * pitchStep * dt) * decay;
-      if (Math.abs(yaw - journey.target.yaw) < .001 && Math.abs(yawVelocity) < .01) {
+      advanceCameraAxis(yawMotion, journey.target.yaw, dt);
+      advanceCameraAxis(pitchMotion, journey.target.pitch, dt);
+      yaw = yawMotion.value;
+      pitch = pitchMotion.value;
+      if (cameraAxisSettled(yawMotion, journey.target.yaw) && cameraAxisSettled(pitchMotion, journey.target.pitch)) {
         yaw = journey.target.yaw;
         pitch = journey.target.pitch;
-        yawVelocity = pitchVelocity = 0;
+        resetCameraAxis(yawMotion, yaw);
+        resetCameraAxis(pitchMotion, pitch);
         journey = null;
       }
     }
@@ -285,7 +279,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
         Math.min(...propCorners.map(p => p.x)), Math.min(...propCorners.map(p => p.y)),
         Math.max(...propCorners.map(p => p.x)), Math.max(...propCorners.map(p => p.y))
       ].map(v => v.toFixed(1)).join(',');
-      host.dataset.propKind = { news: 'envelope', product: 'lily', blog: 'book', about: 'crane' }[region];
+      host.dataset.propKind = { product: 'lily', blog: 'book', about: 'crane' }[region];
       host.dataset.propPose = [...prop.position.toArray(), ...prop.quaternion.toArray()].map(v => v.toFixed(4)).join(',');
     }
     host.dataset.frames = String(renderer.info.render.frame);
@@ -308,9 +302,9 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   function tick(now) {
     frame = 0;
     if (!canRun()) return;
-    const interacting = waterEnabled() && (pendingScroll !== 0 || Math.abs(scrollWake.y) > .02 || inputPending || now - lastInputTime < 180 || flow.z > .02 || waterTime - lastRippleTime < RIPPLE_LIFETIME);
-    const interval = 1000 / (journey || interacting ? 60 : 30);
-    if (interval !== frameInterval) { frameInterval = interval; renderDeadline = now; }
+    // Keep the same cadence through the turn's tail and the idle water motion.
+    // Visibility/reduced-motion gates still stop the loop when it is not needed.
+    const interval = 1000 / 60;
     if (now + .5 < renderDeadline) {
       frame = requestAnimationFrame(tick);
       return;
@@ -319,8 +313,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     if (renderDeadline < now) renderDeadline = now + interval;
     draw(now);
     if (journey || waterEnabled()) {
-      // One display-synchronised clock: 60 fps during interaction, 30 when idle.
-      // Avoid the timer + RAF phase mismatch that produced uneven frame spacing.
+      // One display-synchronised clock, capped at 60 fps even on fast displays.
       frame = requestAnimationFrame(tick);
     }
   }
@@ -491,7 +484,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       region = id;
       endDrag();
       pendingScroll = 0;
-      scrollWake.set(.68, 0);
+      // Preserve the existing wave and let advanceScrollWake decay it naturally.
       moveCamera(true);
     },
     setStill(value) {

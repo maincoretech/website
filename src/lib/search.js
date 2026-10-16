@@ -43,7 +43,6 @@ function build() {
   });
 
   const postModules = import.meta.glob('$lib/posts/*.md', { eager: true, query: '?raw' });
-  const newsModules = import.meta.glob('$lib/news/*.md', { eager: true, query: '?raw' });
   const docs = [];
 
   for (const [path, mod] of Object.entries(postModules)) {
@@ -52,14 +51,6 @@ function build() {
     const title = raw.match(/title:\s*(.+)/)?.[1] ?? slug;
     const text = plainText(raw);
     docs.push({ id: `blog/${slug}`, title, text, slug: `/blog/${slug}`, kind: 'blog' });
-  }
-
-  for (const [path, mod] of Object.entries(newsModules)) {
-    const slug = path.split('/').pop()?.replace('.md', '') ?? '';
-    const raw = mod.default;
-    const title = raw.match(/title:\s*(.+)/)?.[1] ?? slug;
-    const text = plainText(raw);
-    docs.push({ id: `news/${slug}`, title, text, slug: `/news/${slug}`, kind: 'news' });
   }
 
   idx.addAll(docs);

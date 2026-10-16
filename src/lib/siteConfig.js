@@ -11,7 +11,6 @@ export const siteConfig = {
   copyright: '© maincore',
   /** 主导航 */
   nav: [
-    { label: 'news', href: '/news' },
     { label: 'product', href: '/product' },
     { label: 'blog', href: '/blog' },
     { label: 'about', href: '/about' }

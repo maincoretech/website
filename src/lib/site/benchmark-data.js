@@ -6,10 +6,11 @@ export function median(values) {
 }
 
 const range = metric => metric.range.map(value => value.toFixed(3)).join('–');
+export const archiveRows = evidence => [...evidence.rows].reverse();
 const archiveChart = (evidence, id, label, unit = 'ms', digits = 2) => ({
   id, label, unit, digits,
   compactLabel: label.replace('28 MiB ', '').replace('2000 × 4 KiB', '区间读取'),
-  rows: evidence.rows.filter(row => row.encrypted === true && Number.isFinite(row.metrics[id]?.median)).map(row => ({
+  rows: archiveRows(evidence).filter(row => row.encrypted === true && Number.isFinite(row.metrics[id]?.median)).map(row => ({
     id: row.id, label: row.label, compactLabel: row.label.replace(' · 密码加密', '').replaceAll(' · ', ' '), version: row.version, pattern: row.pattern,
     value: row.metrics[id].median,
     detail: `${row.protection} · 进程统计范围 ${range(row.metrics[id])} ${unit} · ${row.note}`

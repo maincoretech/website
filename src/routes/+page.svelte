@@ -1,5 +1,5 @@
 <script>
-  import NewsList from '$lib/components/NewsList.svelte';
+  import ProductPage from './product/+page.svelte';
 </script>
 
-<NewsList />
+<ProductPage />

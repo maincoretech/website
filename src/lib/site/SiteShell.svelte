@@ -19,11 +19,11 @@
   let reducedMotion = $state(true);
   let showTop = $state(false);
   const scrollPositions = new Map();
-  const sections = siteConfig.nav.filter(section => section.label !== 'news');
+  const sections = siteConfig.nav;
   const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
-  const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? 'news');
-  const article = $derived(/^\/(blog|news)\/[^/]+/.test(path));
-  const detail = $derived(article || path === '/product/keine');
+  const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? 'product');
+  const article = $derived(/^\/blog\/[^/]+/.test(path));
+  const detail = $derived(article || path.startsWith('/product/'));
   const backHref = $derived(path.startsWith('/blog/') ? '/blog' : path.startsWith('/product/') ? '/product' : '/');
 
   function onScroll() {
@@ -52,7 +52,7 @@
       let id;
       try { id = decodeURIComponent(to.url.hash.slice(1)); } catch { id = to.url.hash.slice(1); }
       document.getElementById(id)?.scrollIntoView({ block: 'start' });
-    } else if (type !== 'enter' && type !== 'popstate') pageHeading?.focus({ preventScroll: true });
+    } else if (type !== 'enter' && type !== 'popstate') (pageHeading ?? panel)?.focus({ preventScroll: true });
   });
   onMount(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -64,7 +64,7 @@
 </script>
 
 <svelte:head>
-  <link rel="canonical" href={`https://${siteConfig.domain}${path === '/' ? '' : path}`} />
+  <link rel="canonical" href={`https://${siteConfig.domain}${path === '/' ? '/product' : path}`} />
 </svelte:head>
 
 <div class="site-shell" class:article-page={article} class:wide-list={path === '/' || path === '/blog'}>
@@ -83,10 +83,10 @@
       </nav>
     {/if}
     <main id="site-content" class="reading-panel content-surface" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
-      <div class="reading-heading" hidden={path === '/'}>
+      {#if detail}<div class="reading-heading">
         <span class="page-section" tabindex="-1" bind:this={pageHeading}>{$t('nav.' + region)}</span>
-        <a class="reading-back" href={backHref} aria-label={backHref === '/' ? $t('back.home') : '返回栏目'}>←</a>
-      </div>
+        {#if path !== '/' && path !== '/product'}<a class="reading-back" href={backHref} aria-label={backHref === '/' ? $t('back.home') : '返回栏目'}>←</a>{/if}
+      </div>{/if}
       <div class="route-content">{@render children()}</div>
     </main>
     <footer class="site-copyright">{siteConfig.copyright}</footer>

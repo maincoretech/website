@@ -280,6 +280,17 @@
   mask-image: linear-gradient(to bottom, #000 calc(100% - var(--reading-fade)), transparent);
   animation: reading-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.site-shell[data-tab-slide-copy] {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  background: none;
+  pointer-events: none;
+  visibility: hidden;
+  overflow: clip;
+  z-index: 1;
+}
+.site-shell[data-tab-slide-copy] * { animation: none !important; transition: none !important; }
 .reading-heading {
   display: flex;
   justify-content: space-between;
@@ -515,22 +526,6 @@
 }
 .content-surface .code-lines .number {
   color: #cbc6b1;
-}
-.content-surface .editor-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  padding: 8px 15px;
-  color: #a2b8c5;
-  font: 0.75rem var(--f-b);
-}
-.content-surface .editor-controls button {
-  border: 0;
-  background: transparent;
-  color: #b5cddb;
-  padding: 3px 0;
-  font-size: 0.75rem;
 }
 .content-surface .demo-caption {
   display: flex;

@@ -38,12 +38,12 @@
   --control-glow: var(--selection-glow);
 }
 
-:is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled):focus-visible {
+:is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled, .primary-action):focus-visible {
   background-color: var(--hover-wash);
 }
 
 @media (hover: hover) {
-  :is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled):hover {
+  :is(.site-shell, .site-shell .content-surface) :is(a, button):not(:disabled, .primary-action):hover {
     background-color: var(--hover-wash);
   }
 }

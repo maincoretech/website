@@ -45,15 +45,19 @@ test('archive aggregates and ranges reconcile with raw samples', () => {
 });
 
 test('controlled charts exclude plaintext, whole-memory reference and unequal opening work', () => {
+  const original = structuredClone(archives);
   const charts = archiveCharts(archives);
   assert.deepEqual(charts.primary.map(chart => chart.id), ['archive_mib', 'sequential_fresh_ms']);
   assert.deepEqual(charts.range.map(chart => chart.id), ['random_fresh_2000_4k_ms', 'random_reused_2000_4k_ms']);
   [...charts.primary, ...charts.range].forEach(chart => {
     assert.equal(chart.rows.length, 3);
+    assert.deepEqual(chart.rows.map(row => row.id), ['hakutaku', 'hexz-zstd-encrypted', 'hexz-lz4-encrypted']);
+    for (const row of chart.rows) assert.equal(row.value, archives.rows.find(source => source.id === row.id).metrics[chart.id].median);
     assert(chart.rows.every(row => row.id !== 'letsgal-lgpak'));
   });
   assert.equal(archives.coverage.length, 2);
   assert(archives.coverage.every(entry => entry.status.startsWith('未测')));
+  assert.deepEqual(archives, original);
 });
 
 test('controlled runs use matched nominal budgets, explicit reuse warm-up and rotated orders', () => {

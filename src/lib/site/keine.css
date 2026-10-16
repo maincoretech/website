@@ -26,8 +26,6 @@
 .keine-experience.content-surface .code-lines { font-size: clamp(13px, 1.4vw, 17px); line-height: 30px; }
 .keine-experience.content-surface .code-line { height: 30px; padding-inline: 0 12px; }
 .keine-experience.content-surface .line-number { flex-basis: 42px; font-size: 12px; }
-.keine-experience.content-surface .editor-controls { padding: 14px 0; border-top: 1px solid rgb(113 149 169 / 24%); font-size: .82rem; }
-.keine-experience.content-surface .editor-controls button { font-size: .82rem; min-height: 30px; }
 .keine-experience.content-surface .demo-caption { margin-top: 18px; }
 .keine-experience.content-surface .demo-caption small { font-size: .8rem; }
 .keine-experience.content-surface .project-note { margin: 40px 0 0; padding: 0; border: 0; }

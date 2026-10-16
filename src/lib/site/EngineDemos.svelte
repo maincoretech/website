@@ -27,16 +27,16 @@
     }
   ];
   const layers = [
-    { name: 'Core', caption: '故事的逻辑', text: '执行对白、分支与等待，维护确定性的剧本状态。', path: 'crates/core' },
+    { name: 'Core', caption: '脚本执行', text: '执行对白、分支与等待，维护确定性的剧本状态。', path: 'crates/core' },
     {
       name: 'Loader',
-      caption: '内容的入口',
+      caption: '资源加载',
       text: '解析 Eiyashou，读取配置与资源，把工程整理为可执行的 Program。',
       path: 'crates/loader'
     },
     {
       name: 'Engine',
-      caption: '原生的舞台',
+      caption: '渲染与交互',
       text: '将剧本状态交给 Bevy，呈现画面、声音和交互。',
       path: 'src/runtime · scene · render'
     }
@@ -44,7 +44,6 @@
   let exampleIndex = $state(0);
   let replay = $state(0);
   let complete = $state(true);
-  let paused = $state(false);
   let reducedMotion = $state(true);
   let mounted = $state(false);
   let demoVisible = $state(true);
@@ -58,7 +57,7 @@
   let example = $derived(examples[exampleIndex]);
   let layer = $derived(layers[layerIndex]);
   let codeLines = $derived(example.source.split('\n').map(tokens));
-  let playing = $derived(active && (view === 'all' || view === 'live') && demoVisible && pageVisible && !paused);
+  let playing = $derived(active && (view === 'all' || view === 'live') && demoVisible && pageVisible);
 
   function tokens(text) {
     return text
@@ -82,15 +81,7 @@
       exampleIndex = index;
       complete = reducedMotion;
       replay += 1;
-      paused = false;
     });
-  }
-  function togglePlayback() {
-    if (complete) {
-      complete = reducedMotion;
-      replay += 1;
-      paused = false;
-    } else paused = !paused;
   }
   onMount(() => {
     const preference = matchMedia('(prefers-reduced-motion: reduce)');
@@ -156,16 +147,6 @@
                 </div>{/each}
             </div>{/key}
           </div>
-          <div class="editor-controls">
-            <button
-                type="button"
-                class="playback-button"
-                disabled={reducedMotion}
-                onclick={togglePlayback}
-                aria-label={complete ? '重播代码动画' : paused ? '继续代码动画' : '暂停代码动画'}
-                >{complete ? '重播' : paused ? '继续' : '暂停'}</button
-              >
-          </div>
         </div>
         <div class="demo-caption">
           {#if standalone}<small>此处为语法演示，不在浏览器中运行引擎。</small>{/if}
@@ -205,7 +186,7 @@
             </div>
           </div>
           <div class="project-actions">
-            {#if !standalone}<a href="/product/keine">交互介绍 ↗</a>{/if}
+            {#if !standalone && intro}<a href="/product/keine">交互介绍 ↗</a>{/if}
             <a href={architectureHref}>架构笔记 ↗</a><a
               href={engine.link}
               target="_blank"

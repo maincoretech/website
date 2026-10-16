@@ -1,27 +1,49 @@
 # maincore.work
 
-maincore 官方站点，基于 SvelteKit + MDsveX 构建的静态博客。
+English | [简体中文](README.zh-CN.md)
 
-## 技术栈
+Source for the [maincore website](https://maincore.work): projects, benchmark comparisons, development articles, and an interactive water background.
 
-- **SvelteKit 2** + adapter-static（Brotli 预压缩）
-- **MDsveX** — Markdown 文章 + frontmatter
-- **MiniSearch** — 全文搜索（CJK 自定义分词）
-- **@fontsource** — 自托管字体（Lato / Oswald / Roboto Condensed / Inconsolata）
+## Stack
 
-## 开发
+- Svelte 5 and SvelteKit 2, prerendered with `adapter-static`
+- MDsveX for Markdown articles and embedded Svelte components
+- Three.js for the water scene and floating models
+- MiniSearch for full-text search, including Chinese text
+- Self-hosted fonts from `@fontsource`
+
+## Development
+
+Install Bun and Node.js, then run:
 
 ```bash
 bun install
 bun run dev
 ```
 
-## 构建
+## Checks and production build
 
 ```bash
+node --test tests/*.test.js
 bun run build
+bun run preview
 ```
+
+The static site is written to `build/`, including Brotli-precompressed assets. Deploy that directory to a static host. `preview` serves the production build locally.
+
+## Source layout
+
+- `src/routes/` — pages and route data
+- `src/lib/site/` — site layout, water scene, product demos, and benchmark views
+- `src/lib/posts/` — published Markdown articles
+- `src/lib/news/` — retired news sources, kept for reference but not published or indexed
+- `src/lib/products.js` — project catalog
+- `static/benchmarks/` — benchmark evidence
+- `static/posts/` — article assets and supporting data
+- `tests/` — water-motion, chart-scale, and benchmark-data checks
+
+Benchmark results describe the recorded versions and test conditions, not overall engine rankings. Keep the source measurements and methodology in sync when updating the charts.
 
 ## License
 
-MIT
+[MIT](LICENSE)

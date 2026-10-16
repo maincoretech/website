@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { motionDuration } from '$lib/motion.js';
-  let { region = 'news', still = false, paper = true } = $props();
+  let { region = 'product', still = false, paper = true } = $props();
   let host;
   let api = $state.raw(null);
   let status = $state('loading');

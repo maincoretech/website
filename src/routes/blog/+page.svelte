@@ -42,7 +42,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('nav.blog')} · maincore</title>
+  <title>maincore</title>
   <meta name="description" content={$t('pages.blog.subtitle')} />
 </svelte:head>
 <h1 class="site-page-title">{$t('pages.blog.subtitle')}</h1>

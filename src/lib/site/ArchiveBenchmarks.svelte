@@ -13,15 +13,12 @@
   <BenchmarkComparison data={[...charts.primary, ...charts.range]} columns={4} label="资源包体积、顺序读取与 4 KiB 区间读取" />
   <p class="scope mobile-scope">区间读取：2000 × 4 KiB · 暖文件系统<br />新会话每轮重开；复用会话先预热。</p>
   <p class="scope desktop-scope">实测差值不代表统计显著性或同等安全等级；缓存实现、块布局与总内存仍不同。</p>
-  <h4 class="desktop-scope">LGPAK · 独立参考</h4>
-  <p class="scope desktop-scope">整包载入内存的加密读器，不与上方按需读取排名；历史样本与原生打开成本见「测试条件与数据」。</p>
-  <p class="scope mobile-scope">安全与总内存不等价。LGPAK 单列，详见下方测试条件。</p>
+  <p class="scope mobile-scope">安全与总内存不等价，详见下方测试条件。</p>
 </section>
 
 <style>
   .archive-benchmarks { margin-top: 24px; padding-top: 18px; border-top: 1px solid #314b58; }
-  h3, h4 { margin: 0; color: #b7ccd8; font: 400 .95rem/1.5 var(--f-b); }
-  h4 { margin-top: 20px; font-size: .8rem; }
+  h3 { margin: 0; color: #b7ccd8; font: 400 .95rem/1.5 var(--f-b); }
   .scope { margin: 4px 0 12px; color: #8fa6b2; font: .68rem/1.5 var(--f-b); }
   .mobile-scope { display: none; }
   @media (max-width: 600px) {
