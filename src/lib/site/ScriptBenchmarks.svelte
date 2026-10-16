@@ -16,7 +16,7 @@
       <div>
         <dt>{metric.label}</dt>
         <dd><strong>{metric.median_ms.toFixed(3)}</strong><span>ms</span></dd>
-        <small>↓ 越低越好 · {metric.detail}</small>
+        <small>越低越好 · {metric.detail}</small>
         <small>进程中位数范围 {range(metric)} ms</small>
       </div>
     {/each}

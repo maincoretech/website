@@ -81,7 +81,9 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       flow: { value: flow },
       scrollWake: { value: scrollWake },
       viewportHeight: { value: 1 },
-      fadeDepthOffset: { value: 0 },
+      viewportWidth: { value: 1 },
+      surfaceBand: { value: new THREE.Vector2(.76, .8) },
+      surfaceCurve: { value: .04 },
       deep: { value: new THREE.Color(0x10242c) },
       light: { value: new THREE.Color(0x638898) }
     },
@@ -102,7 +104,9 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       varying vec2 waterPoint;
       varying float waterDepth;
       uniform float time;
-      uniform float fadeDepthOffset;
+      uniform vec2 surfaceBand;
+      uniform float viewportWidth;
+      uniform float surfaceCurve;
       uniform vec3 deep;
       uniform vec3 light;
       ${WATER_PHASE_GLSL}
@@ -114,15 +118,18 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
         float edge = 1. - smoothstep(.82, 1., radius);
         // Fade the distant water before the pool boundary becomes visible.
         // Camera depth follows every view; nearby props and waves stay crisp.
-        float fadeDepth = waterDepth / (1. + waterDepth * fadeDepthOffset);
-        float farFade = 1. - smoothstep(5.8, 10.5, fadeDepth);
+        float farFade = 1. - smoothstep(5.8, 10.5, waterDepth);
+        float screenY = 1. - gl_FragCoord.y / viewportHeight;
+        float side = gl_FragCoord.x / viewportWidth * 2. - 1.;
+        float arc = side * side * surfaceCurve;
+        float surfaceFade = smoothstep(surfaceBand.x + arc, surfaceBand.y + arc, screenY);
         float ripple = disturbance(waterPoint, time);
         ripple += scrollDisturbance(1. - gl_FragCoord.y / viewportHeight);
         float wave = sin(waterPhase(waterPoint, time) + ripple * 1.4);
         float sheen = pow(max(0., wave), 14.) * .075;
         float reflection = exp(-pow((p.x - .08 + sin(p.y * 16. - time * .18) * .035) * 5., 2.));
         vec3 colour = mix(deep, light, .08 + reflection * .16 + sheen * reflection + abs(ripple) * .09);
-        gl_FragColor = vec4(colour, edge * farFade * .94);
+        gl_FragColor = vec4(colour, edge * farFade * surfaceFade * .94);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }
@@ -237,10 +244,6 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     camera.position.copy(EYE);
     direction.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     camera.lookAt(direction.add(camera.position));
-    // Shift only the water fade up by 4% of the viewport (0.08 NDC).
-    // On the horizontal water plane, inverse depth is linear in screen height.
-    waterMaterial.uniforms.fadeDepthOffset.value = .08 * Math.cos(pitch)
-      / (camera.projectionMatrix.elements[5] * (EYE.y - .012));
     // Project onto the same current-camera screen band used by gl_FragCoord.
     // Reuse one matrix/vector: five height samples per prop, no extra render loop.
     camera.updateMatrixWorld();
@@ -248,7 +251,11 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     const smoothing = !waterEnabled() ? 1 : 1 - Math.exp(-dt * 14);
     for (const prop of floatingProps) {
       const { home, angle } = prop.userData;
-      sampleFloat(home.x, home.z, waterTime, pose, rippleField, flow, true, scrollHeight);
+      if (waterEnabled()) {
+        sampleFloat(home.x, home.z, waterTime, pose, rippleField, flow, true, scrollHeight);
+      } else {
+        Object.assign(pose, { x: home.x, y: home.y, z: home.z, slopeX: 0, slopeZ: 0, yaw: 0 });
+      }
       prop.position.x += (pose.x - prop.position.x) * smoothing;
       prop.position.y += (pose.y - prop.position.y) * smoothing;
       prop.position.z += (pose.z - prop.position.z) * smoothing;
@@ -337,26 +344,67 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     height = Math.max(1, host.clientHeight);
     renderer.setSize(width, height);
     waterMaterial.uniforms.viewportHeight.value = renderer.domElement.height;
+    waterMaterial.uniforms.viewportWidth.value = renderer.domElement.width;
     camera.aspect = width / height;
     camera.fov = width < 760 ? 66 : 58;
     camera.updateProjectionMatrix();
-    // Bring the paper closer/lower on the water and reduce its footprint,
-    // reserving more of the composition for reading above it.
-    const distance = height < 650 ? 5.4 : height < 800 ? 5.45 : 5.05;
-    // On narrow screens, lower every prop toward the bottom navigation while
-    // keeping its apparent size; leave the reading mask and water fade alone.
-    const placementScale = width < 760 ? .66 : .9;
-    const propDistance = distance * placementScale;
+    // Fit paper between the actual reading edge and navigation, including short
+    // screens. Every section shares the same projected centre.
+    const viewport = host.getBoundingClientRect();
+    const shell = host.parentElement;
+    const readingPanel = shell.querySelector('.reading-panel');
+    const tabs = shell.querySelector('.site-navigation');
+    // The scene can finish fading out after an article has removed its tabs.
+    if (!readingPanel || !tabs) return;
+    const reading = readingPanel.getBoundingClientRect();
+    const navigation = tabs.getBoundingClientRect();
+    const top = reading.bottom - viewport.top + 2;
+    const bottom = navigation.top - viewport.top - 14;
+    const targetY = (top + bottom) / 2;
+    const targetX = width / 2;
+    const layoutCamera = camera.clone();
+    const ray = new THREE.Vector3();
+    const centre = new THREE.Vector3();
+    const corner = new THREE.Vector3();
+    let paperTop = Infinity;
     for (const [id, prop] of Object.entries(props)) {
       const angle = VIEWS[id];
-      // Every prop uses the same camera-centred anchor, distance and scale.
-      prop.userData.home.set(
-        EYE.x + Math.sin(angle) * propDistance,
-        .025,
-        EYE.z - Math.cos(angle) * propDistance
-      );
-      prop.scale.setScalar((height < 650 ? .8 : .88) * placementScale);
+      layoutCamera.position.copy(EYE);
+      layoutCamera.lookAt(EYE.x + Math.sin(angle) * Math.cos(.015), EYE.y + Math.sin(.015), EYE.z - Math.cos(angle) * Math.cos(.015));
+      layoutCamera.updateMatrixWorld();
+      ray.set(targetX / width * 2 - 1, 1 - targetY / height * 2, .5).unproject(layoutCamera).sub(EYE).normalize();
+      prop.rotation.set(0, -angle, 0);
+      prop.scale.setScalar(.79);
+      const box = prop.geometry.boundingBox;
+      box.getCenter(centre);
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const distance = (.025 + centre.y * prop.scale.y - EYE.y) / ray.y;
+        prop.position.copy(EYE).addScaledVector(ray, distance);
+        prop.position.y = .025;
+        prop.updateMatrixWorld();
+        let left = Infinity, right = -Infinity, upper = Infinity, lower = -Infinity;
+        for (let i = 0; i < 8; i++) {
+          corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z);
+          prop.localToWorld(corner).project(layoutCamera);
+          const x = (corner.x + 1) * width / 2, y = (1 - corner.y) * height / 2;
+          left = Math.min(left, x); right = Math.max(right, x);
+          upper = Math.min(upper, y); lower = Math.max(lower, y);
+        }
+        const fit = Math.min(1, (navigation.width / 3 - 24) / (right - left), (bottom - top) / (lower - upper));
+        if (fit >= .999 || attempt === 3) {
+          paperTop = Math.min(paperTop, upper);
+          break;
+        }
+        prop.scale.multiplyScalar(Math.max(.1, fit * .96));
+      }
+      prop.userData.home.copy(prop.position);
     }
+    // Extend the faint upper edge behind the last lines of text. Fade only the
+    // water material, never the paper, and do not follow its per-frame bob.
+    if (!Number.isFinite(paperTop)) paperTop = targetY;
+    waterMaterial.uniforms.surfaceBand.value.set((paperTop - 48) / height, (paperTop + 58) / height);
+    waterMaterial.uniforms.surfaceCurve.value = Math.min(54, Math.max(18, width * .045)) / height;
+    host.dataset.waterBand = [paperTop - 48, paperTop + 58].map(value => value.toFixed(1)).join(',');
     moveCamera(false);
   }
   function pointerMove(event) {

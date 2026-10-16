@@ -6,7 +6,6 @@
 .site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
 .site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
 .site-shell .route-content { min-width: 0; }
-.site-shell .detail-reading { bottom: 126px; }
 .site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #a2c4d6; font: 1.4rem var(--f-n); }
 .site-page-title { margin: 6px 0 16px; font: 400 1.65rem/1.4 var(--f-h); color: #bfd3de; }
 .site-intro { margin: 10px 0 24px; color: #9fb7c4; font-size: .88rem; }

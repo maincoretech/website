@@ -1,13 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { comparisonScale, rankedMeasurements } from '../src/lib/site/benchmark-scale.js';
+import { comparisonScale, comparisonSeries, seriesMeasurements } from '../src/lib/site/benchmark-scale.js';
 const rows = values => values.map(value => ({ value }));
 
-test('ranking is ascending, preserves ties and inputs, and omits missing values', () => {
-  const input = rows([8, 2, null, 2, NaN, 0, -1]);
+test('shared legend deduplicates identities and preserves first-seen order', () => {
+  const input = [{ rows: [
+    { id: 'a', label: 'A', pattern: 'dots', value: 8 },
+    { id: 'b', label: 'B', value: 2 },
+    { id: 'missing', value: null },
+  ] }, { rows: [
+    { id: 'b', label: 'B', value: 0 },
+    { id: 'c', label: 'C', value: 2 },
+    { id: 'invalid', value: -1 },
+  ] }];
   const before = structuredClone(input);
-  assert.deepEqual(rankedMeasurements(input).map(({ value, rank }) => [value, rank]), [[0, 1], [2, 2], [2, 2], [8, 4]]);
+  const series = comparisonSeries(input);
+  assert.deepEqual(series.map(row => row.id), ['a', 'b', 'c']);
+  assert.equal(series[0].pattern, 'dots');
   assert.deepEqual(input, before);
+});
+
+test('metrics follow shared identity order without inventing missing values or ranks', () => {
+  const series = ['a', 'b', 'c'].map(id => ({ id }));
+  const input = [{ id: 'c', value: 2 }, { id: 'b', value: NaN }, { id: 'a', value: 0 }];
+  const before = structuredClone(input);
+  assert.deepEqual(seriesMeasurements(input, series), [{ id: 'a', value: 0 }, { id: 'c', value: 2 }]);
+  assert.deepEqual(input, before);
+  assert.deepEqual(seriesMeasurements([{ id: 'c', value: 8 }, { id: 'a', value: 8 }], series).map(row => row.id), ['a', 'c']);
 });
 
 test('ordinary ranges stay linear and extremes compress without changing data', () => {

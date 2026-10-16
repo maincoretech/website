@@ -149,7 +149,7 @@
 .site-viewport {
   position: relative;
   height: 100svh;
-  min-height: 560px;
+  min-height: 360px;
   isolation: isolate;
   overflow: hidden;
 }
@@ -222,14 +222,12 @@
 }
 .site-navigation {
   position: absolute;
-  bottom: 58px;
+  bottom: 50px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: min(1100px, calc(100% - 64px));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 .site-navigation a {
   display: flex;
@@ -263,7 +261,7 @@
   position: absolute;
   z-index: 1;
   top: 100px;
-  bottom: max(124px, calc(22% + 12px));
+  bottom: max(152px, calc(22% + 4px));
   inset-inline: 0;
   margin-inline: auto;
   width: min(680px, calc(100% - 64px));

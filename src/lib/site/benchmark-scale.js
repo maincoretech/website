@@ -1,15 +1,23 @@
-// Presentation only: keep measurements and ordering unchanged. log1p retains
-// a real zero and is invariant to unit changes when scaled by the smallest value.
-export function rankedMeasurements(rows) {
-  const sorted = rows.filter(row => Number.isFinite(row.value) && row.value >= 0)
-    .map(row => ({ ...row })).sort((a, b) => a.value - b.value);
-  let rank = 0;
-  return sorted.map((row, index) => {
-    if (index === 0 || row.value !== sorted[index - 1].value) rank = index + 1;
-    return { ...row, rank };
-  });
+// One identity/order per comparison group, independent of metric values.
+export function comparisonSeries(charts) {
+  const series = new Map();
+  for (const chart of charts) {
+    for (const row of chart.rows) {
+      if (!Number.isFinite(row.value) || row.value < 0 || series.has(row.id)) continue;
+      const { id, label, compactLabel, pattern } = row;
+      series.set(id, { id, label, compactLabel, pattern });
+    }
+  }
+  return [...series.values()];
 }
 
+export function seriesMeasurements(rows, series) {
+  const values = new Map(rows.filter(row => Number.isFinite(row.value) && row.value >= 0).map(row => [row.id, row]));
+  return series.flatMap(item => values.has(item.id) ? [{ ...values.get(item.id) }] : []);
+}
+
+// log1p retains a real zero and is invariant to unit changes when scaled by the
+// smallest positive value. It never changes the underlying measurements.
 export function comparisonScale(rows, forceLinear = false) {
   const values = rows.map(row => row.value).filter(value => Number.isFinite(value) && value >= 0);
   const positive = values.filter(value => value > 0);
