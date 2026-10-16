@@ -16,7 +16,7 @@
       headings = [...body.querySelectorAll('h2, h3')].map((node, index) => {
         node.id ||= `article-section-${index}`;
         return { id: node.id, text: node.textContent, nested: node.tagName === 'H3' };
-      });
+      }).filter((heading) => !heading.nested);
     });
     return () => cancelled = true;
   });
@@ -34,12 +34,11 @@
 <article class="site-article">
   <header class="article-heading">
     <h1>{meta.title ?? articleKey}</h1>
-    {#if meta.description}<p class="article-description">{meta.description}</p>{/if}
     <div class="article-meta-row"><span>{meta.author ?? ''}{meta.author && date ? ' · ' : ''}<time datetime={date || undefined}>{date}</time></span></div>
   </header>
-  {#if headings.length}
+  {#if headings.length >= 4}
     <div class="article-toc"><Disclosure label={$t('sidebar.toc')}><nav aria-label={$t('sidebar.toc')}>
-      {#each headings as heading}<button class:nested={heading.nested} onclick={() => jump(heading.id)}>{heading.text}</button>{/each}
+      {#each headings as heading}<a href={`#${heading.id}`} onclick={(event) => { event.preventDefault(); jump(heading.id); }}>{heading.text}</a>{/each}
     </nav></Disclosure></div>
   {/if}
   <div class="section-body article-prose" bind:this={body}>{@render children()}</div>

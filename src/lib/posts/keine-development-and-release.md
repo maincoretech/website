@@ -2,16 +2,16 @@
 title: Kēne 开发与发布指南
 date: 2026-10-08
 author: maincore
-description: 给后续维护者的上手指南：模块职责、开发验收、试玩导出、正式游戏打包与当前 CI 边界
+description: 本机开发、测试、试玩导出与正式发行
 priority: 3
 category: tech
 ---
 
-这篇文章面向接手 Kēne 的开发者，也解释游戏作者如何从工程得到可运行的发行包。语言本身的写法见 [Eiyashou v2.0 参考](/blog/eiyashou)。
+本文介绍 Kēne 的开发、测试和打包流程。脚本写法见 [Eiyashou v2.0 参考](/blog/eiyashou)。
 
-本文对应 **Kēne 0.13.1、Eiyashou 2.0，截至 2026-10-08 的本地实现**。源码链接固定到已提交基线 `5ecdcc8c6ec5660784c76a212b9886befedd15b7`；尚未提交的 Android 工作单独标注为实验，不代表已发布。维护者要做的检查不等于系统已经自动完成，workflow 配置也不等于某次构建、上传或真机验收已经成功。
+本文记录 **Kēne 0.13.1 / Eiyashou 2.0，2026-10-08** 的实现，不代表最新版。源码链接固定到 `5ecdcc8c6ec5660784c76a212b9886befedd15b7`；Android 部分是当时尚未提交的实验。以下流程说明如何操作，不表示相关构建或设备测试已经通过。
 
-## 先选对流程
+## 选择流程
 
 | 目的             | 入口                                                 | 结果                                 | 是否使用发行密钥   |
 | ---------------- | ---------------------------------------------------- | ------------------------------------ | ------------------ |
@@ -24,7 +24,7 @@ category: tech
 
 实现入口：[Editor Build](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/crates/editor/src/workspace/build.rs)、[publisher](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/src/publisher.rs)。
 
-## 接手时先看什么
+## 开始修改前
 
 先检查当前分支和未提交改动，再决定在哪里工作：
 
@@ -35,13 +35,13 @@ git status --short
 git diff
 ```
 
-不要覆盖作者未保存的工程，也不要通过 reset、clean 或重新迁移清掉当前修改。贡献通常使用独立分支；共享文件由集成维护者统一合入。涉及已有工作区时，先确认改动的所有者和范围。
+保留未提交修改和作者工程，确认改动归属后再动手。贡献使用独立分支，共享文件由维护者合入。
 
-阅读顺序是根目录 `AGENTS.md`，然后 `dev/docs/architecture.md`、`testing.md`，最后对应功能指南：剧本看 `language.md`，Editor 看 `editor.md`，打包看 `release.md`，兼容输入看 `compatibility.md`。
+先读根目录 `AGENTS.md`、`dev/docs/architecture.md` 和 `testing.md`。功能细节分别见 `language.md`、`editor.md`、`release.md`、`compatibility.md`。
 
 Kēne 的目标是独立、够用的视觉小说引擎。LetsGal 是迁移输入和创作能力的参考；不要求复制它的全部功能。WebGAL 适配已冻结，只维护安全与明确回归，不增加新语义。
 
-## 模块应该改在哪里
+## 模块分工
 
 ```text
 crates/core       类型、Program / State、表达式与确定性执行
@@ -63,7 +63,7 @@ Loader 依赖 Core，Engine 依赖 Loader / Core；Core、Loader 和 authoring �
 
 新增语言能力通常先定义 Core 语义，再实现 Loader 解析、诊断，最后接入 Runtime 和 Editor。命令参数表由 Loader 提供，Inspector 与补全复用它，避免另写一套不一致的参数定义。
 
-需要持续保持的合同：
+修改时需保持以下约束：
 
 - 1920×1080 设计空间与 viewport 转换只有一个 owner，场景、UI、对话的合成关系不能随意变化。
 - 内容通过有序只读挂载读取，路径不能逃逸挂载根。
@@ -73,9 +73,9 @@ Loader 依赖 Core，Engine 依赖 Loader / Core；Core、Loader 和 authoring �
 - 正式游戏数据写入稳定 `project.id` 对应的平台用户目录，不能写进只读发行目录。
 - 新 feature、编译 IR、协议或持久化格式变动必须核对对应版本与拒绝路径；引擎版本、EYS 版本和存档版本不必一起递增。
 
-完整合同见 [架构指南](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/dev/docs/architecture.md)。
+完整约束见 [架构指南](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/dev/docs/architecture.md)。
 
-## 本机开发：先启动一套匹配的 Editor 和 Engine
+## 本机开发
 
 仓库固定 Rust **1.97.1**，Rust edition 为 2024，Bevy 为 **0.19.1**；rustup 会按 `rust-toolchain.toml` 选择工具链。默认工具链组件包含 rustfmt 与 Clippy。系统还需要对应平台的 C/C++ 编译工具和 SDK。
 
@@ -87,7 +87,7 @@ Loader 依赖 Core，Engine 依赖 Loader / Core；Core、Loader 和 authoring �
 
 Linux 与 Windows 的具体 CI 安装配置以 [setup-video action](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/.github/actions/setup-video/action.yml) 为准。`video-ffmpeg` 需要 FFmpeg 开发库；Editor 导入音视频使用的 FFmpeg 可执行程序是另一项需求，不能互相替代。
 
-Linux 编译 Vulkan 与原生 OpenGL/GLES，Windows 编译 DX12、Vulkan 与原生 OpenGL；可用性取决于驱动、features 与 limits，不保证所有旧显卡能运行。现有局部 Bevy vendor patch 保留上游许可，用于窗口循环和原生 display handle；不要在升级时无意覆盖。构建包含 backend、启动出现窗口与真实画面/输入验收是独立关卡。
+Linux 编译 Vulkan 与原生 OpenGL/GLES，Windows 编译 DX12、Vulkan 与原生 OpenGL；可用性取决于驱动、features 与 limits，不保证所有旧显卡能运行。现有局部 Bevy vendor patch 保留上游许可，用于窗口循环和原生 display handle；不要在升级时无意覆盖。编译通过后仍需检查实际画面和输入。
 
 下面命令都在 **Kēne 仓库根目录**执行。以 macOS 为例：
 
@@ -97,7 +97,7 @@ cargo build --locked -p keine-editor --bin editor
 KEINE_ENGINE="$PWD/target/debug/keine" target/debug/editor tests/fixtures/native-smoke
 ```
 
-Editor 只启动预构建 Engine，不在编辑交互里运行 Cargo。`KEINE_ENGINE` 指定要使用的二进制，可避免误用 PATH 或旧 app 中的版本。改了 Engine 后，要构建新二进制并重启 Preview；改了 Editor 后，要重新启动 Editor。不要把旧进程的现象当成新构建的结果。
+Editor 启动预构建的 Engine，不自动运行 Cargo。用 `KEINE_ENGINE` 指定二进制。修改 Engine 后重新构建并重启 Preview；修改 Editor 后重新构建并启动 Editor。
 
 macOS 不需要视频时可省略 `video-native`；Linux / Windows 需要视频时使用 `video-ffmpeg` 并准备 SDK。开发中的常见快捷入口是 `cargo editor <project>`、`cargo validate <project>` 和 `cargo dev <project>`。
 
@@ -109,11 +109,11 @@ cargo run --locked -p keine --bin keine --features hot-reload,video-native -- de
 
 `tests/fixtures/native-smoke` 是最小回归工程，`tests/fixtures/native-benchmark` 提供真实负载；仓库也已包含 `projects/tday` 试玩作品及其 shiftz 素材版权说明。测试自有作品时，另行准备作者工程，并保持其原始来源只读。
 
-## 作者工程、资源和迁移的实际模型
+## 工程与迁移
 
 原生工程的核心文件是 `config.yaml`、`assets.yaml`、`characters.yaml`，以及 `scripts/**/*.shou`。`objects.yaml` 按工程需要使用。场景 ID 在整个工程内唯一，执行入口由 `script.entry` 指定；章节之间通过脚本控制流连接，不按文件名顺序播放。
 
-Text、Blocks 与 Inspector 修改同一个源文档。保存会格式化，并检查外部冲突；中文等 IME 组合输入确认后，才发布相关分析结果。测试编辑功能时必须覆盖“输入 → 保存 → 关闭 → 重开”，仅看到一次屏幕变化不算持久化成功。
+Text、Blocks 与 Inspector 共用源文档；保存时格式化并检查外部冲突，IME 提交后才更新分析结果。编辑测试需覆盖输入、保存、关闭和重开。
 
 Characters 保存姓名、颜色与头像/表情预设，Assets 管理真实清单；预设不会隐式重写剧本或自动纳入发行白名单。Blocks 的插入与重排最终写回源文档，Inspector 修改也必须保留作者语义。关闭有修改的工程时应选择 Cancel、Save and Close 或 Discard；保存失败不能移除窗口或丢失修改。
 
@@ -130,9 +130,9 @@ cargo validate /path/to/new-native-project
 
 资源估算卡显示的只是登记资源大小，不能当作最终包体：Engine、编译剧本、索引、封装和第三方运行库另有开销。未引用资源也可能仍在登记集合中；删除前检查引用和作者意图。
 
-## 每次改动怎样验收
+## 测试
 
-基础门禁：
+基础检查：
 
 ```sh
 cargo fmt --all -- --check
@@ -163,11 +163,11 @@ FFmpeg 路径改动需要 SDK，并检查 `video-ffmpeg`；不要只测试默认
 | 打包            | 从发行目录独立启动、动态库完整、用户数据位置、更新与许可文件               |
 | 性能            | 同机器、同输入、同 release 配置的前后数据，记录 CPU / RSS / 帧时与异常操作 |
 
-性能结论需要原始命令与日志。关注 p99、最大帧时和超出屏幕刷新预算的帧数，平均 FPS 不能证明不掉帧。窗口切换与真实负载停顿分别标记。使用现有 bench、`cargo perf` 与 benchmark 包，不为一次验收增加 GUI 截图接口或新的框架。
+性能测试保留命令与日志，记录 p99、最大帧时和超出刷新预算的帧数，并区分窗口切换与负载停顿。使用现有 bench、`cargo perf` 或 benchmark 包。
 
-独立性能包已提供真实负载与采样入口，但跨平台硬件性能、多显示器和 Windows / Linux 原生 GUI 与完整剧情仍需独立验收。macOS 的已有目测不能外推到其他平台。运行、包装、正式签名/公证分别记录证据。
+性能包提供负载与采样工具；各平台硬件、多显示器、GUI 和完整剧情仍需分别测试。运行、打包、签名和公证的结果也分别记录。
 
-## 依赖与许可也是开发门禁
+## 依赖与许可
 
 当前 CI 固定 cargo-deny **0.20.2**。需要本地工具时：
 
@@ -184,7 +184,7 @@ Kēne 原创代码和文档采用 DL1，贡献默认使用相同条款；第三�
 
 `NOTICE` 只是一份概览。正式发行时，维护者仍要补齐实际依赖的完整版权与许可文本，满足 MPL 的源码获取及修改源码义务，核对所分发 FFmpeg / codec 的实际许可。cargo-deny 检查声明，不证明整个安装包已经满足所有发行义务。字体来源和历史许可文本的验证边界见仓库 [发布指南](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/dev/docs/release.md)。
 
-## 临时试玩：Editor 的 Build view
+## 导出试玩
 
 在 Editor 侧栏打开 Build，点击 **Export game…**，选择工程外的父目录。它生成新的 `<工程名>-playtest` 文件夹；重名时追加数字，成功后可 Play 或 Open folder。
 
@@ -192,7 +192,7 @@ Kēne 原创代码和文档采用 DL1，贡献默认使用相同条款；第三�
 
 当前只支持原生 Eiyashou 工程、本地资源与当前平台。无需生成 publisher key，也不会做正式 Hakutaku 加密打包。试玩副本包含可读源码，适合内部测试；对外正式发行继续走下一节。
 
-## 正式游戏发行：bundle 做了什么
+## 正式打包
 
 先把正式副本中的独立图片与音频规范化为 WebP / Ogg Opus，再验证。开发阶段能播放 PNG、WAV 等格式，不代表发行打包接受它们；`bundle` 不替你转换所有存量资源。
 
@@ -226,7 +226,7 @@ my-game/
 
 仅需资源包时使用 `cargo pack <project>`；它不生成完整可运行游戏，也不能代替 `bundle`。publisher runner 与客户端构建目录分开，避免 Windows 在运行中的 executable 被子构建替换。
 
-### 三种身份不要混淆
+### 身份与密钥
 
 | 项                          | 用途                     | 谁保管 / 放在哪里                            |
 | --------------------------- | ------------------------ | -------------------------------------------- |
@@ -260,7 +260,7 @@ bash dev/scripts/bundle-macos.sh /path/to/game "My Game" com.example.my-game
 
 两项都设置时，脚本进行 hardened runtime 签名、提交公证、staple / validate ticket 和 Gatekeeper 检查；只有证书时只签名。ad hoc 验证通过不等于正式分发通过。脚本依据见 [sign-macos.sh](https://github.com/maincoretech/keine/blob/5ecdcc8c6ec5660784c76a212b9886befedd15b7/dev/scripts/sign-macos.sh)，平台要求见 [Apple 公证文档](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)。
 
-## 当前 CI 与 Release 自动化
+## CI 与自动发布
 
 | Workflow              | 触发方式                      | 结果                                                     |
 | --------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -310,9 +310,9 @@ jobs:
 
 该工作流目前只生成 Linux x64 包，不替代 macOS / Windows 发行。身份只在 runner 临时目录恢复，始终清理后再上传；缓存不包含游戏 checkout、成品发行包或身份。输出附 `KEINE-PROVENANCE.txt`，记录游戏 SHA、Engine SHA、工具链、features 与 workflow run，方便追溯。它上传的是 Actions artifact，不会自动给游戏创建 GitHub Release。
 
-## 维护者怎样发布一个引擎版本
+## 发布引擎版本
 
-下面是维护者需要完成的操作，不能假定当前 workflow 已自动执行：
+发布前由维护者完成以下检查：
 
 1. 确定发行提交与变更范围，更新 workspace 版本、Cargo.lock 中本地包版本以及 README 的当前版本。EYS、IR、协议和存档版本按各自实际格式变更处理。
 2. 跑本机门禁与受影响 features，推送后核对该 SHA 的平台 CI；保留失败原因和未验收项，不能拿前一次绿色结果替代。
@@ -333,19 +333,8 @@ bash dev/scripts/package-authoring-macos.sh target/release/editor target/release
 
 Windows / Linux 已有完整解压使用的 Editor ZIP，但不是安装器；打包成功也不等于独立机器上的完整运行验收。
 
-## Android：当前本地实验边界
+## Android 实验
 
 本地工作区正在接入独立 ARM64 Engine，使用 Android NativeActivity、横屏与 Vulkan，目标 Android 8 / API 26 起；此部分尚未提交，不属于上述桌面下载承诺。当前不支持视频、Editor、publisher 或桌面文件选择器；Core、Loader 与 Save 格式继续共用。
 
 实验构建入口为 `dev/scripts/build-android.sh`，依赖 SDK / NDK、JDK、Gradle 与 cargo-ndk，产出 debug 签名测试 APK，不是正式游戏安装包。APK 只含引擎，测试工程从 Activity 私有 `files/game/` 读取，独立用户数据放在 `files/userdata/<project.id>/`。Hakutaku 游戏打包、正式签名、安装/更新与手机触摸、输入法、音频和 GPU 真机验收均不可视为完成；具体步骤以本地 `dev/docs/android.md` 为准。
-
-## 谁负责什么
-
-| 角色       | 要做的事                                                                                        | 完成标准                                       |
-| ---------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| 游戏作者   | 准备稳定 project.id、内容与资源授权；转换素材；完整剧情、分支与视听验收；私下备份 publisher key | 作者确认作品内容，正式工程校验通过，密钥可恢复 |
-| 功能开发者 | 修改正确的 owner，补必要回归，验证相关 feature 与交互，解释接口/格式变化                        | 可审查的 diff、测试结果和明确的未测项          |
-| 集成维护者 | 维护 shared 文件、依赖、文档、版本；核对提交与 CI，集成贡献                                     | 没有覆盖无关修改，结果对应准确 SHA             |
-| 发行维护者 | 构建、完整第三方许可、平台库、签名/公证、安装与更新检查；分发配套 Engine 和资源                 | 真正安装运行通过、无私有身份、来源与限制可追溯 |
-
-作者不需要每次手动拆分运行时密钥，也不用为正常游戏更新改变发行流程。开发者需要保证这些步骤持续有效，并在实现边界变化时更新文档。编译成功、单元测试通过、目测通过、正式发行通过，是四种不同证据。

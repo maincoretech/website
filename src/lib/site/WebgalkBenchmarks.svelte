@@ -11,7 +11,8 @@
   <p class="scope">hexz 后端 · 独立检查点 · 不混入历史引擎排行</p>
   <BenchmarkComparison data={native} columns={2} label="WebGAL_k 四种原生负载" />
   <p class="scope">100% CPU = 一个逻辑核 · RSS 含 WebKit · GPU / 呈现帧间隔未测</p>
-  <h3>WebGAL_k · 内置资源读器</h3>
+  <h3>WebGAL_k · 内置资源读器 · 加密</h3>
+  <p class="scope">旧版独立参考 · 仅比较同一读器的加密配置，不与下方新协议混排</p>
   <BenchmarkComparison data={embedded} label="WebGAL_k 内置 hexz 读器" />
 </section>
 

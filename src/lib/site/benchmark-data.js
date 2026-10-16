@@ -8,8 +8,9 @@ export function median(values) {
 const range = metric => metric.range.map(value => value.toFixed(3)).join('–');
 const archiveChart = (evidence, id, label, unit = 'ms', digits = 2) => ({
   id, label, unit, digits,
-  rows: evidence.rows.filter(row => Number.isFinite(row.metrics[id]?.median)).map(row => ({
-    id: row.id, label: row.label, version: row.version, pattern: row.pattern,
+  compactLabel: label.replace('28 MiB ', '').replace('2000 × 4 KiB', '区间读取'),
+  rows: evidence.rows.filter(row => row.encrypted === true && Number.isFinite(row.metrics[id]?.median)).map(row => ({
+    id: row.id, label: row.label, compactLabel: row.label.replace(' · 密码加密', '').replaceAll(' · ', ' '), version: row.version, pattern: row.pattern,
     value: row.metrics[id].median,
     detail: `${row.protection} · 进程统计范围 ${range(row.metrics[id])} ${unit} · ${row.note}`
   }))
@@ -19,14 +20,12 @@ export function archiveCharts(evidence) {
   return {
     primary: [
       archiveChart(evidence, 'archive_mib', '资源包体积', 'MiB'),
-      archiveChart(evidence, 'open_ms', '原生打开耗时'),
-      archiveChart(evidence, 'sequential_ms', '28 MiB 完整读取')
+      archiveChart(evidence, 'sequential_fresh_ms', '28 MiB 完整读取 · 新会话')
     ],
     range: [
-      archiveChart(evidence, 'first_2000_4k_ms', '2000 × 4 KiB · 首次轨迹'),
-      archiveChart(evidence, 'random_2000_4k_ms', '2000 × 4 KiB · 十轮中位数')
-    ],
-    full: [archiveChart(evidence, 'random_2000_full_file_ms', '2000 次随机整文件读取')]
+      archiveChart(evidence, 'random_fresh_2000_4k_ms', '2000 × 4 KiB · 新会话'),
+      archiveChart(evidence, 'random_reused_2000_4k_ms', '2000 × 4 KiB · 复用会话')
+    ]
   };
 }
 
@@ -48,12 +47,12 @@ export function embeddedCharts(evidence) {
     { id: 'sequential_ms', label: '内置 hexz · 28 MiB 完整读取', unit: 'ms', digits: 2 },
     { id: 'random_2000_full_file_ms', label: '内置 hexz · 2000 次整文件读取', unit: 'ms', digits: 2 }
   ];
-  return definitions.map(chart => ({ ...chart, rows: evidence.embedded.map((row, i) => {
-    const [, codec, encrypted] = row.variant.split('/');
+  return definitions.map(chart => ({ ...chart, rows: evidence.embedded.filter(row => row.variant.endsWith('/true')).map((row, i) => {
+    const [, codec] = row.variant.split('/');
     return {
-      id: `embedded-${i}`, label: `${codec.toUpperCase()} · ${encrypted === 'true' ? '密码加密' : '明文'}`,
+      id: `embedded-${i}`, label: `${codec.toUpperCase()} · 密码加密`,
       version: 'WebGAL_k 内置读器 · Rust 1.96 opt-level=z', value: row.metrics[chart.id].median,
-      pattern: ['solid', 'dots', 'diagonal', 'cross'][i], detail: encrypted === 'true' ? '打开耗时包含密码派生' : '不含密码派生'
+      pattern: ['cross', 'vertical'][i], detail: '打开耗时包含密码派生；仅比较内置读器的加密配置'
     };
   }) }));
 }

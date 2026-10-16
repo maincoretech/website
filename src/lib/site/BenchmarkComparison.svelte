@@ -31,23 +31,23 @@
     {#each charts as chart}
       <figure>
         <figcaption>
-          <span class="comparison-title">{chart.label}</span>
-          <span class="comparison-direction">↓ 越低越好</span>
-          <span class="comparison-scale">0 — {chart.scale.max.toFixed(chart.digits)} {chart.unit}
+          <span class="comparison-title"><span class="full-title">{chart.label}</span><span class="compact-title">{chart.compactLabel ?? chart.label}</span></span>
+          <span class="comparison-direction"><span class="mobile-unit">{chart.unit} · </span>↓ 越低越好</span>
+        </figcaption>
+        <div class="comparison-scale" class:has-toggle={chart.scale.compressible}><span class="scale-bounds">0 — {chart.scale.max.toFixed(chart.digits)} {chart.unit}</span>
             {#if chart.scale.compressible}
-              · {chart.scale.compressed ? '对数压缩 · 非线性' : '线性刻度'}
+              <span class="scale-separator"> · </span>{chart.scale.compressed ? '对数压缩 · 非线性' : '线性刻度'}
               <button type="button" class="scale-toggle"
                 aria-label={`${chart.label}：切换为${chart.scale.compressed ? '线性刻度' : '对数压缩'}`}
                 onclick={() => linearCharts = chart.scale.compressed ? [...linearCharts, chart.id] : linearCharts.filter(id => id !== chart.id)}
               >{chart.scale.compressed ? '切回线性' : '压缩显示'}</button>
             {/if}
-          </span>
-        </figcaption>
+        </div>
         <ol class="comparison-ranking" style:--count={chart.rows.length} aria-label={`${chart.label}，按实测值从低到高排列`}>
           {#each chart.rows as row, index}
             <li class="comparison-item" style:--amount={`${chart.scale.percent(row.value)}%`}
               aria-label={`第 ${row.rank} 位，${row.label} ${row.version}，${valueLabel(chart, row)}${row.detail ? `，${row.detail}` : ''}`}>
-              <span class="rank-label" aria-hidden="true"><span class="rank-number">{row.rank.toString().padStart(2, '0')}</span>{shortLabel(row)}</span>
+              <span class="rank-label" aria-hidden="true"><span class="rank-number">{row.rank.toString().padStart(2, '0')}</span><span class="full-title">{shortLabel(row)}</span><span class="compact-title">{row.compactLabel ?? shortLabel(row)}</span></span>
               <span class="rank-value" aria-hidden="true">{row.value.toFixed(chart.digits)}<small>{chart.unit}</small></span>
               <span class="rank-track" aria-hidden="true"><span class="comparison-fill" data-pattern={row.pattern ?? patterns[row.id] ?? 'solid'} style:--bar-tone={tone(chart.rows.length - 1 - index, chart.rows.length)}></span></span>
             </li>
@@ -61,11 +61,12 @@
 <style>
   .benchmark-comparison { margin: 14px 0 10px; }
   .comparison-columns { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 16px; }
-  figure { margin: 0; min-width: 0; container-type: inline-size; }
+  figure { display: flex; flex-direction: column; margin: 0; min-width: 0; container-type: inline-size; }
   figcaption { color: #afc6d3; font: .74rem/1.5 var(--f-b); margin-bottom: 4px; }
   .comparison-title { display: block; }
+  .compact-title, .mobile-unit { display: none; }
   .comparison-direction { display: block; color: #abc3cf; font-size: .68rem; }
-  .comparison-scale { display: block; color: #879ba8; font-size: .64rem; }
+  .comparison-scale { display: block; color: #879ba8; font: .64rem/1.5 var(--f-b); }
   .scale-toggle { margin-left: 6px; padding: 2px 4px; border: 0; background: transparent; color: #afc6d3; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .scale-toggle:hover { background: rgb(160 170 180 / 12%); }
   .comparison-ranking { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
@@ -98,6 +99,23 @@
   @media (max-width: 900px) {
     .comparison-columns { grid-template-columns: 1fr; gap: 16px; }
     figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 10px; }
-    .comparison-scale { flex-basis: 100%; }
+  }
+  @media (max-width: 600px) {
+    .full-title, .rank-value small, .scale-bounds, .scale-separator { display: none; }
+    .compact-title, .mobile-unit { display: inline; }
+    .comparison-columns { grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 18px 14px; align-items: start; }
+    figcaption { display: block; }
+    .comparison-title { font-size: .8rem; }
+    .comparison-direction { margin-top: 2px; color: #8fa6b2; }
+    .comparison-scale { display: none; }
+    .comparison-scale.has-toggle { order: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; margin-top: 4px; }
+    .scale-toggle { min-height: 36px; margin: 0; padding: 6px 0; }
+    .comparison-ranking { grid-template-columns: 1fr; margin-top: 6px; padding: 0; gap: 0; }
+    .comparison-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; height: auto; padding: 5px 0 6px; gap: 4px 6px; font-size: .78rem; }
+    .rank-label { position: static; width: auto; text-align: left; white-space: normal; transform: none; }
+    .rank-number { min-width: 18px; margin: 0; font-size: .85em; }
+    .rank-value { position: static; font-size: inherit; transform: none; }
+    .rank-track { position: static; width: auto; height: 2px; margin-left: 18px; transform: none; background: rgb(100 133 150 / 8%); }
+    .comparison-fill { position: static; width: var(--amount); height: 100%; background-image: none; opacity: .6; }
   }
 </style>

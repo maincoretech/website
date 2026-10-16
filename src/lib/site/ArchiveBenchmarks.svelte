@@ -6,15 +6,18 @@
 </script>
 
 <section class="archive-benchmarks" aria-label="资源归档格式补测">
-  <h3>资源归档格式</h3>
-  <p class="scope">624 个合成文件 · 28 MiB · 各实现默认策略，不是同等安全与缓存条件排名</p>
+  <h3>资源归档格式 · 加密读取</h3>
+  <p class="scope desktop-scope">同一 28 MiB 合成负载 · 64 MiB 名义内容缓存 · 关闭预取 · 不含打开与密码派生</p>
+  <p class="scope mobile-scope">624 个文件 · 28 MiB · 全部加密</p>
   <BenchmarkComparison data={charts.primary} label="资源包体积与顺序读取" />
-  <h4>区间读取</h4>
-  <p class="scope">同一 4 KiB seek 轨迹 · 首次为暖文件系统 · 十轮保留句柄与默认缓存</p>
+  <h4 class="desktop-scope">区间读取</h4>
+  <p class="scope desktop-scope">同一 2000 × 4 KiB 轨迹 · 文件系统暖缓存 · 新会话每轮重开，复用会话先预热一轮</p>
+  <p class="scope mobile-scope range-summary">2000 × 4 KiB · 暖文件系统<br />新会话每轮重开；复用会话先预热。</p>
   <BenchmarkComparison data={charts.range} columns={2} label="资源包 4 KiB 区间读取" />
-  <h4>整文件读取</h4>
-  <p class="scope">Suika3 / ONS 原生整文件接口；读取字节量不同，不与上方区间读取横比</p>
-  <BenchmarkComparison data={charts.full} columns={1} label="资源包整文件随机读取" />
+  <p class="scope desktop-scope">按实测中位数排序，不代表显著差异或同等安全等级；缓存实现、块布局与总内存仍不同。</p>
+  <h4 class="desktop-scope">LGPAK · 独立参考</h4>
+  <p class="scope desktop-scope">整包载入内存的加密读器，不与上方按需读取排名；历史样本与原生打开成本见「测试条件与数据」。</p>
+  <p class="scope mobile-scope">仅按实测值排序，安全与总内存不等价。<br />LGPAK 单列，详见下方测试条件。</p>
 </section>
 
 <style>
@@ -22,4 +25,10 @@
   h3, h4 { margin: 0; color: #b7ccd8; font: 400 .95rem/1.5 var(--f-b); }
   h4 { margin-top: 20px; font-size: .8rem; }
   .scope { margin: 4px 0 12px; color: #8fa6b2; font: .68rem/1.5 var(--f-b); }
+  .mobile-scope { display: none; }
+  @media (max-width: 600px) {
+    .desktop-scope { display: none; }
+    .mobile-scope { display: block; }
+    .range-summary { margin-top: 22px; }
+  }
 </style>

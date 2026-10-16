@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { archiveCharts, nativeCharts, embeddedCharts } from '../src/lib/site/benchmark-data.js';
 
 const raw = file => readFileSync(new URL(`../static/benchmarks/${file}.json`, import.meta.url), 'utf8');
@@ -9,10 +10,16 @@ const native = JSON.parse(raw('webgalk-native'));
 // Independent recomputation of the published aggregate, not the UI helper.
 const mid = values => { const a = values.toSorted((a, b) => a - b); return a.length % 2 ? a[(a.length - 1) / 2] : (a[a.length / 2 - 1] + a[a.length / 2]) / 2; };
 
-test('all nine resource variants retain three validated equal-payload process runs', () => {
-  assert.equal(archives.rows.length, 9);
-  assert.equal(new Set(archives.rows.map(row => row.id)).size, 9);
-  for (const row of archives.rows) {
+test('checked-in measurement harness matches the published source fingerprint', () => {
+  const source = readFileSync(new URL('../scripts/benchmarks/encrypted-fair.rs', import.meta.url));
+  assert.equal(createHash('sha256').update(source).digest('hex'), archives.provenance['archive-probe/src/bin/encrypted-fair.rs']);
+});
+
+test('only encrypted variants are published, with three validated equal-payload runs', () => {
+  assert.deepEqual(archives.rows.map(row => row.id).sort(), ['hakutaku', 'hexz-lz4-encrypted', 'hexz-zstd-encrypted']);
+  assert.deepEqual(archives.references.map(row => row.id), ['letsgal-lgpak']);
+  for (const row of [...archives.rows, ...archives.references]) {
+    assert.equal(row.encrypted, true);
     assert.equal(row.runs.length, 3);
     for (const run of row.runs) {
       assert.equal(run.files, 624);
@@ -23,10 +30,10 @@ test('all nine resource variants retain three validated equal-payload process ru
   }
 });
 
-test('archive aggregates, first trajectories and ranges reconcile with raw samples', () => {
-  for (const row of archives.rows) {
-    for (const key of ['open_ms', 'sequential_ms', 'random_2000_4k_ms', 'random_2000_full_file_ms']) {
-      if (row.metrics[key] === null) { assert(row.runs.every(run => run[key] === undefined)); continue; }
+test('archive aggregates and ranges reconcile with raw samples', () => {
+  for (const row of [...archives.rows, ...archives.references]) {
+    const keys = row.id === 'letsgal-lgpak' ? ['open_ms', 'sequential_ms', 'random_2000_4k_ms'] : ['sequential_fresh_ms', 'random_fresh_2000_4k_ms', 'random_reused_2000_4k_ms'];
+    for (const key of keys) {
       const values = row.runs.map(run => { assert.equal(run[key].length, 10); assert(run[key].every(v => Number.isFinite(v) && v > 0)); return mid(run[key]); });
       assert.deepEqual(row.metrics[key].process_values, values);
       assert.equal(row.metrics[key].median, mid(values));
@@ -37,14 +44,30 @@ test('archive aggregates, first trajectories and ranges reconcile with raw sampl
   }
 });
 
-test('charts exclude unavailable metrics and keep full-file and range workloads separate', () => {
+test('controlled charts exclude plaintext, whole-memory reference and unequal opening work', () => {
   const charts = archiveCharts(archives);
-  charts.primary.forEach(chart => assert.equal(chart.rows.length, 9));
-  charts.range.forEach(chart => { assert.equal(chart.rows.length, 7); assert(chart.rows.every(row => !['suika-arc', 'ons-nsa'].includes(row.id))); });
-  assert.deepEqual(charts.full[0].rows.map(row => row.id), ['suika-arc', 'ons-nsa']);
-  assert(archives.rows.filter(row => row.metrics.pack_ms === null).every(row => ['letsgal-lgpak', 'ons-nsa'].includes(row.id)));
+  assert.deepEqual(charts.primary.map(chart => chart.id), ['archive_mib', 'sequential_fresh_ms']);
+  assert.deepEqual(charts.range.map(chart => chart.id), ['random_fresh_2000_4k_ms', 'random_reused_2000_4k_ms']);
+  [...charts.primary, ...charts.range].forEach(chart => {
+    assert.equal(chart.rows.length, 3);
+    assert(chart.rows.every(row => row.id !== 'letsgal-lgpak'));
+  });
   assert.equal(archives.coverage.length, 2);
   assert(archives.coverage.every(entry => entry.status.startsWith('未测')));
+});
+
+test('controlled runs use matched nominal budgets, explicit reuse warm-up and rotated orders', () => {
+  for (const row of archives.rows) {
+    assert.deepEqual(row.runs.map(run => run.process), [1, 2, 3]);
+    assert.deepEqual(row.runs.map(run => run.position).sort(), [0, 1, 2]);
+    for (const run of row.runs) {
+      assert.equal(run.cache_payload_budget_bytes, 64 * 1024 * 1024);
+      assert.equal(run.prefetch, false);
+      assert.equal(run.reused_warmup_rounds, 1);
+      assert.equal(run.encrypted, true);
+      assert.equal(run.open_ms, undefined);
+    }
+  }
 });
 
 test('native aggregates use exactly the accepted foreground and audio samples', () => {
@@ -64,8 +87,9 @@ test('native aggregates use exactly the accepted foreground and audio samples', 
 });
 
 test('embedded legacy reader remains separate from the current archive reader', () => {
-  assert.equal(native.embedded.length, 4);
-  for (const chart of embeddedCharts(native)) assert.equal(chart.rows.length, 4);
+  assert.equal(native.embedded.length, 2);
+  assert(native.embedded.every(row => row.variant.endsWith('/true')));
+  for (const chart of embeddedCharts(native)) assert.equal(chart.rows.length, 2);
   assert.equal(archives.rows.filter(row => row.id.startsWith('embedded-')).length, 0);
 });
 
@@ -74,5 +98,8 @@ test('public evidence omits local home paths and benchmark key material', () => 
     const text = raw(file);
     assert(!text.includes('/Users/'));
     assert(!/"(?:cek|root_key|private_key|pids)"\s*:/.test(text));
+    assert(!/"encrypted"\s*:\s*false/.test(text));
+    assert(!/"variant"\s*:\s*"[^"]*\/false"/.test(text));
+    assert(!/"id"\s*:\s*"(?:[^"\n]*-plain|renpy-rpa|suika-arc|ons-nsa)"/.test(text));
   }
 });

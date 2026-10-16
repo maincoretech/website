@@ -4,31 +4,10 @@ date: 2026-06-18
 priority: 0
 ---
 
-## 官网
+maincore 官网~~激情上线~~。
 
-maincore 官网~~激情上线~~，核心基于 **SvelteKit** + **MDsveX** 构建。
+用 SvelteKit + MDsveX 写页面和文章，MiniSearch 做搜索，中文加了 CJK 分字。上线时计划托管在 Netlify。
 
-预计会托管在netlify上
+设计参考了 [gyan.dev](https://www.gyan.dev/ffmpeg/)。一直挺喜欢这个样子，就想自己写一个，也顺便试试没用过的 Svelte。
 
-### 技术栈
-
-| 层 | 技术 |
-|----|------|
-| 框架 | SvelteKit |
-| 内容 | Markdown + MDsveX |
-| 搜索 | MiniSearch (对于中文有手搓的CJK分字) |
-
-### 页面
-
-- **News** — 开发动态
-- **Product** — 产品目录
-- **Blog** — 技术文章
-- **About** — 组织介绍
-
-### 设计灵感
-
-这个网站的设计主要来源于 [gyan.dev](https://www.gyan.dev/ffmpeg/) ，对这种设计有好感于是打算手搓一个
-
-刚好也没有写过svelte
-
-大部分是vibe的，不过我已经尽可能让代码和结构不臃肿难看了
+大部分是 vibe 的，代码和结构也尽量收拾了一下。

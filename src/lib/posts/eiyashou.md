@@ -2,18 +2,16 @@
 title: Eiyashou v2.0 语法与用例参考
 date: 2026-10-08
 author: maincore
-description: 按 Kēne 当前实现整理的 Eiyashou v2.0 完整语法、命令、参数与演出用例
+description: Eiyashou 2.0 的工程结构、语法、命令与示例
 priority: 2
 category: tech
 ---
 
-Eiyashou 是 Kēne 的原生视觉小说脚本。故事、分支、资源调度和镜头演出都写在 UTF-8 的 `.shou` 文件里。本文先按制作顺序写出一幕，再列出当前解析器接受的语法、命令、字段和对应用例，方便照着写与回查。
+Eiyashou 是 Kēne 的原生脚本语言。故事、分支、资源加载和演出写在 UTF-8 的 `.shou` 文件中。前半篇是示例，后半篇是命令参考。
 
-本文对应 **Kēne 0.13.1 / Eiyashou v2.0，截至 2026-10-08 的本地实现**，包含动态序列、统一音效命令与雨雪参数；不是旧版本引擎的兼容说明。工程写 `script.version: 2`，省略时也默认 2，显式旧版本会被拒绝。已合并的旧命令没有别名。示例中的 `room`、`rin_smile` 等都是资源 ID，不是文件路径；把它们用于自己的工程前，请先在资源清单中登记对应文件。
+本文对应 **Kēne 0.13.1 / Eiyashou 2.0（2026-10-08）**，不代表最新版，也不适用于旧版引擎。工程写 `script.version: 2`，省略时也默认 2，显式旧版本会被拒绝。已合并的旧命令没有别名。示例中的 `room`、`rin_smile` 等都是资源 ID，不是文件路径；把它们用于自己的工程前，请先在资源清单中登记对应文件。
 
-阅读顺序：先看工程、基础语法和独立用例，再按“完整命令参考”查询参数。后文另列旧写法到 v2 的转换及当前实现边界。
-
-## 五分钟写出第一幕
+## 第一个工程
 
 建立下面的文件。路径以工程目录为起点；脚本必须是 UTF-8。
 
@@ -53,7 +51,7 @@ scene start {
 
 在 Kēne 仓库根目录执行 `cargo validate /path/to/my-story` 可检查工程。启动预览时，将同一个工程目录传给 `cargo dev /path/to/my-story`。`scene start` 的名字须与 `script.entry` 一致；同一场景里的语句用逗号分开。
 
-## 给故事加入素材和人物
+## 资源与人物
 
 需要画面或声音时，把相应文件放进工程，再扩展 `assets.yaml`。生产素材采用 WebP 图像与 Ogg Opus 音频；清单键是脚本中使用的裸 ID。
 
@@ -97,7 +95,7 @@ characters:
 
 资源清单里的 `particles` 是纹理资源；`particle.show` 的第一个参数是实例 ID，第二个是预设 ID。下文各段是**独立用例**：放入自己的 `scene ... { ... }`，并按需调整资源和变量。例子中展示 `rin_*` 的地方是立绘槽位 ID 前缀，不是文件名通配符。
 
-## 语法从句子到表达式
+## 基础语法
 
 一个源文件可以写多个 `scene id { ... }`。Loader 递归读取 `scripts/**/*.shou`，`scene` ID 在项目内唯一；不需要 `import`，也不按文件名顺序执行。`script.entry` 指向入口 scene，入口文件不必叫 `main.shou`。语句用逗号分隔，可以换行，也可以把数条语句写在同一行。最后一条语句后不需要逗号。`//` 是行注释，`/* ... */` 是块注释。命令参数中，位置参数写在前面，命名参数写成 `name: value`；未知或重复参数会报错。
 
@@ -156,7 +154,7 @@ choice("下一步") {
 
 `choice` 的提示文字可省略，写成 `choice { "选项": goto(next_scene) }`；`when` 为 false 的选项不显示，所有选项都隐藏则是运行时错误。`call` 与 `return` 成对用于子场景；`goto` 替换当前场景。无等待、无退出路径的循环会报错。
 
-## 对白、旁白、文字演出
+## 对白与文字
 
 人物 ID 后接冒号表示对白。没有人物 ID 的字符串是旁白。可在对白后加一个语音资源 ID，再写尾部选项；`return` 和 `break` 始终是控制语句，不会被当成语音 ID。`[wait=500]` 会在打字到该位置时停 500 毫秒。`${...}` 只接受 Eiyashou 表达式。
 
@@ -434,7 +432,7 @@ stage.mask.show(iris, mode: clip, plane: topmost, scope: selected, targets: [rin
 stage.mask.hide(iris, duration: 200ms, blocking: false)
 ```
 
-## 用时间轴合成一段演出
+## 时间轴
 
 `stage.animate` 把属性关键帧和按时间触发的事件写在同一段里。`track` 指定目标与属性，`key` 指定时间和值；事件可切场景、控制镜头、粒子和声音。下面的 `room`、`roof`、`rin_smile`、`snow_texture`、`theme` 等 ID 需先登记在资源清单。
 
@@ -543,7 +541,7 @@ assets.loading(mode: manual, lookahead: 5, blocking: true) {
 }
 ```
 
-## 完整命令参考：流程与文字
+## 命令参考：流程与文字
 
 以下表格以当前 v2.0 解析器为准。第一列给出可写的最小形式或常见形式；第三列列出其余合法的**命名参数**。位置参数按示例顺序书写，命名参数可省略，除非文字特别注明必填。结构化命令还要求 `{ ... }` 内至少有一行相应子项。
 
@@ -569,7 +567,7 @@ assets.loading(mode: manual, lookahead: 5, blocking: true) {
 
 `text.paragraph.style` 的 `reveal_effect` 可写 `instant`、`smooth_rise`、`classic`、`smooth_drop`、`slide_left`、`slide_right`、`pop`、`flip`、`swing`、`blur`；只有出现任一 `reveal_*` 字段才创建揭示动画配置。`typewriter_speed` 不得为负。`text.float` 默认在设计空间中心 `(960, 540)`，默认字号 48；字号必须为正。持续浮字的典型组合是 `blocking: false`，紧接着 `text.float.configure(infinite: true)`，最后显式 `text.float.hide()`。
 
-### 流程与列表的完整形式
+### 流程与列表
 
 ```text
 scene id { 语句, 语句, ... }
@@ -585,7 +583,7 @@ pop(items, into: target) / pop(items, index, into: target)
 
 `pop` 的目标变量须先声明；弹出空列表或越界索引时目标保持不变。`choice` 选项块结束后回到选择后续语句。选择项可以没有 `when`，也可以没有前置 `@id`。
 
-## 完整命令参考：背景与人物
+## 命令参考：背景与人物
 
 | 写法                                                                                                      | 用例                           | 其他命名参数                                                                                                                |
 | --------------------------------------------------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
@@ -653,7 +651,7 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 
 `scene` 的 `fit` 接受 `by_height`、`by_width`、`cover`、`contain`、`stretch`、`center`。`sprite.update` 只接受整体 `scale`，不接受 `scale_x/y` 或顶层变换 `x/y`；它与 `sprite.transform` 的职责不同。鼠标视差 `scene.parallax` 的 `scale` 也必须大于 0。
 
-## 完整命令参考：镜头与舞台
+## 命令参考：镜头与舞台
 
 | 写法                                                                                | 用例                             | 命名参数                                                                                                                          |
 | ----------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -674,7 +672,7 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 
 `camera.shake` 的 `axis` 为 `x`、`y`、`both`，`falloff` 为 `linear`、`exponential`；两个 `*_randomness` 值都在 0–1。`amplitude` 不得为负。时间轴里的 `event.camera.shake` 使用相同轴、衰减与随机量，但 `frequency` 必须大于 0。
 
-### `camera.effect` 的完整字段
+### `camera.effect` 字段
 
 下列字段可用于 `camera.effect`，也可与九个变换字段一起用于 `camera.move`。除了 `focal_distance`、`lut_preset`、`color_tone` 的特殊类型，以及 `godray_parallel`、`speed_lines_radial`、`speed_lines_region_ellipse` 三个布尔字段，其余均为数值。只写需要变动的字段；`focal_distance: none` 或 `lut_preset: none` 清除对应状态。`color_tone` 接受 `none`、`grayscale`、`sepia`；布尔字段使用 `true` 或 `false`。本表不包含公共控制字段 `duration`、`easing`、`blocking`、`tween`。
 
@@ -718,7 +716,7 @@ stage.mask.show(paper, fill_mode: texture, texture: rin_sad, texture_fit: cover,
 stage.mask.hide(vignette, duration: 300ms)
 ```
 
-### 时间轴的所有子项
+### 时间轴子项
 
 `stage.animate` 必须有 `duration`，且至少有一个 `track` 或 `event.*` 子项。`duration` 与 `playback_rate` 必须大于 0；`repeat` 是非负整数。`track(camera | character(id) | scene_layer(id), property, image: ..., muted: ...)` 必须有至少一个 `key(time: ..., value: ..., easing: ...)`。`time` 和数值 `value` 必填；`image` 只用于 `character(id)` 目标。
 
@@ -744,7 +742,7 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 }
 ```
 
-时间轴 `track` 接受的**全部属性名**如下。实际可用目标仍由具体属性的引擎语义决定；这些名称是当前解析器的语法清单。
+`track` 接受以下属性名；可用目标取决于各属性的运行时语义。
 
 | 属性组       | 属性名                                                                                                                                                                                                                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -758,7 +756,7 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 | 屏幕与轮廓   | `vhs_intensity`、`vhs_jitter`、`vhs_noise`、`halftone_intensity`、`halftone_scale`、`halftone_angle`、`dither_intensity`、`dither_levels`、`outline_intensity`、`outline_thickness`                                                                                                                     |
 | 眼睑         | `eyelid_openness`、`eyelid_width`、`eyelid_curvature`、`eyelid_softness`、`eyelid_center_x`、`eyelid_center_y`                                                                                                                                                                                          |
 
-## 完整命令参考：音视频与粒子
+## 命令参考：音视频与粒子
 
 | 写法                                       | 用例                                | 命名参数与约束                                                                                               |
 | ------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -799,7 +797,7 @@ particle.show(snow_front, snow, texture: snow_texture, count: 80, wind: -4, grav
 particle.hide(*, duration: 300ms)
 ```
 
-## 完整命令参考：输入、界面与资源
+## 命令参考：输入、界面与资源
 
 | 写法                                                                                               | 用例                           | 命名参数                                                                           |
 | -------------------------------------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------- |
@@ -834,7 +832,7 @@ assets.loading(mode: auto, lookahead: 8, blocking: false) {
 
 `assets.yaml` 的全部命名空间是 `backgrounds`、`figures`、`voices`、`bgm`、`se`、`videos`、`particles`、`luts`。每项可写工程相对路径，也可写 `{ path: ..., tags: [...] }`。`characters.yaml` 的每个人物需要 `name`，可选 `color`（`#RRGGBB`）、`avatar` 和 `expressions`。脚本中的人物、素材、对象 ID 分属不同命名空间；引用图片时写清单键，不能直接在命令里嵌入文件路径。
 
-### 在 Editor 中使用人物与源代码
+### Editor 中的人物与源码
 
 在 Characters 中维护稳定角色 ID、显示姓名、颜色、头像与单帧/多帧表情，可选资源或多选导入。选择脚本插入位置后，Show 插入 `sprite`；Change、Blink、Talk 操作已有实例，所以先 Show，再指定同一个舞台 ID。Insert avatar 显式插入头像命令。按钮生成的动态序列默认 10 fps，Blink 默认间隔 3s；这不改变解析器省略帧率时的默认 12 fps。
 
@@ -871,7 +869,7 @@ prefixes:
 | `layout: scene, layout_fit: cover, ...`                       | `layout: scene(fit: cover, ...)`                                     |
 | `layout: composite, layout_canvas_width: ..., ...`            | `layout: composite(canvas: size(...), rect: rect(...), height: ...)` |
 
-### migrate 是旧引擎工程转换，不是原生版本升级器
+### 迁移旧引擎工程
 
 从 Kēne 仓库根目录执行；第一个参数是原工程，第二个是新工程目录：
 
@@ -887,7 +885,7 @@ cargo dev /path/to/new-project
 
 LetsGal v2 的 `characters.json` 中，中心锚点的 `left` / `top` 按画布百分比换算：水平位置转为 `center(x: ...)`，垂直位置从自上而下转为 Kēne 自下而上的偏移，并结合表情、角色、全局高度的优先级扣除半高。显示、更新与序列使用同一换算，distance 缩放保留中心；非中心的 v2 锚点明确拒绝，不猜测。无版本的旧基线继续走旧规则；场景层布局另行处理，不能把角色换算直接套给它。
 
-### 常见诊断怎样改
+### 常见错误
 
 | 错误写法                                                         | 应改为                                                | 原因                           |
 | ---------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------ |
@@ -907,10 +905,10 @@ LetsGal v2 的 `characters.json` 中，中心锚点的 `left` / `top` 按画布�
 | `se(rain, id: ambience, loop: true, fade_out: 1s)`               | 播放时删除 fade_out；用 `se.stop(ambience, fade: 1s)` | 自然尾部包络仅用于单次音效     |
 | `se(bell, fade: 200)`                                            | `se(bell, fade: 200ms)`                               | 时长必须有单位且不得为负       |
 
-## 当前实现边界与校验
+## 限制与校验
 
-本文覆盖当前原生作者语法、完整命令家族、共享字段与对应独立用例，不包含任意 JavaScript、CSS、未知宿主扩展或新的 WebGAL wrapper。时间轴的属性/事件字段与普通命令各有独立清单，不能因为一个字段存在于 `camera.effect` 或 `particle.show` 就将它写进所有结构化命令。
+Eiyashou 不执行任意 JavaScript、CSS 或未知宿主扩展，也不提供新的 WebGAL wrapper。时间轴与普通命令使用不同的参数表；`camera.effect`、`particle.show` 的字段不能直接套用到时间轴事件。
 
-素材驱动的片段需要把示例 ID 换成工程实际资源；含 `goto` / `call` 的片段需要补齐目标 scene。解析成功只能确认作者语法和静态类型，不证明媒体存在、视觉/听觉效果或完整剧情正确。先 `cargo validate` 检查全项目引用与入口控制流，再在 Preview 验收分支、动画、音视频及存档回退。
+使用示例时，替换资源 ID，并补齐 `goto` / `call` 的目标场景。先用 `cargo validate` 检查引用和入口，再在 Preview 测试分支、动画、音视频和读档；解析通过不能代替这些检查。
 
-脚本版本 2 与存档版本不是同一个概念：当前仍是 Save v11，要求 Program fingerprint 匹配；修改脚本后不能假定旧存档继续加载。当前 IR schema v7 包含统一音效与尾部淡出字段，旧编译内容需重新编译；Editor–Engine authoring 协议仍为 v9。以当前 Kēne 解析器、typed model 和 `dev/docs/language.md` 为最终依据；更新引擎后重新检查这份参考与工程。引擎开发、平台依赖、试玩导出与正式发行见 [开发与发布指南](/blog/keine-development-and-release)。
+本文版本使用 Save v11、IR schema v7 和 authoring 协议 v9。存档要求 Program fingerprint 匹配，修改脚本后可能无法加载旧存档；旧 IR 则需重新编译。升级引擎时，以对应版本的解析器、typed model 和 `dev/docs/language.md` 为准。构建、测试与打包见[开发与发布指南](/blog/keine-development-and-release)。
