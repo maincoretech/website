@@ -1,4 +1,5 @@
 <script>
+  import { msg } from '$lib/i18n/index.js';
   import { onMount, tick } from 'svelte';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { page } from '$app/stores';
@@ -68,28 +69,28 @@
 </svelte:head>
 
 <div class="site-shell" class:article-page={article} class:wide-list={path === '/' || path === '/blog'}>
-  <a class="skip-link" href="#site-content">跳到内容</a>
+  <a class="skip-link" href="#site-content">{$msg("跳到内容")}</a>
   <div class="site-viewport">
     {#if !article}<WaterScene bind:this={waterScene} {region} still={reducedMotion} />{/if}
     <div class="site-brand">
-      <a class="site-brand-link" href="/" aria-label="maincore，返回首页"><img class="site-brand-logo" src="/favicon.png" width="42" height="42" alt="" /></a>
+      <a class="site-brand-link" href="/" aria-label={$msg("maincore，返回首页")}><img class="site-brand-logo" src="/favicon.png" width="42" height="42" alt="" /></a>
       <span class="site-wordmark">maincore</span>
     </div>
     {#if !article}
-      <nav id="site-navigation" class="site-navigation" aria-label="主导航">
+      <nav id="site-navigation" class="site-navigation" aria-label={$msg("主导航")}>
         {#each sections as section}
           <a href={section.href} class:active={region === section.label} aria-current={region === section.label ? 'page' : undefined}><span>{$t('nav.' + section.label)}</span></a>
         {/each}
       </nav>
     {/if}
     <main id="site-content" class="reading-panel content-surface" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
-      {#if detail}<div class="reading-heading">
+      {#if detail && path !== '/product/keine'}<div class="reading-heading">
         <span class="page-section" tabindex="-1" bind:this={pageHeading}>{$t('nav.' + region)}</span>
-        {#if path !== '/' && path !== '/product'}<a class="reading-back" href={backHref} aria-label={backHref === '/' ? $t('back.home') : '返回栏目'}>←</a>{/if}
+        {#if path !== '/' && path !== '/product'}<a class="reading-back" href={backHref} aria-label={$msg(backHref === '/' ? $t('back.home') : '返回栏目')}>←</a>{/if}
       </div>{/if}
       <div class="route-content">{@render children()}</div>
     </main>
-    <footer class="site-copyright">{siteConfig.copyright}</footer>
+    <footer class="site-copyright">{$msg(siteConfig.copyright)}</footer>
     {#if showTop}<button class="site-back-top" aria-label={$t('a11y.back_to_top')} onclick={backToTop}>↑</button>{/if}
   </div>
   <Header />

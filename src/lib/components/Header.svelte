@@ -1,7 +1,7 @@
 <script>
   import { page } from '$app/stores';
   import { browser } from '$app/environment';
-  import { t } from '$lib/i18n/index.js';
+  import { t, msg } from '$lib/i18n/index.js';
   import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
   import { popup } from '$lib/motion.js';
 
@@ -52,7 +52,7 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-<header id="banner" aria-label="语言与搜索">
+<header id="banner" aria-label={$msg('语言与搜索')}>
   <div id="masthead">
     <LanguageSwitcher />
     <span class="search-wrap" onfocusout={blurSoon}>

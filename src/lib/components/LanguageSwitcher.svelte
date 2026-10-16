@@ -1,5 +1,5 @@
 <script>
-  import { lang, setLang } from '$lib/i18n/index.js';
+  import { lang, setLang, msg } from '$lib/i18n/index.js';
   import { Translate } from '$lib/icons.js';
   import { popup, transitionContent } from '$lib/motion.js';
 
@@ -36,7 +36,7 @@
     bind:this={trigger}
     class:lang-btn--open={open}
     onclick={(e) => { e.stopPropagation(); toggle(); }}
-    aria-label="语言"
+    aria-label={$msg('语言')}
     aria-expanded={open}
   >
     {@html Translate}

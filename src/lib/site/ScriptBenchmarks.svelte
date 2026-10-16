@@ -1,4 +1,5 @@
 <script>
+  import { msg } from '$lib/i18n/index.js';
   import evidence from '../../../static/benchmarks/script-comparison.json';
 
   const range = result => result.process_range_ms.map(value => value.toFixed(3)).join('–');
@@ -8,16 +9,16 @@
   ].map(item => ({ ...item, ...evidence.results.find(row => row.stage === item.stage) }));
 </script>
 
-<section class="script-benchmarks" aria-label="Core 脚本执行">
-  <h3>脚本执行 · Core</h3>
-  <p class="script-scope">Kēne {evidence.keine.version} · 不含解析 · 未测竞品执行</p>
+<section class="script-benchmarks" aria-label={$msg("Core 脚本执行")}>
+  <h3>{$msg("脚本执行 · Core")}</h3>
+  <p class="script-scope">{$msg("Kēne {0} · 不含解析 · 未测竞品执行", {0: $msg(evidence.keine.version)})}</p>
   <dl class="benchmark-metrics core-metrics">
     {#each core as metric}
       <div>
-        <dt>{metric.label}</dt>
-        <dd><strong>{metric.median_ms.toFixed(3)}</strong><span>ms</span></dd>
-        <small>越低越好 · {metric.detail}</small>
-        <small>进程中位数范围 {range(metric)} ms</small>
+        <dt>{$msg(metric.label)}</dt>
+        <dd><strong>{$msg(metric.median_ms.toFixed(3))}</strong><span>ms</span></dd>
+        <small>{$msg("越低越好 · {0}", {0: $msg(metric.detail)})}</small>
+        <small>{$msg("进程中位数范围 {0} ms", {0: $msg(range(metric))})}</small>
       </div>
     {/each}
   </dl>

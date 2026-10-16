@@ -1,19 +1,20 @@
 <script>
+  import { msg } from '$lib/i18n/index.js';
   import evidence from '../../../static/benchmarks/resource-archives.json';
   import BenchmarkComparison from './BenchmarkComparison.svelte';
   import { archiveCharts } from './benchmark-data.js';
   const charts = archiveCharts(evidence);
 </script>
 
-<section class="archive-benchmarks" aria-label="资源归档格式补测">
-  <h3>资源归档格式 · 加密读取</h3>
-  <p class="scope desktop-scope">同一 28 MiB 合成负载 · 64 MiB 名义内容缓存 · 关闭预取 · 不含打开与密码派生</p>
-  <p class="scope mobile-scope">624 个文件 · 28 MiB · 全部加密</p>
-  <p class="scope desktop-scope">区间读取：同一 2000 × 4 KiB 轨迹 · 文件系统暖缓存 · 新会话每轮重开，复用会话先预热一轮</p>
-  <BenchmarkComparison data={[...charts.primary, ...charts.range]} columns={4} label="资源包体积、顺序读取与 4 KiB 区间读取" />
-  <p class="scope mobile-scope">区间读取：2000 × 4 KiB · 暖文件系统<br />新会话每轮重开；复用会话先预热。</p>
-  <p class="scope desktop-scope">实测差值不代表统计显著性或同等安全等级；缓存实现、块布局与总内存仍不同。</p>
-  <p class="scope mobile-scope">安全与总内存不等价，详见下方测试条件。</p>
+<section class="archive-benchmarks" aria-label={$msg("资源归档格式补测")}>
+  <h3>{$msg("资源归档格式 · 加密读取")}</h3>
+  <p class="scope desktop-scope">{$msg("同一 28 MiB 合成负载 · 64 MiB 名义内容缓存 · 关闭预取 · 不含打开与密码派生")}</p>
+  <p class="scope mobile-scope">{$msg("624 个文件 · 28 MiB · 全部加密")}</p>
+  <p class="scope desktop-scope">{$msg("区间读取：同一 2000 × 4 KiB 轨迹 · 文件系统暖缓存 · 新会话每轮重开，复用会话先预热一轮")}</p>
+  <BenchmarkComparison data={[...charts.primary, ...charts.range]} columns={4} label={$msg("资源包体积、顺序读取与 4 KiB 区间读取")} />
+  <p class="scope mobile-scope">{$msg("区间读取：2000 × 4 KiB · 暖文件系统")}<br />{$msg("新会话每轮重开；复用会话先预热。")}</p>
+  <p class="scope desktop-scope">{$msg("实测差值不代表统计显著性或同等安全等级；缓存实现、块布局与总内存仍不同。")}</p>
+  <p class="scope mobile-scope">{$msg("安全与总内存不等价，详见下方测试条件。")}</p>
 </section>
 
 <style>

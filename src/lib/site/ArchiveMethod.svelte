@@ -1,4 +1,5 @@
 <script>
+  import { msg } from '$lib/i18n/index.js';
   import evidence from '../../../static/benchmarks/resource-archives.json';
   import { archiveRows } from './benchmark-data.js';
   const rows = archiveRows(evidence);
@@ -8,29 +9,29 @@
 </script>
 
 <div class="archive-method">
-  <h4>资源包补测 · {evidence.date}</h4>
-  <p>{evidence.fixture.groups}，共 624 个文件、28 MiB；全部文件及 2000 次区间读取在计时外逐字节校验。受控组每配置三次进程、每阶段十次采样；{evidence.method.aggregate}。</p>
-  <p>{evidence.method.cache}。{evidence.method.order} {evidence.method.build.split('LGPAK')[0].trim()}</p>
-  <p>{evidence.method.timing}</p>
-  {#each evidence.limitations.filter(note => !note.includes('LGPAK')) as note}<p>{note}</p>{/each}
+  <h4>{$msg("资源包补测 · {0}", {0: $msg(evidence.date)})}</h4>
+  <p>{$msg("{0}，共 624 个文件、28 MiB；全部文件及 2000 次区间读取在计时外逐字节校验。受控组每配置三次进程、每阶段十次采样；{1}。", {0: $msg(evidence.fixture.groups), 1: $msg(evidence.method.aggregate)})}</p>
+  <p>{$msg(evidence.method.cache)}</p><p>{$msg(evidence.method.order)} {$msg(evidence.method.build.split('LGPAK')[0].trim())}</p>
+  <p>{$msg(evidence.method.timing)}</p>
+  {#each evidence.limitations.filter(note => !note.includes('LGPAK')) as note}<p>{$msg(note)}</p>{/each}
   <!-- svelte-ignore a11y_no_noninteractive_tabindex (Keyboard users must be able to scroll the wide table.) -->
-  <div class="table-scroll" tabindex="0" role="region" aria-label="资源包精确数值，可横向滚动">
+  <div class="table-scroll" tabindex="0" role="region" aria-label={$msg("资源包精确数值，可横向滚动")}>
     <table>
-      <caption>加密受控组 · 中位数 / 三进程统计范围（非置信区间）；均越低越好</caption>
-      <thead><tr><th scope="col">资源包</th>{#each columns as [, label]}<th scope="col">{label}</th>{/each}</tr></thead>
-      <tbody>{#each rows as row}<tr><th scope="row">{row.label}</th>{#each columns as [key]}<td>{value(row, key)}<small>{span(row, key)}</small></td>{/each}</tr>{/each}</tbody>
+      <caption>{$msg("加密受控组 · 中位数 / 三进程统计范围（非置信区间）；均越低越好")}</caption>
+      <thead><tr><th scope="col">{$msg("资源包")}</th>{#each columns as [, label]}<th scope="col">{$msg(label)}</th>{/each}</tr></thead>
+      <tbody>{#each rows as row}<tr><th scope="row">{$msg(row.label)}</th>{#each columns as [key]}<td>{$msg(value(row, key))}<small>{$msg(span(row, key))}</small></td>{/each}</tr>{/each}</tbody>
     </table>
   </div>
   <dl>
     {#each rows as row}
-      <div><dt>{#if row.source}<a href={row.source} target="_blank" rel="noopener noreferrer">{row.label} ↗</a>{:else}{row.label}{/if} · {row.version}</dt><dd>{row.protection}。{row.note}。{row.writer}。</dd></div>
+      <div><dt>{#if row.source}<a href={row.source} target="_blank" rel="noopener noreferrer">{$msg(row.label)} ↗</a>{:else}{$msg(row.label)}{/if} · {$msg(row.version)}</dt><dd>{$msg(row.protection)} · {$msg(row.note)} · {$msg(row.writer)}</dd></div>
     {/each}
   </dl>
-  <h4>未覆盖的发行路径</h4>
+  <h4>{$msg("未覆盖的发行路径")}</h4>
   {#each evidence.coverage as entry}
-    <p><a href={entry.source} target="_blank" rel="noopener noreferrer">{entry.label} ↗</a> · {entry.status}：{entry.reason}</p>
+    <p><a href={entry.source} target="_blank" rel="noopener noreferrer">{$msg(entry.label)} ↗</a> · {$msg(entry.status)}：{$msg(entry.reason)}</p>
   {/each}
-  <a href="/benchmarks/resource-archives.json" target="_blank" rel="noopener noreferrer">全部进程样本、版本、来源与校验记录 ↗</a>
+  <a href="/benchmarks/resource-archives.json" target="_blank" rel="noopener noreferrer">{$msg("全部进程样本、版本、来源与校验记录 ↗")}</a>
 </div>
 
 <style>

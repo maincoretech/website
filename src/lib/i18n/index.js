@@ -13,10 +13,10 @@ import zh from './zh.js';
 import en from './en.js';
 import ja from './ja.js';
 import zhHant from './zh-Hant.js';
+import { resolveLanguage, translateMessage } from './message-runtime.js';
 
 const dicts = { zh, en, ja, 'zh-Hant': zhHant };
 const defaultLang = 'zh';
-const cycle = ['zh', 'zh-Hant', 'ja', 'en'];
 
 function getCookie(name) {
   if (!browser) return null;
@@ -33,17 +33,18 @@ function setCookie(name, value) {
 
 function detectLang() {
   if (!browser) return defaultLang;
-  const stored = localStorage.getItem('lang') || getCookie('lang');
+  let stored = getCookie('lang');
+  try { stored = localStorage.getItem('lang') || stored; } catch { /* Storage may be disabled. */ }
   if (stored && dicts[stored]) return stored;
-  const nav = navigator.language?.replace('-', '');
-  for (const code of cycle) {
-    if (nav.startsWith(code) || code.startsWith(nav)) return code;
-  }
-  return defaultLang;
+  return resolveLanguage(navigator.language);
 }
 
 /** 当前语言 store。SSR 和 hydration 均从默认语言开始，避免标记不一致。 */
 export const lang = writable(defaultLang);
+if (browser) lang.subscribe(code => { document.documentElement.lang = code === 'zh' ? 'zh-Hans' : code; });
+
+/** Reactive source-message translations for product and shared site UI. */
+export const msg = derived(lang, code => (source, params) => translateMessage(source, code, params));
 
 let initialized = false;
 
@@ -67,7 +68,7 @@ export function setLang(code) {
   if (!dicts[code]) return;
   lang.set(code);
   if (browser) {
-    localStorage.setItem('lang', code);
+    try { localStorage.setItem('lang', code); } catch { /* Cookie persistence remains available. */ }
     setCookie('lang', code);
   }
 }
@@ -82,6 +83,5 @@ export function currentLang() {
  *   t('nav.news') → translations[lang].nav.news
  */
 export function translate(path) {
-  const dict = _t;
-  return path.split('.').reduce((o, k) => o?.[k], dict) ?? path;
+  return path.split('.').reduce((o, k) => o?.[k], get(dict)) ?? path;
 }
