@@ -42,5 +42,8 @@
     </nav></Disclosure></div>
   {/if}
   <div class="section-body article-prose" bind:this={body}>{@render children()}</div>
+  <p class="article-license">{$t('contentLicense.summary')} <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="license">CC BY-NC-ND 4.0</a> · <a href="/license">{$t('contentLicense.details')}</a></p>
   {#key articleKey}<Giscus />{/key}
 </article>
+
+<style>.article-license { margin-block: 32px; padding-top: 18px; border-top: 1px solid #304650; color: #91aab8; font-size: .78rem; }</style>

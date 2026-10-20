@@ -46,4 +46,14 @@ bun run preview
 
 ## 许可证
 
-[MIT](LICENSE)
+[网站代码：MIT](LICENSE-MIT) · [原创文章：CC BY-NC-ND 4.0](LICENSE-CONTENT.md)。
+
+导入的 Kēne 和 Hakutaku 文档保留原许可，详见[适用范围](LICENSE)。
+
+## 项目文档
+
+`/docs/keine` 和 `/docs/hakutaku` 使用项目仓库的 Markdown 快照。
+审阅源文档修改后，运行 `node scripts/sync-docs.mjs /path/to/dev`，
+路径指向同时包含两个仓库的父目录；将正文和来源摘要一起提交。
+正常构建只读取快照，不需要相邻仓库或联网。
+`src/lib/docs/sources.json` 记录来源提交、正文摘要及是否包含未提交修改，发布前请核对。

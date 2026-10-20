@@ -3,7 +3,8 @@ const ja = {
   lang: 'ja',
   langLabel: '日本語',
 
-  nav: { news: 'news', product: 'product', blog: 'blog', about: 'about' },
+  contentLicense: { summary: '表示 · 非営利 · 改変物の共有禁止', details: 'ライセンスについて' },
+  nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
     toc: '目次',

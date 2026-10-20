@@ -226,7 +226,7 @@
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   width: min(1100px, calc(100% - 64px));
 }
 .site-navigation a {
@@ -887,6 +887,7 @@
   opacity: 0.55;
   pointer-events: none;
 }
+.site-copyright a { pointer-events: auto; padding: 8px 4px; }
 .no-script-links {
   position: absolute;
   bottom: 130px;

@@ -3,7 +3,8 @@ const zhHant = {
   lang: 'zh-Hant',
   langLabel: '繁體',
 
-  nav: { news: 'news', product: 'product', blog: 'blog', about: 'about' },
+  contentLicense: { summary: '署名 · 非商業 · 不得發布改編', details: '許可說明' },
+  nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
     toc: '目錄',

@@ -3,7 +3,8 @@ const en = {
   lang: 'en',
   langLabel: 'English',
 
-  nav: { news: 'news', product: 'product', blog: 'blog', about: 'about' },
+  contentLicense: { summary: 'Attribution · Noncommercial · No shared adaptations', details: 'License details' },
+  nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
     toc: 'TOC',

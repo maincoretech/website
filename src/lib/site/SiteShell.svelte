@@ -23,8 +23,9 @@
   const sections = siteConfig.nav;
   const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
   const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? 'product');
-  const article = $derived(/^\/blog\/[^/]+/.test(path));
-  const detail = $derived(article || path.startsWith('/product/'));
+  const documentation = $derived(path.startsWith('/docs') || path === '/license');
+  const article = $derived(/^\/blog\/[^/]+/.test(path) || documentation);
+  const detail = $derived((article && !documentation) || path.startsWith('/product/'));
   const backHref = $derived(path.startsWith('/blog/') ? '/blog' : path.startsWith('/product/') ? '/product' : '/');
 
   function onScroll() {
@@ -90,7 +91,7 @@
       </div>{/if}
       <div class="route-content">{@render children()}</div>
     </main>
-    <footer class="site-copyright">{$msg(siteConfig.copyright)}</footer>
+    <footer class="site-copyright">{$msg(siteConfig.copyright)} · <a href="/license">{$msg('许可')}</a></footer>
     {#if showTop}<button class="site-back-top" aria-label={$t('a11y.back_to_top')} onclick={backToTop}>↑</button>{/if}
   </div>
   <Header />

@@ -46,4 +46,15 @@ Benchmark results describe the recorded versions and test conditions, not overal
 
 ## License
 
-[MIT](LICENSE)
+[Code: MIT](LICENSE-MIT) · [Articles: CC BY-NC-ND 4.0](LICENSE-CONTENT.md).
+
+Imported Kēne and Hakutaku docs retain their original licenses; see [scope](LICENSE).
+
+## Project documentation
+
+`/docs/keine` and `/docs/hakutaku` use Markdown snapshots from the project repositories.
+After reviewing source changes, run `node scripts/sync-docs.mjs /path/to/dev`
+(the parent containing both repositories). Commit the updated content and source
+hashes together. Normal builds use the snapshots and need no sibling checkout
+or network access. `src/lib/docs/sources.json` records source revisions and
+whether each snapshot includes uncommitted edits; review these before publishing.

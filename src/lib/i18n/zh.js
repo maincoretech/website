@@ -3,7 +3,8 @@ const zh = {
   lang: 'zh',
   langLabel: '中文',
 
-  nav: { news: 'news', product: 'product', blog: 'blog', about: 'about' },
+  contentLicense: { summary: '署名 · 非商业 · 不得发布改编', details: '许可说明' },
+  nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
     toc: '目录',

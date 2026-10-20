@@ -13,6 +13,7 @@ export const siteConfig = {
   nav: [
     { label: 'product', href: '/product' },
     { label: 'blog', href: '/blog' },
+    { label: 'docs', href: '/docs', reading: true },
     { label: 'about', href: '/about' }
   ]
 };

@@ -1,21 +1,20 @@
-MIT License
-
+Licensing scope
+===============
 Copyright (c) 2026 maincore
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Website implementation code, configuration, scripts, tests, and developer
+instructions are licensed under MIT. See LICENSE-MIT.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Original editorial content (src/lib/posts/, src/lib/news/, src/lib/about.md,
+and original prose on product/about pages), including original illustrations
+embedded in those articles unless separately marked, is licensed under
+CC BY-NC-ND 4.0. See LICENSE-CONTENT.md. This content is excluded from the
+website implementation's MIT grant.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Imported project documentation in src/lib/docs/content/ retains its source
+license: Kēne — Defold License 1.0; Hakutaku — MIT OR Apache-2.0.
+Copies of those licenses are in static/docs/licenses/.
+
+Third-party materials remain under their respective licenses. Logos and
+trademarks are not granted a trademark license by this notice.
+This notice does not revoke permissions already granted for earlier copies.

@@ -46,7 +46,7 @@
       <h1 class="product-name" id="keine-title">Kēne</h1>
       <p class="product-promise">{$msg("视觉小说引擎与编辑器")}</p>
       <p class="product-summary">{$msg("内建立绘动画、镜头与舞台特效。用 Eiyashou 编写剧情，在原生引擎里预览作品。")}</p>
-      <div class="product-actions"><a class="primary-action" href="https://github.com/maincoretech/keine/releases/tag/editor-latest" target="_blank" rel="noopener noreferrer">{$msg("下载开发版 ↗")}</a><a href="/blog/keine-development-and-release">{$msg("使用指南 →")}</a></div>
+      <div class="product-actions"><a class="primary-action" href="https://github.com/maincoretech/keine/releases/tag/editor-latest" target="_blank" rel="noopener noreferrer">{$msg("下载开发版 ↗")}</a><a href="/docs/keine">{$msg("使用指南 →")}</a></div>
       <p class="product-meta">Rust / Bevy / wgpu · <a href="https://github.com/maincoretech/keine" target="_blank" rel="noopener noreferrer">GitHub ↗</a></p>
       <p class="product-note">{$msg("预发行版")}</p>
     </div>
@@ -74,14 +74,14 @@
       <section id="keine-source" class="keine-feature" aria-labelledby="keine-source-title" use:scrollReveal>
         <header class="feature-heading">
           <h3 id="keine-source-title">{$msg("文本与块编辑")}</h3>
-          <a href="https://github.com/maincoretech/keine/blob/main/dev/docs/editor.md#单一源码" target="_blank" rel="noopener noreferrer">{$msg("编辑器 ↗")}</a>
+          <a href="/docs/keine#单一源码">{$msg("编辑器 →")}</a>
         </header>
         <p>{$msg("直接写脚本，也可以拖动对白块、在面板里调参数。两种方式修改同一份源码，保留原有注释。")}</p>
       </section>
       <section id="keine-preview" class="keine-feature" aria-labelledby="keine-preview-title" use:scrollReveal={{ delay: 60 }}>
         <header class="feature-heading">
           <h3 id="keine-preview-title">{$msg("在实际引擎里预览")}</h3>
-          <a href="https://github.com/maincoretech/keine/blob/main/dev/docs/editor.md#engine" target="_blank" rel="noopener noreferrer">{$msg("预览调试 ↗")}</a>
+          <a href="/docs/keine#engine">{$msg("预览调试 →")}</a>
         </header>
         <p>{$msg("未保存的修改也能预览。选中指令可重建对应舞台，查看变量与错误；语法出错时保留上次有效画面。")}</p>
         <p class="product-note">{$msg("定位重建舞台，不还原此前的分支选择。")}</p>
@@ -100,7 +100,7 @@
       <section id="keine-release" class="keine-feature" aria-labelledby="keine-release-title" use:scrollReveal>
         <header class="feature-heading">
           <h3 id="keine-release-title">{$msg("打包与内容更新")}</h3>
-          <a href="https://github.com/maincoretech/keine/blob/main/dev/docs/release.md" target="_blank" rel="noopener noreferrer">{$msg("发行流程 ↗")}</a>
+          <a href="/docs/keine/release">{$msg("发行流程 →")}</a>
         </header>
         <ol class="release-features">
           {#each releaseFeatures as feature, index}
@@ -115,8 +115,8 @@
     <h2 id="keine-start">{$msg("开始制作")}</h2>
     <div class="start-links">
       <a href="https://github.com/maincoretech/keine/releases/tag/editor-latest" target="_blank" rel="noopener noreferrer"><span>{$msg("下载编辑器")}</span><small>Editor + Preview Engine</small><span aria-hidden="true">↗</span></a>
-      <a href="/blog/eiyashou"><span>{$msg("编写剧本")}</span><small>Eiyashou</small><span aria-hidden="true">→</span></a>
-      <a href="/blog/keine-development-and-release"><span>{$msg("打包作品")}</span><small>{$msg("制作与发行指南")}</small><span aria-hidden="true">→</span></a>
+      <a href="/docs/keine/language"><span>{$msg("编写剧本")}</span><small>Eiyashou</small><span aria-hidden="true">→</span></a>
+      <a href="/docs/keine/release"><span>{$msg("打包作品")}</span><small>{$msg("制作与发行指南")}</small><span aria-hidden="true">→</span></a>
     </div>
     <div class="product-license">
       <p>{$msg("可以免费使用 Kēne 制作并销售游戏，无需支付引擎版税。发行时需附带许可证及版权声明。")}</p>

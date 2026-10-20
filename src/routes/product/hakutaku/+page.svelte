@@ -15,7 +15,7 @@
       <h1 class="product-name" id="hakutaku-title">Hakutaku</h1>
       <p class="product-promise">{$msg("按需读取，复用未变的资源。")}</p>
       <p class="product-summary">{$msg("将剧本、图片和声音组织成可认证的资源包，为引擎提供随机访问和增量更新所需的数据结构。")}</p>
-      <div class="product-actions"><a class="primary-action" href="https://github.com/maincoretech/hakutaku" target="_blank" rel="noopener noreferrer">{$msg("查看项目与文档 ↗")}</a><a href="/blog/hakutaku">{$msg("格式设计")}</a></div>
+      <div class="product-actions"><a class="primary-action" href="https://github.com/maincoretech/hakutaku" target="_blank" rel="noopener noreferrer">{$msg("查看项目与文档 ↗")}</a><a href="/docs/hakutaku">{$msg("使用指南 →")}</a></div>
     </div>
     <div class="archive-outline" aria-label={$msg("资源组织示意")}>
       <p>{$msg("一个发行版本")}</p>

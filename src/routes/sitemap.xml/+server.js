@@ -1,6 +1,7 @@
 export const prerender = true;
 
 import { siteConfig } from '$lib/siteConfig.js';
+import { docs } from '$lib/docs/projects.js';
 
 /**
  * Sitemap XML — 自动扫描所有页面和博客
@@ -13,7 +14,7 @@ export async function GET() {
   const postModules = import.meta.glob('$lib/posts/*.md', { eager: true });
   const blogSlugs = Object.keys(postModules).map((p) => '/blog/' + p.split('/').pop()?.replace('.md', ''));
 
-  const urls = [...pages, ...blogSlugs];
+  const urls = [...pages, '/docs', '/license', ...docs.map(d => d.href), ...blogSlugs];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

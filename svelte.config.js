@@ -1,6 +1,7 @@
 import { mdsvex } from 'mdsvex';
 import adapter from '@sveltejs/adapter-static';
 import remarkComponents from './src/lib/markdown/remark-components.js';
+import remarkDocs from './src/lib/markdown/remark-docs.js';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,7 +9,7 @@ const config = {
   preprocess: [
     mdsvex({
       extensions: ['.md', '.svx'],
-      remarkPlugins: [remarkComponents]
+      remarkPlugins: [remarkDocs, remarkComponents]
     })
   ],
   kit: {

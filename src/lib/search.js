@@ -2,6 +2,7 @@
  * 搜索索引 — MiniSearch 全文搜索 + 高亮 (支持中文)
  */
 import MiniSearch from 'minisearch';
+import { docs as documents } from './docs/projects.js';
 
 /** 把中文按字符拆分，英文按空格拆分 */
 function tokenize(s) {
@@ -53,6 +54,11 @@ function build() {
     docs.push({ id: `blog/${slug}`, title, text, slug: `/blog/${slug}`, kind: 'blog' });
   }
 
+  const documentModules = import.meta.glob('$lib/docs/content/*/*.md', { eager: true, query: '?raw', import: 'default' });
+  for (const doc of documents) {
+    const raw = Object.entries(documentModules).find(([path]) => path.endsWith('/' + doc.project + '/' + doc.slug + '.md'))?.[1] ?? '';
+    docs.push({ id: doc.href, title: doc.project + ' · ' + doc.title, text: plainText(raw), slug: doc.href, kind: 'docs' });
+  }
   idx.addAll(docs);
 }
 

@@ -4,7 +4,8 @@ import { CAMERA_VIEWS, createCameraAxis, advanceCameraAxis, resetCameraAxis, cam
 import { siteConfig } from '../src/lib/siteConfig.js';
 
 test('water turns follow the same direction as every main tab pair', () => {
-  const tabs = siteConfig.nav.map(section => section.label);
+  // Documentation uses a plain reading surface, with no water camera.
+  const tabs = siteConfig.nav.filter(section => !section.reading).map(section => section.label);
   for (let from = 0; from < tabs.length; from++) {
     for (let to = 0; to < tabs.length; to++) {
       assert.equal(Math.sign(CAMERA_VIEWS[tabs[to]] - CAMERA_VIEWS[tabs[from]]), Math.sign(to - from));
