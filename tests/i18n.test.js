@@ -34,6 +34,9 @@ test('translation preserves measurements, whitespace and parameter values withou
   assert.equal(translateMessage('Kēne {0} · 不含解析 · 未测竞品执行', 'en', {0:'{1}'}).includes('{1}'), true);
 });
 const files = [
+  'routes/download/keine/+page.svelte', 'routes/archive/news/+page.svelte',
+  'routes/archive/news/[slug]/+page.svelte', 'routes/404/+page.svelte',
+  'lib/site/TableOfContents.svelte',
   'routes/product/+page.svelte', 'routes/product/keine/+page.svelte',
   'routes/product/hakutaku/+page.svelte', 'routes/about/+page.svelte',
   'lib/site/ProjectExplorer.svelte', 'lib/site/EngineDemos.svelte',

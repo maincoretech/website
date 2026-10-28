@@ -1,5 +1,6 @@
-<script>import { msg } from '$lib/i18n/index.js';</script>
-<svelte:head><title>{$msg('内容与代码许可')} · maincore</title></svelte:head>
+<script>
+  import PageMeta from '$lib/site/PageMeta.svelte';import { msg } from '$lib/i18n/index.js';</script>
+<PageMeta title={$msg('内容与代码许可') + ' · maincore'} description={$msg("网站代码、原创文章与项目文档的许可范围。")} />
 <article class="article-prose">
   <a href="/about">← maincore</a>
   <h1 class="site-page-title">{$msg('内容与代码许可')}</h1>

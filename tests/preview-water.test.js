@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RIPPLE_LIFETIME, SCROLL_WAKE_WIDTH, SCROLL_WAKE_GAIN, prepareRipples, disturbanceHeight, sampleFloat, waveHeight, advanceScrollWake, scrollDisturbance } from '../src/lib/site/water-motion.js';
+import { RIPPLE_LIFETIME, SCROLL_WAKE_WIDTH, SCROLL_WAKE_GAIN, prepareRipples, disturbanceHeight, sampleFloat, waveHeight, advanceScrollWake, advancePointerFlow, scrollDisturbance } from '../src/lib/site/water-motion.js';
 
 test('scroll surface matches the shader band and reverses with scroll direction', () => {
   for (const strength of [-.8, -.2, 0, .2, .8]) {
@@ -121,5 +121,48 @@ test('overlapping clicks keep paper displacement bounded', () => {
     const ambient = .035 + waveHeight(pose.x, pose.z, time);
     assert(Math.abs(pose.y - ambient) <= .03);
     assert(Object.values(pose).every(Number.isFinite));
+  }
+});
+
+
+test('pointer wake follows rapid direction changes in the next frame, without position easing', () => {
+  const flow = { x: -2, y: 3, z: .4 };
+  for (const dt of [1 / 120, 1 / 60, 1 / 30]) {
+    for (const [x, y] of [[2, -3], [-2, 3], [0, 0]]) {
+      advancePointerFlow(flow, { x, y, z: .75 }, dt);
+      assert.deepEqual(flow, { x, y, z: .75 });
+    }
+  }
+});
+
+test('holding a finger keeps the wake engaged; lifting fades in place without a final jump', () => {
+  const flow = { x: 0, y: 0, z: 0 };
+  const target = { x: 1, y: -1, z: .75 };
+  for (let i = 0; i < 120; i++) advancePointerFlow(flow, target, 1 / 60);
+  assert.deepEqual(flow, target);
+  // Consume the endpoint even when a complete swipe occurs between two frames.
+  advancePointerFlow(flow, { x: 2, y: -2, z: .75 }, 0);
+  const released = { ...flow, z: 0 };
+  let previous = flow.z;
+  for (let i = 0; i < 120; i++) {
+    advancePointerFlow(flow, released, 1 / 60);
+    assert.equal(flow.x, 2);
+    assert.equal(flow.y, -2);
+    assert(flow.z <= previous);
+    previous = flow.z;
+  }
+  assert.equal(flow.z, 0);
+});
+
+
+test('ambient wave fronts cross the viewing direction in every main camera view', () => {
+  for (const angle of [Math.PI / 2, Math.PI, Math.PI * 1.5]) {
+    const x = Math.sin(angle) * 6;
+    const z = 1.6 - Math.cos(angle) * 6;
+    // A radial move crosses the crests; a sideways move stays on the same band.
+    const forward = waveHeight(x + Math.sin(angle) * .04, z - Math.cos(angle) * .04, .7);
+    const sideways = waveHeight(x + Math.cos(angle) * .04, z + Math.sin(angle) * .04, .7);
+    const centre = waveHeight(x, z, .7);
+    assert(Math.abs(forward - centre) > Math.abs(sideways - centre) * 4);
   }
 });

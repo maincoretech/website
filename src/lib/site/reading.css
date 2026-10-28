@@ -1,17 +1,41 @@
 /* All routes share one transparent reading surface and one fixed navigation. */
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-.site-shell.article-page .site-viewport { background: #0b1216; }
-.site-shell.article-page .reading-panel { bottom: 48px; mask-image: none; -webkit-mask-image: none; }
+.site-shell.article-page .site-viewport { background: #10151c; }
+.site-shell.article-page .reading-panel { bottom: 104px; mask-image: none; -webkit-mask-image: none; }
 .site-shell.article-page .site-back-top { bottom: 40px; }
 .site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
 .site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
 .site-shell .route-content { min-width: 0; }
+.site-shell .docs-exit { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 8px; padding-inline: 8px; font-size: .9rem; }
 .site-shell .reading-panel:not(.detail-reading) > .route-content { will-change: transform; }
-.site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #a2c4d6; font: 1.4rem var(--f-n); }
+.site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #b3cae5; font: 1.4rem var(--f-n); }
 .site-page-title { margin: 6px 0 16px; font: 400 1.65rem/1.4 var(--f-h); color: #bfd3de; }
 .site-intro { margin: 10px 0 24px; color: #9fb7c4; font-size: .88rem; }
 .site-shell .entry-link { padding: 12px 0; }
 .site-shell .entry-link > .entry-title { display: block; font: 400 1.1rem/1.45 var(--f-n); }
+/* Animate the wash separately from text inside the masked reading surface.
+   Keep its layer alive across rapid entry changes; it never participates in hit testing. */
+.site-shell .reading-panel .entry-list a.entry-link {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent;
+  transition: color var(--hover-duration) var(--hover-ease), border-color var(--hover-duration) var(--hover-ease);
+}
+.site-shell .entry-list .entry-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--hover-wash);
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity var(--hover-duration) var(--hover-ease);
+}
+.site-shell .entry-list .entry-link:focus-visible::before { opacity: 1; }
+@media (hover: hover) {
+  .site-shell .entry-list .entry-link:hover::before { opacity: 1; }
+}
 .site-shell .list-section { margin: 22px 0; }
 .site-shell .list-section > h2, .site-shell .catalog-group > h2 { margin: 0 0 12px; font: 400 1.15rem/1.5 var(--f-n); color: #abc6d5; }
 /* Every route shares the same width; only list pages use independent columns. */
@@ -66,4 +90,16 @@
   .site-shell .page-section { font-size: 1.25rem; }
   .site-shell .article-heading h1 { font-size: 1.5rem; }
   .site-shell .site-back-top { bottom: 110px; }
+}
+
+/* Keep cross-section navigation available while reading long documents. */
+.site-shell.article-page .site-navigation { bottom: 42px; width: min(680px, calc(100% - 80px)); }
+.site-shell.article-page .site-navigation a > span { font-size: .86rem; }
+.site-shell.article-page .site-back-top { bottom: 92px; }
+.site-shell.docs-page .reading-panel { bottom: 48px; }
+.site-shell.docs-page .site-back-top { bottom: 40px; }
+.site-shell .article-prose :is(h2, h3, h4) { scroll-margin-top: 64px; }
+@media (max-width: 759px) {
+  .site-shell.article-page .site-navigation { width: calc(100% - 32px); }
+  .site-shell.article-page .site-navigation a { padding-inline: 5px; }
 }

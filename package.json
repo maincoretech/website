@@ -7,9 +7,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "node --test tests/*.test.js",
+    "check:site": "node scripts/check-site.mjs",
+    "check": "bun run test && bun run build && bun run check:site",
+    "test:browser": "playwright test",
+    "check:live": "node scripts/check-live.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@sveltejs/adapter-static": "^3.0.0",
     "@sveltejs/kit": "^2.20.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",

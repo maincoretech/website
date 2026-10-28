@@ -146,7 +146,7 @@ Full builds preserve and advance the authenticated release sequence even when
 rebuilding unchanged source or recovering missing old segments. An existing
 snapshot must authenticate; `--full` does not reset the launcher's rollback floor.
 
-Hakutaku 0.2.0 reads and writes **v2 only**. Existing v1 packages require a full
+Hakutaku 0.2.1 reads and writes **v2 only**. Existing v1 packages require a full
 source repack into a fresh directory using the same identity; pass
 `--release-sequence-floor N` above the last published sequence. Deploy the new
 runtime with its matching package. There is no legacy format fallback.

@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tabSlideDirection, tabSlideProgress } from '../src/lib/site/tab-motion.js';
+import { docsSlideDirection, tabSlideDirection, tabSlideProgress } from '../src/lib/site/tab-motion.js';
+
+test('docs push in and pop out consistently regardless of main navigation order', () => {
+  for (const section of ['/', '/product', '/blog', '/about']) {
+    assert.equal(docsSlideDirection(section, '/docs/'), 1);
+    assert.equal(docsSlideDirection('/docs/keine/language', section), -1);
+  }
+  assert.equal(docsSlideDirection('/docs', '/docs/keine'), 1);
+  assert.equal(docsSlideDirection('/docs/keine/language', '/docs'), -1);
+  assert.equal(docsSlideDirection('/docs/keine/language', '/docs/keine/start'), 0);
+  assert.equal(docsSlideDirection('/docs/keine/', '/docs/keine'), 0);
+  assert.equal(docsSlideDirection('/blog', '/product'), 0);
+});
 
 test('main tabs slide in navigation order, including the home alias', () => {
   assert.equal(tabSlideDirection('/product', '/blog'), 1);

@@ -51,7 +51,7 @@ APK 校验沿 manifest 资源 ID 检查编译资源表、各密度 PNG 和 adapt
 此引擎 CI 不读取 publisher identity，也不打包 tday；原生构建缓存与桌面分开。
 Android 与桌面/媒体 job 在前置检查通过后并行，不等待桌面编译完成。
 
-工具和平台入口依据 [Bevy 0.19.1 Android 示例](https://github.com/bevyengine/bevy/blob/v0.19.1/examples/README.md#android)、
+工具和平台入口依据 [Bevy 0.20.0 Android 示例](https://github.com/bevyengine/bevy/blob/v0.20.0/examples/README.md#android)、
 [AGP 9.4 构建要求](https://developer.android.com/build/releases/agp-9-4-0-release-notes)、
 [Android 16 KB 对齐要求](https://developer.android.com/guide/practices/page-sizes)。
 

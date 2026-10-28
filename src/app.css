@@ -16,7 +16,7 @@
 
 :root {
   color-scheme: dark;
-  --c-t: #c4d0d6; --c-l: #a2c4d6; --c-m: #19262d; --c-e: #3d5664;
+  --c-t: #c4d0d6; --c-l: #b3cae5; --c-m: #202b36; --c-e: #3d5664;
   --c-pr: #102129; --c-cb: #20343e; --c-hv: rgb(180 180 180 / 7%);
   --f-b: "Lato", "Helvetica", "Arial", sans-serif;
   --f-h: "Oswald", "Bookman Old Style", serif;
@@ -25,8 +25,8 @@
   --motion-fast: 160ms; --motion-ease: cubic-bezier(.22,1,.36,1);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font: clamp(15px, .825vw, 19px) var(--f-b); background: #0b1216; }
-body { min-height: 100svh; color: var(--c-t); background: #0b1216; }
+html { font: clamp(15px, .825vw, 19px) var(--f-b); background: #10151c; }
+body { min-height: 100svh; color: var(--c-t); background: #10151c; }
 a { color: var(--c-l); text-decoration: none; }
 button, input { font: inherit; }
 button { cursor: pointer; }

@@ -1,11 +1,11 @@
 // Shared world-space ripple phase: the shader and paper motion use the same field.
 // Analytic sampling only; no physics solver, geometry updates or additional timer.
-const X_SCALE = 14;
-const Z_SCALE = 12;
-const FREQUENCY = 125;
 const SPEED = 1.15;
-const BEND_X = 19;
-const BEND_Z = 31;
+// The three camera views look across the same pool from EYE=(0, 1.65, 1.6).
+// Distance bands run across the water in every view, rather than becoming
+// lengthwise rays when the camera turns 90 degrees from the global Z axis.
+const WATER_ORIGIN_Z = 1.6;
+const WAVE_SPACING = 10;
 export const RIPPLE_COUNT = 4;
 export const RIPPLE_LIFETIME = 1.2;
 export const SCROLL_WAKE_WIDTH = .18;
@@ -111,19 +111,16 @@ export function disturbanceHeight(x, z, time, ripples, flow, prepared = false) {
 
 export const WATER_PHASE_GLSL = `
   float waterPhase(vec2 world, float time) {
-    vec2 p = vec2(world.x / ${X_SCALE.toFixed(1)}, -world.y / ${Z_SCALE.toFixed(1)});
-    return p.y * ${FREQUENCY.toFixed(1)} - time * ${SPEED.toFixed(2)}
-      + sin(p.x * ${BEND_X.toFixed(1)} + time * .12) * 2.
-      + sin(p.y * ${BEND_Z.toFixed(1)} - time * .2);
+    float distance = length(world - vec2(0., ${WATER_ORIGIN_Z.toFixed(1)}));
+    return distance * ${WAVE_SPACING.toFixed(1)} - time * ${SPEED.toFixed(2)}
+      + sin(world.x * .35 + world.y * .23) * .6;
   }
 `;
 
 export function waveHeight(x, z, time) {
-  const u = x / X_SCALE;
-  const v = -z / Z_SCALE;
-  const phase = v * FREQUENCY - time * SPEED
-    + Math.sin(u * BEND_X + time * .12) * 2
-    + Math.sin(v * BEND_Z - time * .2);
+  const distance = Math.hypot(x, z - WATER_ORIGIN_Z);
+  const phase = distance * WAVE_SPACING - time * SPEED
+    + Math.sin(x * .35 + z * .23) * .6;
   return Math.sin(phase) * .026;
 }
 
@@ -146,4 +143,17 @@ export function sampleFloat(homeX, homeZ, time, pose, ripples = [], flow, prepar
   pose.slopeZ = (surfaceHeight(pose.x, pose.z + reach, time, ripples, flow, prepared, scrollHeight) - surfaceHeight(pose.x, pose.z - reach, time, ripples, flow, prepared, scrollHeight)) / (2 * reach);
   pose.yaw = Math.sin(time * SPEED * .3 + phase) * .045;
   return pose;
+}
+
+// Input position is direct manipulation, not a spring. Only a released wake fades.
+export function advancePointerFlow(flow, target, dt) {
+  if (target.z > 0) {
+    flow.x = target.x;
+    flow.y = target.y;
+    flow.z = target.z;
+  } else {
+    flow.z *= Math.exp(-Math.max(0, dt) * 12);
+    if (flow.z < .002) flow.z = 0;
+  }
+  return flow;
 }

@@ -1,20 +1,20 @@
 /* Shared water-and-paper theme for every public route. */
 .site-shell {
   --c-t: #c4d0d6;
-  --c-l: #a2c4d6;
-  --c-m: #19262d;
+  --c-l: #b3cae5;
+  --c-m: #202b36;
   --c-e: #3d5664;
-  --c-nav: #243b48;
-  --c-con: #151f24;
-  --c-ft: #172a35;
+  --c-nav: #293a4d;
+  --c-con: #1b2530;
+  --c-ft: #202f40;
   --c-hv: rgb(120 159 176 / 13%);
-  --c-pr: #122936;
+  --c-pr: #203042;
   --c-sh: #7195a9;
   --utility-right: 55px;
   --utility-top: 16px;
   position: relative;
   min-height: 100svh;
-  background: #0b1216;
+  background: #10151c;
   color: var(--c-t);
   color-scheme: dark;
 }
@@ -66,7 +66,7 @@
 }
 .site-shell #banner :is(.lang-btn:focus-visible, .lang-btn--open, .search-input:focus) {
   color: #d5e7ef;
-  box-shadow: inset 0 -2px 0 #a2c4d6;
+  box-shadow: inset 0 -2px 0 #b3cae5;
   outline: none;
 }
 .site-shell #banner .lang-btn--open {
@@ -193,7 +193,10 @@
   pointer-events: none;
 }
 .site-brand-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
   transform: translateY(-2px);
   margin: 0;
   padding: 0;
@@ -451,7 +454,7 @@
   left: 0;
   width: 100%;
   height: 1px;
-  background: #a2c4d6;
+  background: #b3cae5;
   transform-origin: left;
   pointer-events: none;
 }

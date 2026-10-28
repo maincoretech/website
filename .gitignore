@@ -1,6 +1,5 @@
 # deps
 node_modules
-bun.lock
 
 # build
 build
@@ -21,3 +20,7 @@ Thumbs.db
 # misc
 *.log
 static/pagefind/
+
+# Browser test artifacts
+playwright-report/
+test-results/

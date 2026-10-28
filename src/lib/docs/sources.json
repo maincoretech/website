@@ -1,57 +1,79 @@
 {
   "keine/editor": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-23",
     "modified": false,
-    "sha256": "37370b648938ed2496fe1eb596d1b92105f2d3ccbff8f0ffea636b0bacf7ada2"
+    "sha256": "4aaec2f6f96a9b2bee404798cf5ef718f09a36b8f9376961bffb2c4b97864b52"
   },
   "keine/language": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-20",
     "modified": false,
     "sha256": "3b32051f85eb4066136177808fd088a6e99215b40d6f6cfa3e8662c36d44ede0"
   },
   "keine/release": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-23",
     "modified": false,
-    "sha256": "41a4d6b427009dc08555309679bc66f65b751bf8f0b7b9c9914dc4c5c96e7f50"
+    "sha256": "59138a367e1098b2d287be8201f7d2ed251978aa58be2aa1fa35f5ef34559b30"
   },
   "keine/compatibility": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-20",
     "modified": false,
     "sha256": "3abd183ad19780cb462cf8db2b6a130cde6dc01f74d0e41c57f76d97a21d1ce1"
   },
   "keine/android": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-23",
     "modified": false,
-    "sha256": "bb33be734940858ec46849a0626d239e2f926ac3037512f2a177df628b78f9f9"
+    "sha256": "2ac3f5db012e83ab798df01859c129c1e75bd3c567c414ba948286cff5c12b2a"
   },
   "keine/architecture": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-23",
     "modified": false,
-    "sha256": "b217e76ef19825d96f505a7b1de5726f083e97fce805176b62a380fbf5a64940"
+    "sha256": "27daedf88ce6d5fcb6904b9d35e14698eb2cdc6d49563cb0c2776b35006d12c2"
   },
   "keine/testing": {
-    "revision": "b7a3282ee60b65200371ea6691e5ad2a0a787a16",
+    "revision": "9eefe9acf34e82203321fe59ed38d3f7215ed783",
+    "version": "0.17.1",
+    "updated": "2026-10-23",
     "modified": false,
-    "sha256": "db1514dbf53bd4470ee07b2a30b2f33fe2073e743e9456db3af0e0813591340b"
+    "sha256": "065aeec8878297e2dc7288f9b95eef5e2c465a39ed0f367f0afc38851607053f"
   },
   "hakutaku/start": {
-    "revision": "f1aeff80b9076b56b6ef835bf51980f19c041af9",
-    "modified": true,
-    "sha256": "8a23e0112d2cd5da361f9f173e1f861f5fe3ee52d023e2d791f8f89fec6c0140"
+    "revision": "9c461cd46012c09d0ace7ee0f12ffe724c433e2c",
+    "version": "0.2.1",
+    "updated": "2026-10-23",
+    "modified": false,
+    "sha256": "4379ceb7658dde93f678ecaec9cfb2a2ed265024084877555184fde90e91be9e"
   },
   "hakutaku/format": {
-    "revision": "f1aeff80b9076b56b6ef835bf51980f19c041af9",
-    "modified": true,
+    "revision": "9c461cd46012c09d0ace7ee0f12ffe724c433e2c",
+    "version": "0.2.1",
+    "updated": "2026-10-23",
+    "modified": false,
     "sha256": "812a7a929f72c386a96583a27286317c6e97e03c5e920fc0f860004a7924b1d1"
   },
   "hakutaku/security": {
-    "revision": "f1aeff80b9076b56b6ef835bf51980f19c041af9",
-    "modified": true,
-    "sha256": "3c321896e0b70752aa6786bd3214f735a485853c5693c1d2aafe430bd77004cb"
+    "revision": "9c461cd46012c09d0ace7ee0f12ffe724c433e2c",
+    "version": "0.2.1",
+    "updated": "2026-10-23",
+    "modified": false,
+    "sha256": "3a0bcf853d943c2f39a656b0cc73cc40df913dc36d0fd6b79912e60e23bd4c65"
   },
   "hakutaku/performance": {
-    "revision": "f1aeff80b9076b56b6ef835bf51980f19c041af9",
-    "modified": true,
-    "sha256": "c92a0d769256578abc8779a58e081e39b99fc535355196f5f484f9d3bc865e64"
+    "revision": "9c461cd46012c09d0ace7ee0f12ffe724c433e2c",
+    "version": "0.2.1",
+    "updated": "2026-10-23",
+    "modified": false,
+    "sha256": "bd81f533803e00db57d983f3f5fae54c7886eaf81ab2629fb18d475235a028cb"
   }
 }

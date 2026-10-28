@@ -13,6 +13,21 @@ tree. The output directory may neither equal nor be nested beneath that tree,
 so snapshots, segments, temporary files, and local build-cache state cannot be
 collected by a later scan.
 
+## Complete release verification
+
+`Package::open` authenticates the snapshot header and catalog; normal reads
+authenticate pages and blocks lazily. CLI/GUI Verify use `Package::verify` to
+also check every metadata page, path lookup, contiguous file mapping, segment
+digest and decoded content block, including Deferred segments. This is an
+explicit whole-release check, not part of normal startup. `verify_segments`
+retains its narrower segment-only meaning.
+
+Strict incremental builds verify existing payloads and compare sources even
+when the fingerprint is unchanged; missing/corrupt segments cannot yield a
+successful unchanged result. Development-cache unchanged builds intentionally
+retain their faster local-trust policy. The pack library, as well as its CLI,
+rejects development cache with full reconstruction.
+
 ## At-rest boundary
 
 On Unix, publisher identities, runtime-key exports, GUI backups, and their

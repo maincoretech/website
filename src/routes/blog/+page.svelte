@@ -1,5 +1,6 @@
 <script>
-  import { t } from '$lib/i18n/index.js';
+  import PageMeta from '$lib/site/PageMeta.svelte';
+  import { t, msg } from '$lib/i18n/index.js';
 
   /**
    * 博客文章列表 — 从 src/lib/posts 目录下所有 .md 文件自动加载
@@ -41,17 +42,14 @@
   });
 </script>
 
-<svelte:head>
-  <title>maincore</title>
-  <meta name="description" content={$t('pages.blog.subtitle')} />
-</svelte:head>
+<PageMeta title={$msg('博客') + ' · maincore'} description={$msg("开发文章、软件架构与实测记录。")} />
 <h1 class="site-page-title">{$t('pages.blog.subtitle')}</h1>
 {#each grouped as [cat, catPosts]}
   <section class="list-section">
     <h2>{$t('cat.' + cat) || cat}</h2>
     <div class="entry-list">
       {#each catPosts as post}
-        <a href="/blog/{post.slug}" class="entry-link">
+        <a href="/blog/{post.slug}" class="entry-link" data-sveltekit-preload-data="tap">
           <span class="entry-title">{post.title}</span>
           <time datetime={post.date}>{post.date}</time>
           {#if post.description}<p>{post.description}</p>{/if}

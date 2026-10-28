@@ -31,7 +31,7 @@
       </div>
       <div class="package-lane">
         <h3>{$msg("游戏运行端")}</h3><div class="flow-node"><strong>hakutaku-core</strong><span>{$msg("认证 · 索引 · 按需读取")}</span></div>
-        <span class="flow-down" aria-hidden="true">↓</span><div class="flow-node"><strong>Engine</strong><span>{$msg("解码与播放")}</span></div>
+        <span class="flow-down" aria-hidden="true"></span><div class="flow-node"><strong>Engine</strong><span>{$msg("解码与播放")}</span></div>
       </div>
     </div>
     <p class="flow-note">{$msg("新快照可继续引用旧数据段。游戏只链接 Core，不携带打包器与签名私钥。")}</p>
@@ -49,7 +49,7 @@
     <figcaption>{$msg("常见调用流程")}</figcaption>
     <div class="api-entry">
       <div class="flow-node"><code>Package::open_directory(...)</code><span>{$msg("验证快照，载入目录")}</span></div>
-      <span aria-hidden="true">→</span>
+      <span class="flow-down" aria-hidden="true"></span>
       <div class="flow-node"><code>package.asset(path)</code><span>{$msg("获取资源句柄，不读取整个资源")}</span></div>
     </div>
     <div class="api-branches">
@@ -61,44 +61,64 @@
 </section>
 
 <style>
-  .hakutaku-flows { min-width: 0; }
-  figure { margin: 28px 0 36px; }
+  .hakutaku-flows { --connector-color: #7096a7; min-width: 0; }
+  figure { margin: 28px 0 36px 12px; }
   figcaption { color: #bdd5e2; font: 400 1.05rem/1.5 var(--f-b); margin-bottom: 20px; }
   .package-lanes { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 40px; }
   .package-lane { position: relative; min-width: 0; }
-  .package-lane + .package-lane::before { content: '→'; position: absolute; left: -30px; top: 64px; color: #83a9bb; }
+
+  .package-lane + .package-lane > .flow-node:first-of-type::after {
+    content: ''; position: absolute; pointer-events: none; top: 50%;
+  }
+
+  .package-lane + .package-lane > .flow-node:first-of-type::after {
+    left: -25px; width: 8px; height: 8px; background: var(--connector-color); clip-path: polygon(0 0, 100% 50%, 0 100%); transform: translateY(-50%);
+  }
   h3 { margin: 0 0 10px; font: .8rem/1.5 var(--f-b); color: #8caebf; }
-  .flow-node { min-width: 0; padding: 14px; border: 1px solid #35505e; background: rgb(113 149 169 / 5%); }
+  .flow-node { position: relative; min-width: 0; padding: 14px; border: 1px solid #35505e; background: rgb(113 149 169 / 5%); }
   .flow-node strong, .flow-node code, .flow-node span { display: block; }
   strong { font: 400 .9rem/1.5 var(--f-b); color: #bdd5e2; }
   code { color: #b4d2e0; font: .76rem/1.6 var(--f-m); overflow-wrap: anywhere; }
   .flow-node span, .lookup-flow p { margin: 6px 0 0; font: .78rem/1.7 var(--f-b); color: #93aebb; }
+  .flow-node span, .lookup-flow p { padding-inline-start: 8px; }
   .segment-node { margin-top: 12px; border-style: dashed; }
-  .flow-down { display: block; text-align: center; color: #83a9bb; margin: 4px 0; }
-  .flow-note { color: #829eac; font: .73rem/1.75 var(--f-b); margin: 14px 0 0; }
+  .flow-down { position: relative; display: block; align-self: center; width: 12px; height: 24px; margin: 4px auto; padding: 0; flex: none; pointer-events: none; }
+
+  .flow-down::after { content: ''; position: absolute; bottom: 8px; left: 50%; width: 8px; height: 8px; background: var(--connector-color); clip-path: polygon(0 0, 100% 0, 50% 100%); transform: translateX(-50%); }
+  .flow-note { color: #829eac; font: .73rem/1.75 var(--f-b); margin: 14px 0 0; padding-inline-start: 12px; }
   .lookup-flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 24px; }
   .lookup-flow li { position: relative; min-width: 0; border-top: 2px solid #527989; padding-top: 10px; }
-  .lookup-flow li + li::before { content: '→'; position: absolute; left: -20px; top: -13px; color: #83a9bb; }
+
+  .lookup-flow li + li::after { content: ''; position: absolute; left: -18px; top: -5px; width: 8px; height: 8px; background: var(--connector-color); clip-path: polygon(0 0, 100% 50%, 0 100%); }
   .lookup-flow code { display: block; min-height: 3.2em; margin-bottom: 8px; }
   .api-entry { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #83a9bb; }
   .api-entry .flow-node { width: min(100%, 380px); box-sizing: border-box; }
-  .api-entry > span { text-align: center; transform: rotate(90deg); }
-  .api-branches { position: relative; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 24px; padding-top: 28px; margin-top: 18px; }
-  .api-branches::before { content: ''; position: absolute; top: -18px; left: 50%; height: 18px; border-left: 1px solid #527989; }
-  .api-branches::after { content: ''; position: absolute; top: 0; left: calc(100% / 6); right: calc(100% / 6); border-top: 1px solid #527989; }
+  .api-branches { --branch-gap: 24px; position: relative; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--branch-gap); padding-top: 28px; margin-top: 18px; }
+
   .api-branches .flow-node { position: relative; }
-  .api-branches .flow-node::before { content: '↓'; position: absolute; top: -27px; left: 50%; transform: translateX(-50%); color: #83a9bb; }
+
+  .api-branches .flow-node::after { content: ''; position: absolute; top: -28px; left: 50%; width: 8px; height: 8px; background: var(--connector-color); clip-path: polygon(0 0, 100% 0, 50% 100%); transform: translateX(-50%); }
   .api-branches strong { margin-top: 8px; }
   .flow-links { display: flex; flex-wrap: wrap; gap: 12px 28px; font: .8rem/1.7 var(--f-b); }
-  @media(max-width:900px) { .lookup-flow { grid-template-columns: 1fr; gap: 24px; } .lookup-flow li { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); gap: 4px 18px; padding: 10px 0 0; } .lookup-flow code { min-height: 0; grid-row: span 2; margin: 0; } .lookup-flow p { margin: 0; } .lookup-flow li + li::before { content: '↓'; left: 12px; top: -25px; } }
+  @media(max-width:900px) {
+    .lookup-flow { grid-template-columns: 1fr; gap: 24px; }
+    .lookup-flow li { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); gap: 4px 18px; padding: 10px 0 0; }
+    .lookup-flow code { min-height: 0; grid-row: span 2; margin: 0; }
+    .lookup-flow p { margin: 0; }
+
+    .lookup-flow li + li::after { left: 11.5px; top: -18px; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  }
   @media(max-width:600px) {
     .package-lanes { grid-template-columns: 1fr; gap: 28px; }
-    .package-lane + .package-lane::before { content: '↓'; left: 50%; top: -28px; }
+
+    .package-lane + .package-lane > .flow-node:first-of-type::after { display: none; }
+
+    .package-lane + .package-lane::after { content: ''; position: absolute; left: 50%; top: -18px; width: 8px; height: 8px; background: var(--connector-color); clip-path: polygon(0 0, 100% 0, 50% 100%); transform: translateX(-3.5px); }
     .api-entry { flex-direction: column; gap: 8px; align-items: stretch; }
     .api-entry .flow-node { flex: auto; }
-    .api-branches { grid-template-columns: 1fr; gap: 14px; padding: 0 0 0 20px; margin-top: 22px; border-left: 1px solid #527989; }
-    .api-branches::before { top: -22px; left: -1px; height: 22px; }
-    .api-branches::after { display: none; }
-    .api-branches .flow-node::before { content: '→'; top: 14px; left: -20px; transform: none; }
+    .api-branches { grid-template-columns: 1fr; gap: 14px; padding: 0 0 0 20px; margin-top: 22px; }
+
+
+    .api-branches .flow-node::after { top: 23.5px; left: -15px; clip-path: polygon(0 0, 100% 50%, 0 100%); transform: none; }
   }
 </style>

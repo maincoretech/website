@@ -2,7 +2,7 @@ import { tabSlideDuration, tabSlideEasing } from './tab-motion.js';
 
 // Only the outgoing reading panel is copied. The incoming page stays live,
 // so finishing a slide never swaps a screenshot back to the real page.
-export function prepareTabSlide(panel, direction) {
+export function prepareTabSlide(panel, direction, { duration = tabSlideDuration, easing: customEasing } = {}) {
   if (!panel?.parentElement || !panel.animate) return null;
   const viewport = panel.parentElement;
   const bounds = panel.getBoundingClientRect();
@@ -32,9 +32,9 @@ export function prepareTabSlide(panel, direction) {
   let idleCleanup;
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
   const updateMotion = () => { if (preference.matches) cancel(); };
-  const easing = CSS.supports('animation-timing-function', tabSlideEasing)
-    ? tabSlideEasing : 'cubic-bezier(.4, 0, .2, 1)';
-  const options = { duration: tabSlideDuration, easing, fill: 'both' };
+  const easing = customEasing ?? (CSS.supports('animation-timing-function', tabSlideEasing)
+    ? tabSlideEasing : 'cubic-bezier(.4, 0, .2, 1)');
+  const options = { duration, easing, fill: 'both' };
   const translate = x => `translate3d(${x}px, 0, 0)`;
   function cancel() {
     cancelled = true;

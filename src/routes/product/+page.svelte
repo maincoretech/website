@@ -1,12 +1,10 @@
 <script>
+  import PageMeta from '$lib/site/PageMeta.svelte';
   import { msg } from '$lib/i18n/index.js';
   import { products } from '$lib/products.js';
   import '$lib/site/product.css';
 </script>
-<svelte:head>
-  <title>maincore</title>
-  <meta name="description" content={$msg("用 Kēne 制作视觉小说，用 Hakutaku 打包与更新游戏资源。了解 maincore 的开发工具、使用文档与实测数据。")} />
-</svelte:head>
+<PageMeta title={'maincore · ' + $msg('产品')} description={$msg("用 Kēne 制作视觉小说，用 Hakutaku 打包与更新游戏资源。了解 maincore 的开发工具、使用文档与实测数据。")} />
 <div class="product-page project-overview">
 <h1 class="visually-hidden">{$msg("maincore 产品")}</h1>
 <div class="overview-projects">

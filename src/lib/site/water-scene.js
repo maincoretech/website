@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { createOrigami } from './origami.js';
 import { CAMERA_VIEWS as VIEWS, createCameraAxis, advanceCameraAxis, resetCameraAxis, cameraAxisSettled } from './camera-motion.js';
-import { WATER_PHASE_GLSL, RIPPLE_GLSL, SCROLL_WAKE_GLSL, advanceScrollWake, scrollDisturbance, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
+import { WATER_PHASE_GLSL, RIPPLE_GLSL, SCROLL_WAKE_GLSL, advanceScrollWake, advancePointerFlow, scrollDisturbance, RIPPLE_COUNT, RIPPLE_LIFETIME, prepareRipples, sampleFloat } from './water-motion.js';
 
-const BACKGROUND = 0x0b1216;
+const BACKGROUND = 0x10151c;
 const EYE = new THREE.Vector3(0, 1.65, 1.6);
 
 // A composed backdrop, not a free camera: only section changes travel through 3D.
@@ -61,7 +61,6 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   const input = new THREE.Vector2();
   let inputPending = false;
   let inputRect;
-  let lastInputTime = -1000;
   let dragId = null;
   let rippleIndex = 0;
   let rippleSequence = 0;
@@ -83,8 +82,8 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       viewportWidth: { value: 1 },
       surfaceBand: { value: new THREE.Vector2(.76, .8) },
       surfaceCurve: { value: .04 },
-      deep: { value: new THREE.Color(0x10242c) },
-      light: { value: new THREE.Color(0x638898) }
+      deep: { value: new THREE.Color(0x141e2a) },
+      light: { value: new THREE.Color(0x8eadc9) }
     },
     vertexShader: `
       varying vec2 surfaceUv;
@@ -125,24 +124,29 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
         float ripple = disturbance(waterPoint, time);
         ripple += scrollDisturbance(1. - gl_FragCoord.y / viewportHeight);
         float wave = sin(waterPhase(waterPoint, time) + ripple * 1.4);
-        float sheen = pow(max(0., wave), 14.) * .075;
-        float reflection = exp(-pow((p.x - .08 + sin(p.y * 16. - time * .18) * .035) * 5., 2.));
-        vec3 colour = mix(deep, light, .08 + reflection * .16 + sheen * reflection + abs(ripple) * .09);
+        float sheen = pow(max(0., wave), 14.) * .045;
+        // Read as transverse wave crests, without a bright longitudinal beam.
+        vec3 colour = mix(deep, light, .07 + sheen + abs(ripple) * .09);
         gl_FragColor = vec4(colour, edge * farFade * surfaceFade * .94);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
+        // Fixed monochrome sub-level noise breaks up 8-bit gradient bands.
+        // Compensate for alpha so the fade stays dithered after blending;
+        // no time component, so holding still never introduces shimmer.
+        float grain = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(.06711056, .00583715)))) - .5;
+        gl_FragColor.rgb += vec3(grain / (255. * max(gl_FragColor.a, .05)));
       }
     `
   }));
   const disc = geometry(new THREE.PlaneGeometry(2, 2));
-  scene.add(new THREE.HemisphereLight(0xb5d5e2, 0x10171c, 2.3));
-  const key = new THREE.DirectionalLight(0xa6c7d7, 3.2);
+  scene.add(new THREE.HemisphereLight(0xc5d6eb, 0x151c26, 2.3));
+  const key = new THREE.DirectionalLight(0xbacfea, 3.2);
   key.position.set(-6, 10, -4);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x78b3cb, 2.4);
+  const rim = new THREE.DirectionalLight(0x9bbee8, 2.4);
   rim.position.set(5, 4, -12);
   scene.add(rim);
-  const fill = new THREE.DirectionalLight(0x8b9da6, 0.5);
+  const fill = new THREE.DirectionalLight(0x9cabbd, 0.5);
   fill.position.set(3, 2, 5);
   scene.add(fill);
 
@@ -155,7 +159,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
   }
   const ground = new THREE.Mesh(
     geometry(new THREE.PlaneGeometry(90, 90)),
-    material(new THREE.MeshStandardMaterial({ color: BACKGROUND, roughness: 1 }))
+    material(new THREE.MeshStandardMaterial({ color: BACKGROUND, roughness: 1, dithering: true }))
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -.055;
@@ -209,19 +213,10 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     const dt = Math.min((now - lastTime) / 1000, .1);
     lastTime = now;
     if (waterEnabled()) waterTime += dt;
-    if (inputPending) {
-      inputPending = false;
-      disturb(input.x, input.y);
-    }
-    if (dragId === null || now - lastInputTime > 160) flowTarget.z = 0;
     if (waterEnabled()) {
       advanceScrollWake(scrollWake, pendingScroll, dt);
       pendingScroll = 0;
-      flow.lerp(flowTarget, 1 - Math.exp(-dt * 12));
-      if (flowTarget.z === 0 && flow.z < .002) flow.z = 0;
     }
-    waterMaterial.uniforms.time.value = waterTime;
-    prepareRipples(waterTime, ripples, rippleField);
     if (journey) {
       advanceCameraAxis(yawMotion, journey.target.yaw, dt);
       advanceCameraAxis(pitchMotion, journey.target.pitch, dt);
@@ -242,6 +237,13 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     // Reuse one matrix/vector: five height samples per prop, no extra render loop.
     camera.updateMatrixWorld();
     waterProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    if (inputPending) {
+      inputPending = false;
+      disturb(input.x, input.y);
+    }
+    if (waterEnabled()) advancePointerFlow(flow, flowTarget, dt);
+    waterMaterial.uniforms.time.value = waterTime;
+    prepareRipples(waterTime, ripples, rippleField);
     const smoothing = !waterEnabled() ? 1 : 1 - Math.exp(-dt * 14);
     for (const prop of floatingProps) {
       const { home, angle } = prop.userData;
@@ -264,37 +266,39 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       firstFrame = false;
       onReady?.();
     }
-    const prop = props[region];
-    if (prop) {
-      const { min, max } = prop.geometry.boundingBox;
-      prop.geometry.boundingBox.getCenter(propProjection);
-      prop.localToWorld(propProjection).project(camera);
-      host.dataset.propPosition = ((propProjection.x + 1) * width / 2).toFixed(1) + ',' + ((1 - propProjection.y) * height / 2).toFixed(1);
-      propCorners.forEach((corner, i) => {
-        corner.set(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z);
-        prop.localToWorld(corner).project(camera);
-        corner.set((corner.x + 1) * width / 2, (1 - corner.y) * height / 2, 0);
-      });
-      host.dataset.propBounds = [
-        Math.min(...propCorners.map(p => p.x)), Math.min(...propCorners.map(p => p.y)),
-        Math.max(...propCorners.map(p => p.x)), Math.max(...propCorners.map(p => p.y))
-      ].map(v => v.toFixed(1)).join(',');
-      host.dataset.propKind = { product: 'lily', blog: 'book', about: 'crane' }[region];
-      host.dataset.propPose = [...prop.position.toArray(), ...prop.quaternion.toArray()].map(v => v.toFixed(4)).join(',');
+    if (import.meta.env.DEV) {
+      const prop = props[region];
+      if (prop) {
+        const { min, max } = prop.geometry.boundingBox;
+        prop.geometry.boundingBox.getCenter(propProjection);
+        prop.localToWorld(propProjection).project(camera);
+        host.dataset.propPosition = ((propProjection.x + 1) * width / 2).toFixed(1) + ',' + ((1 - propProjection.y) * height / 2).toFixed(1);
+        propCorners.forEach((corner, i) => {
+          corner.set(i & 1 ? max.x : min.x, i & 2 ? max.y : min.y, i & 4 ? max.z : min.z);
+          prop.localToWorld(corner).project(camera);
+          corner.set((corner.x + 1) * width / 2, (1 - corner.y) * height / 2, 0);
+        });
+        host.dataset.propBounds = [
+          Math.min(...propCorners.map(p => p.x)), Math.min(...propCorners.map(p => p.y)),
+          Math.max(...propCorners.map(p => p.x)), Math.max(...propCorners.map(p => p.y))
+        ].map(v => v.toFixed(1)).join(',');
+        host.dataset.propKind = { product: 'lily', blog: 'book', about: 'crane' }[region];
+        host.dataset.propPose = [...prop.position.toArray(), ...prop.quaternion.toArray()].map(v => v.toFixed(4)).join(',');
+      }
+      host.dataset.frames = String(renderer.info.render.frame);
+      host.dataset.drawCalls = String(renderer.info.render.calls);
+      host.dataset.triangles = String(renderer.info.render.triangles);
+      host.dataset.waterTime = waterTime.toFixed(3);
+      host.dataset.ripples = String(ripples.filter(r => waterTime - r.z < RIPPLE_LIFETIME).length);
+      host.dataset.rippleSequence = String(rippleSequence);
+      host.dataset.dragging = String(dragId !== null);
+      host.dataset.flow = flow.toArray().map(v => v.toFixed(3)).join(',');
+      host.dataset.scrollWake = scrollWake.toArray().map(v => v.toFixed(4)).join(',');
+      host.dataset.region = region;
+      host.dataset.moving = String(!!journey);
+      host.dataset.camera = camera.position.toArray().map(v => v.toFixed(3)).join(',');
+      host.dataset.view = yaw.toFixed(3) + ',' + pitch.toFixed(3);
     }
-    host.dataset.frames = String(renderer.info.render.frame);
-    host.dataset.drawCalls = String(renderer.info.render.calls);
-    host.dataset.triangles = String(renderer.info.render.triangles);
-    host.dataset.waterTime = waterTime.toFixed(3);
-    host.dataset.ripples = String(ripples.filter(r => waterTime - r.z < RIPPLE_LIFETIME).length);
-    host.dataset.rippleSequence = String(rippleSequence);
-    host.dataset.dragging = String(dragId !== null);
-    host.dataset.flow = flow.toArray().map(v => v.toFixed(3)).join(',');
-    host.dataset.scrollWake = scrollWake.toArray().map(v => v.toFixed(4)).join(',');
-    host.dataset.region = region;
-    host.dataset.moving = String(!!journey);
-    host.dataset.camera = camera.position.toArray().map(v => v.toFixed(3)).join(',');
-    host.dataset.view = yaw.toFixed(3) + ',' + pitch.toFixed(3);
   }
   function canRun() {
     return !disposed && visible && !document.hidden;
@@ -332,10 +336,13 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     } else { endDrag(); stop(); }
   }
   function resize() {
+    const nextWidth = Math.max(1, host.clientWidth);
+    const nextHeight = Math.max(1, host.clientHeight);
+    if (!firstFrame && nextWidth === width && nextHeight === height) return;
     endDrag();
-    width = Math.max(1, host.clientWidth);
-    height = Math.max(1, host.clientHeight);
-    renderer.setSize(width, height);
+    width = nextWidth;
+    height = nextHeight;
+    renderer.setSize(width, height, false);
     waterMaterial.uniforms.viewportHeight.value = renderer.domElement.height;
     waterMaterial.uniforms.viewportWidth.value = renderer.domElement.width;
     camera.aspect = width / height;
@@ -362,6 +369,9 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     let paperTop = Infinity;
     for (const [id, prop] of Object.entries(props)) {
       const angle = VIEWS[id];
+      const previousHome = prop.userData.home.clone();
+      const previousOffset = prop.position.clone().sub(previousHome);
+      const previousRotation = prop.quaternion.clone();
       layoutCamera.position.copy(EYE);
       layoutCamera.lookAt(EYE.x + Math.sin(angle) * Math.cos(.015), EYE.y + Math.sin(.015), EYE.z - Math.cos(angle) * Math.cos(.015));
       layoutCamera.updateMatrixWorld();
@@ -391,34 +401,45 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
         prop.scale.multiplyScalar(Math.max(.1, fit * .96));
       }
       prop.userData.home.copy(prop.position);
+      if (!firstFrame) {
+        prop.position.add(previousOffset);
+        prop.quaternion.copy(previousRotation);
+      }
     }
     // Extend the faint upper edge behind the last lines of text. Fade only the
     // water material, never the paper, and do not follow its per-frame bob.
     if (!Number.isFinite(paperTop)) paperTop = targetY;
     waterMaterial.uniforms.surfaceBand.value.set((paperTop - 48) / height, (paperTop + 58) / height);
     waterMaterial.uniforms.surfaceCurve.value = Math.min(54, Math.max(18, width * .045)) / height;
-    host.dataset.waterBand = [paperTop - 48, paperTop + 58].map(value => value.toFixed(1)).join(',');
-    moveCamera(false);
+    if (import.meta.env.DEV) host.dataset.waterBand = [paperTop - 48, paperTop + 58].map(value => value.toFixed(1)).join(',');
+    // A resize must not snap an in-progress camera journey to its destination.
+    // Repaint in the same ResizeObserver turn: setSize clears the drawing buffer.
+    if (firstFrame) moveCamera(false);
+    draw(performance.now());
+    wake();
   }
   function pointerMove(event) {
     if (event.pointerId !== dragId) return;
     // Keep only the newest input; projection and sampling run once per rendered frame.
     input.set(event.clientX, event.clientY);
     inputPending = true;
-    lastInputTime = performance.now();
     wake();
   }
   function disturb(clientX, clientY, first = false) {
-    if (!waterEnabled() || journey || !props[region]) return false;
+    if (!waterEnabled() || !props[region]) return false;
     touchPoint.set((clientX - inputRect.left) / width * 2 - 1, 1 - (clientY - inputRect.top) / height * 2);
     raycaster.setFromCamera(touchPoint, camera);
     if (!raycaster.ray.intersectPlane(waterPlane, waterHit)) return false;
-    const home = props[region].userData.home;
-    if (Math.hypot(waterHit.x - home.x, waterHit.z - home.z) > 2.8) {
+    // Match the visible water band, not an invisible radius around the paper.
+    // A finger can keep travelling across the foreground without losing its wake.
+    const screenY = (clientY - inputRect.top) / height;
+    const side = (clientX - inputRect.left) / width * 2 - 1;
+    const edge = waterMaterial.uniforms.surfaceBand.value.x
+      + side * side * waterMaterial.uniforms.surfaceCurve.value;
+    if (screenY < edge || waterHit.distanceToSquared(EYE) > 1600) {
       flowTarget.z = 0;
       return false;
     }
-    if (first && flow.z < .02) flow.set(waterHit.x, waterHit.z, 0);
     flowTarget.set(waterHit.x, waterHit.z, .75);
     // Drag trails are rate-limited; a new press always gets its own immediate impulse.
     // Very rapid taps recycle the oldest of four slots, keeping work bounded.
@@ -436,12 +457,17 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
     inputRect = host.getBoundingClientRect();
     if (!disturb(event.clientX, event.clientY, true)) return;
     dragId = event.pointerId;
-    lastInputTime = performance.now();
     host.setPointerCapture(dragId);
     host.style.cursor = 'grabbing';
     wake(true);
   }
-  function endDrag() {
+  function endDrag(event) {
+    if (event && event.pointerId !== dragId) return;
+    // A short swipe can end between frames. Do not discard its final position.
+    if (event?.type === 'pointerup' && inputRect) {
+      disturb(event.clientX, event.clientY);
+      advancePointerFlow(flow, flowTarget, 0);
+    }
     const id = dragId;
     dragId = null;
     inputPending = false;
@@ -495,7 +521,7 @@ export function createWaterScene(host, onFailure, { paper = true, onReady } = {}
       wake();
     },
     scroll(delta) {
-      if (!waterEnabled() || !canRun() || journey || !Number.isFinite(delta)) return;
+      if (!waterEnabled() || !canRun() || !Number.isFinite(delta)) return;
       pendingScroll = Math.max(-120, Math.min(120, pendingScroll + delta));
       wake(true);
     },

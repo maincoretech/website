@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // Thin, flat-shaded paper faces. Each object stays a single low-poly mesh.
-const PAPER = [0x668693, 0x8daab7, 0x4a6a79, 0x7697a5].map(value => new THREE.Color(value));
+const PAPER = [0x7d8fa6, 0xafc1d6, 0x586d88, 0x91a5bd].map(value => new THREE.Color(value));
 
 export function createOrigami(kind) {
   const positions = [];

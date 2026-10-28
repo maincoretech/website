@@ -1,0 +1,4 @@
+/news /archive/news 301
+/news/ /archive/news 301
+/news/:slug /archive/news/:slug 301
+/news/:slug/ /archive/news/:slug 301

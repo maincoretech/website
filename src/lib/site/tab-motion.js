@@ -3,6 +3,14 @@ import { createCameraAxis, advanceCameraAxis } from './camera-motion.js';
 
 export const tabSlideDuration = 1200;
 
+// Documents form a stack: enter from the right and leave back to the left.
+// Chapter links at the same depth keep the small content reveal.
+export function docsSlideDirection(from, to) {
+  const depth = path => /^\/docs(?:\/|$)/.test(path ?? '')
+    ? path.split('/').filter(Boolean).length : 0;
+  return Math.sign(depth(to) - depth(from));
+}
+
 export function tabSlideDirection(from, to) {
   const index = path => siteConfig.nav.findIndex(section => section.href === (path?.replace(/\/$/, '') || '/product'));
   const start = index(from);

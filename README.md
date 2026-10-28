@@ -24,8 +24,9 @@ bun run dev
 ## Checks and production build
 
 ```bash
-node --test tests/*.test.js
-bun run build
+bun run check
+bunx playwright install chromium webkit
+bun run test:browser
 bun run preview
 ```
 
@@ -36,7 +37,7 @@ The static site is written to `build/`, including Brotli-precompressed assets. D
 - `src/routes/` — pages and route data
 - `src/lib/site/` — site layout, water scene, product demos, and benchmark views
 - `src/lib/posts/` — published Markdown articles
-- `src/lib/news/` — retired news sources, kept for reference but not published or indexed
+- `src/lib/news/` — historical news, published under `/archive/news`; old `/news` URLs redirect permanently
 - `src/lib/products.js` — project catalog
 - `static/benchmarks/` — benchmark evidence
 - `static/posts/` — article assets and supporting data
@@ -53,8 +54,30 @@ Imported Kēne and Hakutaku docs retain their original licenses; see [scope](LIC
 ## Project documentation
 
 `/docs/keine` and `/docs/hakutaku` use Markdown snapshots from the project repositories.
-After reviewing source changes, run `node scripts/sync-docs.mjs /path/to/dev`
+After reviewing committed source changes, run `node scripts/sync-docs.mjs /path/to/dev`
 (the parent containing both repositories). Commit the updated content and source
 hashes together. Normal builds use the snapshots and need no sibling checkout
-or network access. `src/lib/docs/sources.json` records source revisions and
-whether each snapshot includes uncommitted edits; review these before publishing.
+or network access. `src/lib/docs/sources.json` records source revisions project versions, source modification dates and content hashes. Imports use committed
+HEAD only, so unrelated working-tree edits never become published documentation.
+Use `node scripts/sync-docs.mjs /path/to/dev --check` to detect source drift without writing.
+
+## Release verification
+
+`bun run check` runs unit tests, builds the site, and checks the generated HTML:
+internal links and anchors, canonical/share metadata, sitemap, archive redirects,
+404 output, share-card size and document provenance. Broken prerender routes fail the build.
+The browser suite exercises download/docs navigation, search, language persistence,
+nested contents, history/scroll restoration, old links and 404 at desktop/mobile sizes
+in Chromium and desktop WebKit. WebKit coverage is not physical iPhone acceptance. Chromium also replays water touch holds, moves, releases, unrelated pointer releases and native reading-panel scrolling; this CDP-only case is explicitly skipped on WebKit.
+
+The GitHub check workflow runs both gates on pull requests and main. It does not deploy.
+Deploy `build/` through the existing Cloudflare setup; `wrangler.jsonc` selects
+`404-page` and `static/_redirects` preserves legacy News addresses.
+After deployment, run `bun run check:live` (or the manual published-site workflow).
+Deployment success events also trigger the live check when the hosting integration emits them.
+The live gate verifies actual HTTP 301/404 responses; Vite preview alone cannot validate CDN rules.
+
+Browser binaries can stay inside the checkout with
+`PLAYWRIGHT_BROWSERS_PATH=node_modules/.cache/ms-playwright` during install and tests.
+For a local Chromium-only check with an existing Chrome installation:
+`PW_USE_CHROME=1 bun run test:browser --project=chromium --project=mobile-chromium`.

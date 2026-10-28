@@ -1,24 +1,16 @@
 <script>
-  import { tick } from 'svelte';
   import { docs, projects } from '$lib/docs/projects.js';
-  import { msg, t } from '$lib/i18n/index.js';
-  import Disclosure from '$lib/components/Disclosure.svelte';
+  import { msg } from '$lib/i18n/index.js';
+  import TableOfContents from '$lib/site/TableOfContents.svelte';
+  import PageMeta from '$lib/site/PageMeta.svelte';
+  import sources from '$lib/docs/sources.json';
   let { data } = $props();
-  let body;
-  let headings = $state([]);
+  let body = $state();
+  const source = $derived(sources[data.doc.project + "/" + data.doc.slug]);
   const chapter = $derived(docs.filter(d => d.project === data.project.id));
   const index = $derived(chapter.findIndex(d => d.slug === data.doc.slug));
-  $effect(() => {
-    data.doc;
-    let cancelled = false;
-    tick().then(() => { if (!cancelled && body) headings = [...body.querySelectorAll('h2[id]')].map(n => ({ id: n.id, text: n.textContent })); });
-    return () => cancelled = true;
-  });
 </script>
-<svelte:head>
-  <title>{data.project.name} · {$msg(data.doc.title)} · maincore</title>
-  <meta name="description" content={`${data.project.name} — ${data.doc.title}`} />
-</svelte:head>
+<PageMeta title={data.project.name + ' · ' + $msg(data.doc.title) + ' · maincore'} description={data.project.name + ' — ' + $msg(data.doc.title)} />
 <nav class="docs-projects" aria-label={$msg('项目文档')}>
   <a href="/docs">{$msg('文档')}</a>
   {#each projects as project}<a href={`/docs/${project.id}`} aria-current={project.id === data.project.id ? 'true' : undefined}>{project.name}</a>{/each}
@@ -31,10 +23,11 @@
   </aside>
   <article>
     <div class="docs-meta">
-      <span>{data.project.name} · {data.project.language === 'en' ? 'English' : '简体中文'}</span>
-      <a href={`https://github.com/maincoretech/${data.doc.project}/blob/main/${data.doc.source}`}>{$msg('查看源文档')} ↗</a>
+      <span>{data.project.name} {source.version} · {data.project.language === 'en' ? 'English' : '简体中文'}</span>
+      <span>{$msg("更新于")} <time datetime={source.updated}>{source.updated}</time></span>
+      <a href={`https://github.com/maincoretech/${data.doc.project}/blob/${source.revision}/${data.doc.source}`}>{$msg('查看源文档')} ↗</a>
     </div>
-    {#if headings.length > 1}<div class="article-toc"><Disclosure label={$t('sidebar.toc')}><nav aria-label={$t('sidebar.toc')}>{#each headings as heading}<a href={`#${heading.id}`}>{heading.text}</a>{/each}</nav></Disclosure></div>{/if}
+    <TableOfContents {body} routeKey={data.doc.href} />
     <div class="article-prose docs-prose" lang={data.project.language} bind:this={body}><data.Content /></div>
     <footer class="docs-license">{$msg('文档许可')} · <a href={data.project.licenseUrl} rel="license">{data.project.license}</a></footer>
     <nav class="docs-pagination" aria-label={$msg('章节')}>

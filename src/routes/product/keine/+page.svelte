@@ -1,4 +1,5 @@
 <script>
+  import PageMeta from '$lib/site/PageMeta.svelte';
   import { msg } from '$lib/i18n/index.js';
   import ProjectExplorer from '$lib/site/ProjectExplorer.svelte';
   import KeineMetrics from '$lib/site/KeineMetrics.svelte';
@@ -31,10 +32,7 @@
     { title: 'Demand-driven', text: '按画面与输入需要唤醒，音频独立推进；资源预取有界，媒体流式读取。' }
   ];
 </script>
-<svelte:head>
-  <title>{$msg("Kēne · 视觉小说引擎 · maincore")}</title>
-  <meta name="description" content={$msg("Kēne 是带原生编辑器的视觉小说引擎。用 Eiyashou 编写剧情与多轨演出，内建立绘动画、镜头特效、原生预览和 Hakutaku 增量资源打包。")} />
-</svelte:head>
+<PageMeta title={$msg("Kēne · 视觉小说引擎 · maincore")} description={$msg("Kēne 是带原生编辑器的视觉小说引擎。用 Eiyashou 编写剧情与多轨演出，内建立绘动画、镜头特效、原生预览和 Hakutaku 增量资源打包。")} />
 <div class="product-page keine-product">
   <nav class="product-local-nav" aria-label={$msg("Kēne 页面导航")}>
     <a href="/product">{$msg("← 所有项目")}</a>
@@ -46,7 +44,7 @@
       <h1 class="product-name" id="keine-title">Kēne</h1>
       <p class="product-promise">{$msg("视觉小说引擎与编辑器")}</p>
       <p class="product-summary">{$msg("内建立绘动画、镜头与舞台特效。用 Eiyashou 编写剧情，在原生引擎里预览作品。")}</p>
-      <div class="product-actions"><a class="primary-action" href="https://github.com/maincoretech/keine/releases/tag/editor-latest" target="_blank" rel="noopener noreferrer">{$msg("下载开发版 ↗")}</a><a href="/docs/keine">{$msg("使用指南 →")}</a></div>
+      <div class="product-actions"><a class="primary-action" href="/download/keine">{$msg("下载开发版 →")}</a><a href="/docs/keine">{$msg("使用指南 →")}</a></div>
       <p class="product-meta">Rust / Bevy / wgpu · <a href="https://github.com/maincoretech/keine" target="_blank" rel="noopener noreferrer">GitHub ↗</a></p>
       <p class="product-note">{$msg("预发行版")}</p>
     </div>
@@ -114,7 +112,7 @@
   <section class="product-section keine-start" aria-labelledby="keine-start">
     <h2 id="keine-start">{$msg("开始制作")}</h2>
     <div class="start-links">
-      <a href="https://github.com/maincoretech/keine/releases/tag/editor-latest" target="_blank" rel="noopener noreferrer"><span>{$msg("下载编辑器")}</span><small>Editor + Preview Engine</small><span aria-hidden="true">↗</span></a>
+      <a href="/download/keine"><span>{$msg("下载编辑器")}</span><small>Editor + Preview Engine</small><span aria-hidden="true">↗</span></a>
       <a href="/docs/keine/language"><span>{$msg("编写剧本")}</span><small>Eiyashou</small><span aria-hidden="true">→</span></a>
       <a href="/docs/keine/release"><span>{$msg("打包作品")}</span><small>{$msg("制作与发行指南")}</small><span aria-hidden="true">→</span></a>
     </div>

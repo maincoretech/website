@@ -201,7 +201,9 @@ cargo deny --locked --all-features check advisories licenses bans sources
 `cargo-deny` 检查声明，不证明所有二进制与素材的发行义务已满足。
 
 合成字体来源与完整 OFL/MIT 文本见 `src/assets/fonts/FONT-LICENSES.txt`。
-Maven Pro 合成版内部名称已改为 Kene Text，字形与排版数据未变；CJK 来源由项目所有者确认
+Maven Pro 合成版内部名称已改为 Kene Text，原有字形与排版数据保留；另从 HanaMinA 8.030
+增补 252 个常用符号，确切来源、哈希与轮廓转换参数见该声明，回归覆盖字符见同目录
+`KeneText-symbols.txt`。原有 CJK 来源由项目所有者确认
 为 HanaMinAFDKO，作者仓库声明遵循 GlyphWiki 数据许可。已附 Mozilla 分发的 GlyphWiki 历史许可原文；
 此前来源核查时上游页面返回 403，未验证其最新版本。原始合成/图标转换配方和确切源版本未保存，
 不声称已重建来源链。
@@ -333,11 +335,33 @@ identity 与内嵌 key 不记录、不提交、不缓存，也不传给无需它
 [质量检查与相关 feature 门禁](testing.md#质量检查)。
 
 Bevy 的三个本地补丁、GPUI 原生平台行为和 Hakutaku 格式边界须随对应依赖单独复核。
+当前使用 Bevy 0.20、wgpu 30、GPUI Kit 0.8。Rodio 保持 Bevy Audio 支持的 0.22.2，
+避免重复音频栈和不兼容的 Source/Player；Windows SDK 与 windows-core 成对使用 0.62.2，
+不单独升级到不同 ABI 版本的 windows-core 0.100。Tokio 1.54.0 已因
+[RUSTSEC-2026-0384](https://github.com/rustsec/advisory-db/blob/main/crates/tokio/RUSTSEC-2026-0384.md)
+撤回，锁文件至少使用 1.54.1。
+
 Editor 的 `image` 仅请求 BMP/GIF/JPEG/PNG/TIFF/WebP，Media 图标仅请求 PNG；
 不要为了方便恢复默认编码器集合。锁文件仍可包含上游可选依赖，实际依赖树须按目标与
 features 查询，不能用锁文件包数推断运行时体积。
 GPUI 的 macOS 依赖链仍含 `block 0.1.6` 的 `uninhabited_static` 未来兼容性警告；
 当前 Rust 1.99 可构建，应随上游 Cocoa/Metal 绑定迁移处理，不新增本地 FFI 替代层。
+
+证书撤销事件还需检查构建工具和系统信任库，更新 Rust 锁文件不能替代它们。
+2026-10 的 eMudhra 事件对应 [RUSTSEC-2026-0382](https://rustsec.org/advisories/RUSTSEC-2026-0382.html)：
+`rustls-webpki` 至少使用 0.103.16。当前该依赖来自 GPUI 的 wasm 可选资源下载路径，
+桌面和 Android 发行未启用该路径；锁文件仍保留修复版。
+Linux SDK 安装同时更新 `ca-certificates`；其他平台还需核对 runner 镜像和下载工具各自使用的信任库。
+固定 SHA 和 Cargo 校验和继续保留，不以关闭 TLS 校验解决下载失败。
+macOS 自带 `curl` 可能仍使用旧 PEM 信任库，不能只看系统更新状态。
+使用 Homebrew 的维护者可先更新 `ca-certificates`，再在当前终端为下载工具指定它：
+
+```sh
+brew upgrade ca-certificates
+export CURL_CA_BUNDLE="$(brew --prefix)/etc/ca-certificates/cert.pem"
+export CARGO_HTTP_CAINFO="$CURL_CA_BUNDLE"
+export GIT_SSL_CAINFO="$CURL_CA_BUNDLE"
+```
 
 - `CI` 每日 UTC 02:17（北京时间 10:17）仅审计依赖；每周一 UTC 03:17 另跑媒体安全。
   定时任务不编译桌面/Android 或发布 Editor，手动审计选择 `checks: dependencies`。

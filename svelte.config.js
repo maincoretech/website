@@ -21,7 +21,7 @@ const config = {
     }),
     inlineStyleThreshold: 30720,
     prerender: {
-      handleHttpError: 'warn'
+      handleHttpError: 'fail'
     }
   }
 };

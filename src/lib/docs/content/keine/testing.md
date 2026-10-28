@@ -11,6 +11,8 @@
 - Linux 需要 ALSA、Fontconfig、udev、Wayland、XKB 开发库；FFmpeg feature 另需
   avcodec/avformat/avutil/swscale/swresample。Windows 使用匹配架构的 FFmpeg vcpkg SDK。
   可复用的安装清单以 [`setup-video`](../../.github/actions/setup-video/action.yml) 为准。
+- FFmpeg 绑定的构建脚本在 16 MiB 栈的工作线程上运行，避免 Windows 主线程栈溢出；
+  本地与显式 `--target` 构建共用此修复，见 [FFmpeg patch](../vendor/ffmpeg-sys-next/KEINE-PATCH.md)。
 - Android 的 SDK/NDK/JDK 与构建步骤由 [Android guide](android.md) 维护；不启用视频 feature。
 - Editor Preview 启动已构建的 Engine，不自动执行 Cargo。开发时 `target/debug/editor`
   和 `target/debug/keine` 应来自同一源码；覆盖路径及发现规则见 [Editor](editor.md#engine)。
@@ -70,6 +72,25 @@ macOS 的 IPC/系统 Trash 测试可能被本地沙箱拒绝（`Operation not pe
 `PermissionDenied`）。在允许本地 socket/系统文件服务的环境重跑受影响测试，不能跳过后报通过。
 显式 `ignored` 的 GPU/性能测试也不能计作工作区测试已覆盖。
 不以测试数量作为目标：同规则参数边界用表驱动；独立故障保留独立回归，失败信息包含案例名。
+
+### 当前依赖迁移验收
+
+Bevy 0.20 / wgpu 30 / GPUI Kit 0.8 已在 macOS arm64 完成上述 fmt、check、clippy、
+两组工作区测试、native/FFmpeg feature 检查、native-smoke、打包合同和全 feature cargo-deny。
+根工作区与独立 fuzz 工作区的 locked metadata 均通过。原始日志保留在本机
+`target/ci-repair/`：`test-major.log`、`test-publisher-major.log`、`deny-major.log` 等。
+
+显式执行的 GPU 回归为 6 项渲染测试和 1 项 Metal 设备替换测试：
+
+```sh
+cargo test --workspace --locked --all-features on_gpu -- --ignored --test-threads=1
+cargo test --workspace --locked --all-features metal_cache_follows_replacement_device -- --ignored
+```
+
+临时配对 macOS 包已完成签名验证和原生界面检查：Engine 的逐字显现、文字阴影、设置页模糊、
+按钮与窗口缩放；Editor 的中文源码、折叠、缩略图、文件选择弹层和未保存关闭提示。
+这些检查不代表所有图形变体或视频场景均已人工验收；Windows、Linux、Android 的构建和设备验收仍待完成。
+本轮未重跑性能基准，不据此宣称帧耗时或内存改善。
 
 ## 测试入口与 CI
 
@@ -132,6 +153,8 @@ Fuzz/ASan 的工具链、时间预算和调用以 Media Safety workflow 为准�
 | 运行时错误定位在返回标题后保留 | Preview `checkpoint_and_failure_positions_survive_transient_presentation_and_title_cleanup`，由真实 Flow 错误生成诊断 |
 | 18 类瞬态动作及 Flow/SpriteVisual 包装，前置检查点与 Save v11 往返重放 | Driver `transient_action_families_round_trip_the_pre_action_save_boundary` |
 | 点击与自动到期同帧，只跨过一个等待点 | Tick `playback_manual_and_automatic_advance_cannot_cross_two_yields_in_one_frame` |
+| 自动播放等待语音同步、加载、实际队列 EOF 后的阅读延时；暂停/静音和菜单不提前推进，同文件下一句重新等待 | Tick `playback_auto_waits_for_voice_eof_and_then_reading_delay`、`playback_auto_waits_for_pending_voice_and_releases_after_failed_player_cleanup`；使用无设备 Rodio 队列，恢复同一光标及真实失败清理 |
+| 无语音阅读延时；手动/快进/作者显式续行仍可打断语音 | Tick `playback_auto_without_voice_keeps_the_configured_reading_delay`、`playback_manual_skip_and_authored_notend_can_interrupt_voice` |
 | 加载/菜单期间取消跳过并消费自动按键释放，解除遮挡不误推进 | Tick `playback_loading_and_menu_gates_do_not_swallow_auto_release` |
 | 对白、选择、输入恢复与执行上限 | Driver `normal_yield_and_end_share_one_host_policy`、`every_resume_source_*` |
 | 阻塞演出自然结束，后端完成发生在加载/菜单期间 | Tick `settled_presentation_clocks_resume_without_player_input`、`playback_backend_completion_resumes_after_the_loading_or_menu_gate` |
@@ -653,6 +676,166 @@ Kēne 同一万条文本的解析 + Program 构建为 6.708 ms。此表不含输
 在 `target/performance/script-0163/`：`summary.json`、`optimization.json`、`metrics.json`、
 `manifest.json`、`commands.txt`、`build-and-bench-commands.txt`。测试资料不进入发行包。
 
+### 静态菜单的重复重绘
+
+`8319be9` 与本轮调度修复工作区；Apple M5 Pro / 24 GiB / macOS 27.0.1 / Metal，
+dev opt-level=1，1280×720 @1×。临时项目复用 native-benchmark 的 day.webp，
+在非阻塞镜头移动中执行 `ui.show(settings)`，得到暂停演出、背景静止的真实菜单。
+正常打字与页签切换时仍执行场景合成和区域模糊；本轮未引入画面像素缓存。
+
+| 原生窗口、60 秒采样中的稳定 10 秒区间（elapsed 50–60s） | 重绘提交数 | 最后观察到的状态 |
+| --- | ---: | --- |
+| 原版 | 1,135 | 前台 Active |
+| 调度修复 | 0 | 前台 Idle；仅事件/采样期限唤醒 |
+
+期间显示环境从 144 Hz 切换为 60 Hz，因此这组数据只证明静止菜单从持续提交变为休眠，
+不比较单帧 GPU 耗时、输入延迟、CPU 百分比或显示 FPS。没有新帧不能写成 GPU 每帧耗时 0。
+原版把已经被菜单暂停的打字、演出和眨眼计时仍算作动画；修复使生命周期与 Tick 的输入域一致。
+UI 动画以及媒体、粒子和时变 shader 继续请求绘制，返回舞台后恢复原有播放。
+
+```sh
+cargo build --locked --bin keine --features hot-reload,video-native,video-ffmpeg
+python3 target/performance/static-ui/measure.py before paused acceptance 60 runtime
+python3 target/performance/static-ui/measure.py after paused acceptance 60 runtime
+```
+
+两个二进制采用相同 feature；命令、哈希、临时项目、Metal 数据及逐帧 trace 保存在
+`target/performance/static-ui/`，汇总为 `final-results.json`。着色器编译失败、失焦和不同
+尺寸的探索样本未混入上述区间；完整高斯核与少量系数预计算候选均撤回，未宣称稳定收益。
+
+扩展现有生命周期回归，覆盖四种菜单输入域中的暂停对白/计时/眨眼、UI 与 shader 唤醒和返回舞台。
+工作区 all-features check、Clippy、测试（1,140 passed / 28 ignored）、无默认 feature 的 publisher
+check、native-smoke 校验及另行执行的五项真实 Metal 回归通过。macOS 原生窗口检查了打字、菜单
+模糊、页签与返回舞台；滑块自动化未产生有效数值变化，未计为拖动验收。其他平台、长时压力和
+新的发行包本轮未验收。
+
+### 对白与音乐进度的重复 UI 写入
+
+`b098232` 与本轮工作区；Apple M5 Pro / 24 GiB / macOS 27.0.1，test opt-level=1、
+all-features。只测无窗口 Bevy `App.update` 中的动画/透明度或进度系统及变化计数器，
+不含布局、渲染、音频和 GPU。预热 100 次，文本测 20,000 次，音乐测 100,000 次；
+以下为三组交替前后测试的中位数，桌面未隔离。
+
+| 场景 | 修改前 → 后（µs/update） | 每次更新的组件写入 |
+| --- | ---: | --- |
+| 80 字，仅一字淡入 | 1.935 → 1.956 | TextColor 80 → 1 |
+| 320 字，仅一字淡入 | 3.313 → 3.291 | TextColor 320 → 1 |
+| 1,000 字，仅一字淡入 | 7.110 → 6.966 | TextColor 1,000 → 1 |
+| 音乐进度固定 | 1.576 → 1.532 | Text/Node/BackgroundColor (1,2,1) → (0,0,0) |
+
+合成测试用很长的淡入时间保持一个活动字形，不代表正常播放速度。已稳定的对白在修改前后
+都不写颜色。保留的改动减少无效变更通知；普通对白耗时没有稳定改善，未据此宣称 GPU 或
+整帧性能提升。额外的活动字形标记方案已撤回，收益不足以抵消生命周期维护成本。
+
+```sh
+cargo test --locked --lib --all-features perf_ui_ --no-run
+# 保存带相同临时测量模块的前后测试二进制后，各交替运行三次：
+target/performance/ui-updates/probe-before perf_ui_ --ignored --nocapture --test-threads=1
+target/performance/ui-updates/probe-final perf_ui_ --ignored --nocapture --test-threads=1
+```
+
+临时测量模块、原版源文件、命令、原始日志、二进制哈希与 `results.json` 保存在
+`target/performance/ui-updates/`，不进入发行包。正式回归覆盖单字与全局淡入、
+新文本的透明度、亚秒进度移动、拖动/悬停状态及同一秒内重建时间标签。
+工作区 all-features check、Clippy、测试（1,142 passed / 28 ignored）、无默认 feature 的
+publisher check 与原生构建通过。macOS 窗口确认了打字淡入、隐藏/恢复对白、菜单模糊、
+音乐播放/暂停、点击跳转进度与恢复播放；拖动工具未产生有效位移，不计为拖动验收。
+CG 空提示居中、单页隐藏分页及两页翻页已检查。其他平台未实测。
+
+### 鉴赏动画结束后的重复写入
+
+沿用上述机器和 test opt-level=1 / all-features 配置。前版包含上面的对白与进度改动；
+同一无窗口系统测量方法，预热 100 次、测量 100,000 次，三组交替前后测试取中位数。
+稳定状态下只在值变化时写入；动画曲线、模糊强度公式、轮询频率和输入处理不变。
+
+| 单独测量的系统 | 修改前 → 后（µs/update） | 稳定帧的相关组件变更数 |
+| --- | ---: | ---: |
+| CG/音乐页切换（两面板、一网格） | 1.574 → 1.570 | 5 → 0 |
+| 鉴赏页淡入（根节点、模糊层） | 1.605 → 1.590 | 4 → 0 |
+| 全屏 CG 淡入 | 1.713 → 1.563 | 3 → 0 |
+| 音乐不可用状态（无音源） | 2.987 → 2.975 | 3 → 0 |
+
+计数范围为 Node、UiTransform、BlurStrength、BackgroundColor、LocalizedText、
+ExtraBgmPlayer、ExtraMotion，未表示整个鉴赏页不再更新。耗时很小且存在波动；
+保留这些简单比较以减少无效组件变更，不据此推导 GPU、帧率或交互延迟改善。
+状态样本包含 AssetPlugin，但不播放音频；所有样本均不含布局与渲染。
+
+```sh
+cargo test --locked --lib --all-features perf_extra_ --no-run
+# 用相同临时模块构建并保存前后测试二进制，各交替运行三次：
+target/performance/extra-settled/probe-before perf_extra_ --ignored --nocapture --test-threads=1
+target/performance/extra-settled/probe-after perf_extra_ --ignored --nocapture --test-threads=1
+```
+
+原版源文件、临时测量模块、命令、原始日志及二进制哈希位于
+`target/performance/extra-settled/`，汇总为 `results.json`。正式回归覆盖双向页签切换、
+动画结束后的新节点、模糊层关闭清理、全屏 CG 关闭，以及音乐失败/加载/停止状态与重建标签。
+工作区 all-features check、Clippy、测试（1,144 passed / 28 ignored）和无默认 feature 的
+publisher check 通过。macOS 原生窗口确认模糊、CG 翻页/打开/关闭、双向页签切换、
+音乐播放/暂停/停止及点击跳转进度；之后翻页文字改为内嵌左右图标，再构建并验证两个方向的点击。
+没有新增 GPU 耗时或跨平台实测结论。
+
+### 标题、菜单与设置的稳定帧
+
+继续审查标题、菜单、存读档、Backlog、输入路由及场景/音频同步。删除标题根节点每帧
+重复的固定布局赋值；动画稳定后停止重复写入；按钮字重只在选择状态改变时写入，设置数值只在
+设置变化或新标签加入时格式化。沿用现有状态与 Bevy 变化检测，没有增加缓存或调度层。
+背景、立绘、音频与 Editor 文档索引已有更新门控，本轮未改动这些模块。
+
+沿用上述环境与无窗口测量方式，100 次预热、100,000 次更新，三组交替测量取中位数。
+前版为本轮标题/菜单调整前的工作区，已包含上述对白及鉴赏优化。
+
+| 系统样本 | 前 → 后（µs/update） | 稳定帧相关变更数 |
+| --- | ---: | ---: |
+| 关闭的标题继续预览 | 1.555 → 1.515 | 3 → 0 |
+| 菜单面板与模糊层 | 1.550 → 1.551 | 3 → 0 |
+| 存读档单网格 | 1.487 → 1.487 | 1 → 0 |
+| Backlog 静止滚动容器 | 1.545 → 1.540 | 2 → 0 |
+| 16 个稳定设置按钮 | 1.710 → 1.743 | 16 → 0 |
+| 7 个设置数值标签 | 1.880 → 1.538 | 0 → 0 |
+
+计数针对各样本的 Node、TextColor、UiTransform、BackgroundColor，以及按钮的
+SettingChoiceVisual 或滚动容器的 ScrollPosition。最后一项减少字符串格式化，原本就没有
+无效 Text 写入。耗时接近系统调度开销，部分结果有回退或波动；收益主要是减少无效更新，
+没有证据表明整帧或 GPU 耗时改善。
+
+```sh
+cargo test --locked --lib --all-features perf_audit_ --no-run
+# 相同临时探针分别构建前后版本，再交替运行三次：
+target/performance/ui-audit/probe-before-v2 perf_audit_ --ignored --nocapture --test-threads=1
+target/performance/ui-audit/probe-after-v2 perf_audit_ --ignored --nocapture --test-threads=1
+```
+
+前后源码、临时探针、命令脚本、日志、二进制哈希与 `results.json` 保存在
+`target/performance/ui-audit/`。v2 修正了初版 Backlog 样本默认阻塞输入的问题，并补充了
+按钮状态计数；上表使用 v2。临时探针不保留在生产源码中。
+正式回归覆盖按钮字重、重建设置标签、菜单关闭/重开及模糊恢复、继续预览悬停、翻页清理和
+Backlog 动画计时停止。工作区 fmt/check/Clippy、测试（1,148 passed / 28 ignored）、
+无默认 feature 的 publisher check 与原生构建通过。macOS 1920×1080 原生窗口确认设置选项、
+滑块点击及数值、设置/读档双向切换、翻页、返回标题和 Backlog 开关/短列表滚动；模糊保留。
+继续预览的完整生命周期由回归测试覆盖，本轮未做其原生悬停验收；其他平台未实测。测试窗口已关闭。
+
+
+### 遮罩同步的重复写入
+
+全模块复查包含 Core/Loader、运行时、场景/音视频、渲染、存储、Editor/Authoring、
+Media、迁移/发布、开发脚本、CI 与本地依赖补丁的相关更新路径。新增修复仅在
+`src/scene/masks.rs`：遮罩透明度变化时，相同 Transform 和 RenderLayers 不再重复写入。
+材质仍随渐变更新，窗口尺寸和遮罩平面变化仍更新布局。没有增加缓存、状态或依赖。
+其余路径保留现有变化检测、异步交接、校验和失败重试，没有为减少代码量合并不同生命周期。
+
+```sh
+cargo test --locked --lib -p keine --all-features overlay_fade_only_changes_material_and_keeps_layout_responsive
+```
+
+同一个回归在修改前捕获 `[1, 1]` 次位置/层级变更，修改后为 `[0, 0]`；同时验证渐变材质、
+窗口缩放、切换渲染层和无关 stage revision。原始日志与修改前源码位于
+`target/performance/global-audit/`，工作区检查命令及结果同目录保存。
+fmt、全 feature check/Clippy、工作区测试（同职责用例合并后 1,144 passed / 28 ignored）通过；
+此前 16 项打包脚本测试通过。测试合并的独立 diff、命令与日志在 `target/test-consolidation/`。
+首次测试的系统废纸篓操作被 macOS 沙箱拒绝，沙箱外重跑完整工作区通过。
+这是 ECS 变更计数验证，没有测量 GPU 帧耗时，也未新增跨平台或原生窗口视觉验收。
+
 ### GPU 合成与模糊
 
 0.15.4–0.15.5 工作区；Apple M5 Pro / 24 GiB / macOS 27.0.1 / Metal，
@@ -711,9 +894,117 @@ Suika3 26.07.13 的该 fixture GPU 三轮均值为 0.5262 / 0.5393 / 0.5352 ms�
 这支持额外模糊/合成是差距的重要来源，不能量化语言或抽象层各自贡献，也不是等画质排名。
 Suika 每帧同步等待不应照搬。横向图的包体积包含不同素材/SDK范围，同样不能作为最小发行包排名。
 
+### 内嵌字体
+
+内嵌 Kene Text 的标题/符号回归通过真实 `TextPipeline` 排版和栅格化，检查水仙章节标题及
+`src/assets/fonts/KeneText-symbols.txt` 的常见符号均使用内嵌字体、glyph ID 非零，
+避免系统字体 fallback 掩盖缺字：
+
+```sh
+cargo test --locked -p keine --all-features --lib embedded_font_renders_titles_and_common_symbols_without_fallback
+```
+
+252 个新增映射取自 HanaMinA 8.030；原有 21,740 个 glyph 的轮廓、水平度量和
+21,703 个字符映射均已逐项核对，原有基线/行高、GSUB/GPOS 与名称表保留。
+水仙剧本剩余一处未映射字符为源包自带的私用区 U+E5A2，含义未确认，未擅自替字。
+本机禁用持久化的工程副本定位 `chapter_19:140`，Computer Use 已确认原生窗口中
+日文/中文终章标题的 `■` 均显示为实心方块。
+
 ### 内存、空闲与连续播放
 
-均为 M5 Pro / 24 GiB / macOS 27.0.1 / Metal、dev opt-level=1 的历史记录；
+窗口缩放的字体缓存回归使用 Bevy 0.19.1 的真实 `TextPipeline` 和内嵌 CJK 字体，
+同时跑未回收对照与生产回收策略。128 个不同缩放比例、相同文字，对照为
+134,217,728 CPU 像素字节 / 128 个字号 key；回收后为 33,554,432 字节 / 32 个 key，
+退役的 `Image` 资产也已移除。这是字体图集 payload 的 128 → 32 MiB，不是进程 RSS。
+原因是上游按精确浮点字号缓存图集，未自动淘汰旧字号；每张最小 RGBA 图集为 1 MiB，
+且同时保留 CPU 数据和 GPU 纹理。Runtime 在排版后按最近使用顺序回收闲置字号，
+CPU 图集预算 32 MiB；所有现存布局（含隐藏文字）引用的整组图集受保护，
+活跃工作集可超过预算。回收后保留三帧资产退役时间，再恢复空闲休眠。
+
+```sh
+cargo test --locked -p keine --all-features --lib ui::support::font_cache:: -- --nocapture
+cargo build --locked --bin keine --all-features
+# 本机真实工程副本；分别将保存的 keine-before / keine-after 复制到
+# Narcissu Probe.app/Contents/MacOS/memory-probe 后运行，不修改工程素材或存档。
+python3 target/performance/narcissu-memory/run.py before
+python3 target/performance/narcissu-memory/run.py after
+```
+
+回归另覆盖隐藏布局保护、活跃工作集超预算、布局删除后回收与资源退役后停止唤醒。
+本机 Narcissu 工程副本定位 `chapter_00:35`，原生三轮最大化/还原后文字正常；
+还原 1920×1080 时 RSS 196,288 KiB，footprint 266,159,400 B。这次原生短测只有
+两种最终尺寸，未触发 32 MiB 回收，不能据此主张进程 RSS 改善；高基数回收由上述排版回归覆盖。
+原始日志、命令和 2,382 个工程媒体文件的前后 SHA-256 核对保存在
+`target/performance/narcissu-memory/`；媒体无变化。该回归不代表 Windows/Linux
+原生窗口、长时阅读或整进程 200–300 MiB 的验收。
+
+图形缓冲回收补充覆盖“大尺寸菜单关闭、弹窗相机休眠、还原窗口”的路径。
+休眠/失效相机现在同时移除 `ViewTarget` 和 `ViewDepthTexture`，释放其颜色、深度及
+旧交换链视图引用；区域模糊中间纹理在没有匹配的活动使用者时退役，光学特效关闭后
+释放绑定组持有的源视图。窗口像素尺寸或活动相机集合变化后额外渲染四帧，让
+TextureCache 的三帧淘汰和提交收尾完成；后台剧情时钟仍暂停，收尾后恢复休眠。
+输出分辨率、纹理格式、采样、shader 和工程媒体均未修改。
+
+本机 M5 Pro / Metal、同一 Narcissu 工程副本从 `chapter_00:35` 启动，使用原生窗口
+最大化（窗口外框 5120×2700）、关闭设置菜单，再还原到 1920×1080。下列为一次配对
+采样的 physical footprint；RSS 同时留档，但受压缩/编译负载影响，不用于此组改善主张。
+
+| 还原后的分类 | 修复前 | 修复后 |
+| --- | ---: | ---: |
+| 进程 footprint | 509,248,832 B / 485.7 MiB | 321,602,904 B / 306.7 MiB |
+| unmapped graphics | 215,564,288 B / 205.6 MiB | 103,366,656 B / 98.6 MiB |
+| IOSurface | 80,576,512 B / 76.8 MiB | 25,460,736 B / 24.3 MiB |
+
+修复前再空闲约三分钟仍为 509,265,192 B；大尺寸关闭菜单后的 footprint 则为
+620,463,424 → 598,066,520 B。后者仍包含大尺寸输出所需资源，不能宣称全屏等于
+1080p 窗口的占用。修复版另一个同进程的两轮菜单缩放后，graphics / IOSurface 分别
+保持 103,366,656 / 25,460,736 B；总 footprint 344.7 → 352.8 MiB 的变化主要落在
+Malloc Small，不能据此宣称整进程完全不增长。
+
+```sh
+# 使用保存的 keine-graphics-before / keine-graphics-after；窗口操作通过 Computer Use 完成。
+python3 target/performance/narcissu-memory/launch-graphics.py before
+python3 target/performance/narcissu-memory/launch-graphics.py after
+probe_pid=$(cat target/performance/narcissu-memory/graphics-after-native.pid)
+ps -p "$probe_pid" -o pid,rss,etime,command
+footprint -p "$probe_pid" -f bytes
+cargo test --locked -p keine --all-features --lib inactive_camera_releases_render_targets_on_gpu -- --ignored --nocapture
+cargo test --locked -p keine --all-features --lib target_retirement_finishes_in_background -- --nocapture
+cargo test --locked -p keine --all-features --lib on_gpu -- --ignored --nocapture
+```
+
+`graphics-gpu-before.log` 使用同一合法渲染目标回归，在未修相机提取逻辑上确认颜色/深度
+附件仍存在；修复后释放并能按新尺寸唤醒。窗口大小、打开/关闭菜单及对白已在本机原生
+检查，Gaussian 边界和 source-over Metal 回归通过。原始命令、二进制和分类采样位于
+`target/performance/narcissu-memory/graphics-*`。未验证 Windows/Linux 原生缩放、
+长时剧情或 device-loss；这次没有新的打包/发行验收。
+
+区域模糊的绑定组现在按源纹理视图与 uniform buffer 的实际 ID 复用，保留范围仅为
+仍运行该 pass 的活动相机和当前中间纹理。无可见处理区域、目标尺寸/缓冲更换及
+相机休眠后清理旧绑定；光学特效的绑定缓存也在 render prepare 阶段回收，
+不依赖相机继续执行才能释放。输出尺寸、格式、采样和 shader 均保持原样。
+
+真实 Metal 回归中，60 个稳定帧的每帧丢弃绑定组对照（等价于原来两次创建）为
+120 次分配，复用后新增 0 次。两种策略执行相同的两次模糊 pass；这只是分配计数，
+不是整游戏 RSS、CPU 或 FPS 改善。另覆盖 uniform 扩容、2560×1440 / 64×64
+切换、屏幕外区域、无 pass 标记的相机，以及光学相机停用、恢复和销毁。
+素材预取仍按既有字节预算管理，字体预算保护活动布局，存档预览保留当前页，
+视频继续使用有界队列；本轮没有调整素材解码规格或增加 1080p 缓存上限。
+
+```sh
+cargo test --locked -p keine --all-features --lib on_gpu -- --ignored --nocapture
+cargo check --workspace --locked --all-targets --all-features
+cargo clippy --workspace --locked --all-targets --all-features -- -D warnings
+```
+
+命令、分配计数和检查日志保存在 `target/performance/postprocess-cache/`。
+本机 Narcissu 测试副本已检查正常窗口、最大化及还原后的背景/对白画面；
+菜单点击被 Computer Use 的 `noWindowsAvailable` 阻断，未计为菜单人工验收通过。
+工作区全功能 / publisher-only 测试及五项 Metal 回归通过，native-smoke 校验通过，
+2,382 个工程媒体文件 SHA-256 均未变化；未做新的发行打包验收。
+Windows/Linux 原生运行、长时压力与真实 device-loss 仍未验收。
+
+下列为 M5 Pro / 24 GiB / macOS 27.0.1 / Metal、dev opt-level=1 的历史记录；
 窗口 1920×1080 @1×。physical footprint 与 RSS 分别采集，不能混称 RAM。
 
 | 观察 / 改动 | 结果 | 原始目录（`target/performance/` 下） |
@@ -728,7 +1019,7 @@ Suika 每帧同步等待不应照搬。横向图的包体积包含不同素材/S
 CG 输出 RGBA 245.2 → 69.8 MiB 是像素 payload，不是进程内存；顺序解码
 211.7 → 225.1 ms（+6.4%，每图约 +0.43 ms），不能宣称 codec 更快。
 页面仍并行加载，首开全屏原图改为按需加载；低端设备、冷包和 2× 设备延迟尚未验收。
-三帧收尾使资源退役得以完成，不清空字体/模糊/allocator 缓存；缓存保留与泄漏不能凭单点占用区分。
+当时的三帧收尾使资源退役得以完成，不清空字体/模糊/allocator 缓存；缓存保留与泄漏不能凭单点占用区分。
 
 ```sh
 # 使用各实验保存的输入、副本、before/after binary 和本地测试 app。
@@ -776,6 +1067,147 @@ cargo test --locked -p keine-editor --release --lib index::benchmark:: -- --igno
 后续仅在实际工作流出现可测问题时再定位，不按历史待办重复启动全面跑分。
 
 ### Hakutaku v2
+
+#### 开发态真实图片读取与解码
+
+2026-10-23，在 `4c04778`、Rust 1.99.0、macOS 27.0.1 arm64 / M5 Pro / 24 GiB 上，
+测量 tday 全部 35 张 WebP（31 背景、4 立绘，8,664,922 B），以及本机 Narcissu
+196 张背景中按压缩文件大小分层选出的 40 张（8,600,150 B）。源素材只读复制到临时
+目录并打包，身份仅在内存中生成；不使用作者私钥或相邻 Hakutaku worktree 的修改。
+
+实际路径是 `OverlayAssetReader → ContentMount → ContentFile → AssetCursor`（包）
+或散文件，之后使用生产 `read_webp_input`、`target_size`、native WebP decoder 和
+Bevy `Image::new`。当前读取已有几何扩容与持久 cursor，RGBA 所有权直接移动，没有
+整图 clone；背景上限 1920×1080，立绘本次使用实际工程的 sprite height 1080。
+计时拆分为打开/读完压缩输入、解码/构造 Image、场景取色，完整 RGBA 校验不计时。
+
+保留的修改仅为 `[profile.dev.package.libwebp-sys] opt-level = 3`：原来原生 C codec
+也继承 dev/test 的 opt-level=1，其 build.rs 通过 `cc` 使用 Cargo 的 `OPT_LEVEL`。
+发行版本来就是 opt-level=3，**这不是 shipping 性能提升**。没有改变 codec 算法、
+线程设置、输出格式、尺寸/像素限制、缓存或认证链，也没有新依赖。
+
+六对独立进程，前三对 before/after，后三对 after/before；每进程每后端五遍，先取
+进程内中位数，再取六轮中位数。每遍新开 package，宿主文件缓存为热；打包、打开
+package 和构造挂载不计时，桌面负载未隔离。表中是整组解码耗时，不是单张或 P95。
+
+| 后端 / 图片组 | 原实现 | codec opt-level=3 | 变化 |
+| --- | ---: | ---: | ---: |
+| Hakutaku / tday 31 背景 | 237.794 ms | 195.649 ms | −17.7% |
+| Hakutaku / tday 4 立绘 | 92.100 ms | 88.872 ms | −3.5% |
+| Hakutaku / Narcissu 40 背景 | 234.790 ms | 212.245 ms | −9.6% |
+| 散文件 / tday 31 背景 | 232.366 ms | 200.474 ms | −13.7% |
+| 散文件 / tday 4 立绘 | 93.594 ms | 89.058 ms | −4.8% |
+| 散文件 / Narcissu 40 背景 | 242.402 ms | 213.264 ms | −12.0% |
+
+Hakutaku 三组读取合计分别为 3.840 → 3.733、3.020 → 2.958、6.542 → 6.666 ms，
+不是物理 SSD 时间，不能宣称读取加速。对应读取+解码+取色合计为
+242.127 → 199.861、95.156 → 91.988、241.606 → 219.101 ms。
+75 张图在所有后端/遍次/前后版本中输出尺寸、完整 RGBA hash 相同；231 个源 WebP
+的 SHA-256 未变。另一个省掉 RGBA 初始化清零的候选在反序后收益不足且立绘略慢，
+已撤回。未测冷存储、GPU 上传、AssetServer 调度、实际呈现延迟或其他平台；不把这组
+CPU 结果解释为帧率、峰值内存或发行版加载性能变化。
+
+```sh
+KEINE_IMAGE_BENCH=/path/to/read-only/images \
+  cargo test --locked -p keine --all-features --lib \
+  scene::images::benchmark::mounted_image_reads -- --ignored --nocapture --test-threads=1
+```
+
+可复用入口位于 `tests/bench/runtime/images.rs`。原始 binary、逐图日志、候选 diff、
+输入/二进制 SHA-256、命令和汇总器保存在本机 `target/performance/image-reads/`；
+保留方案的六轮对照位于其 `codec-o3/` 子目录，当前命令测优化后的 dev/test 配置。
+保留版本通过 fmt、workspace all-targets/all-features check/Clippy、全功能及
+no-default-features + publisher 两组串行工作区测试；IPC 测试在允许本地 socket 的
+环境运行。这不包含窗口视觉、GPU 或其他平台的验收。
+
+#### Release 图片读取与解码
+
+同日、同 checkout 和 75 张素材，用 `--release` 重新构建生产读取/解码路径：
+opt-level=3、LTO、codegen-units=1，libwebp 原生代码也为 opt-level=3。
+这是 release profile 的测试 harness，非正式游戏包启动；依据
+[Cargo 测试合同](https://doc.rust-lang.org/cargo/reference/profiles.html#panic)，测试使用
+unwind，而非 shipping 的 panic=abort。前述 dev-only codec override 不影响本组结果。
+仍为热宿主文件缓存、每遍新开 package、每进程五遍、六对进程且后三对反序；
+计时期间没有并行编译。初步单次运行发生过整机波动，原始日志保留但不混入配对统计。
+
+| Hakutaku 路径 / 图片组 | 原实现读取 | 原实现解码 | 关闭 codec 内部线程后解码 | 解码变化 |
+| --- | ---: | ---: | ---: | ---: |
+| tday 31 张 1080p 有损背景 | 3.396 ms | 185.944 ms | 252.134 ms | +35.6% |
+| tday 4 张无损立绘，1024×1536 → 720×1080 | 2.805 ms | 84.377 ms | 84.392 ms | +0.02% |
+| Narcissu 40 张 1080p 无损背景 | 6.272 ms | 207.244 ms | 207.711 ms | +0.23% |
+
+均为整组时间的中位数，不是单张 P95。原实现读取+解码+取色合计分别为
+189.777 / 87.253 / 213.704 ms；读取仅占约 1.8% / 3.2% / 2.9%，不是物理 SSD 时间。
+散文件的有损背景解码也从 185.549 增至 252.667 ms（+36.2%）；两组无损对照变化
+均小于 0.4%。锁定 libwebp 的 `VP8GetThreadMethod` 只为满足宽度条件的有损 VP8
+启用工作线程，无损 VP8L 不走该分支，观察与源码一致。
+
+候选仅修改 `config.options.use_threads = 1` 为 `0`，已撤回；没有保留新的发行版
+生产代码改动，也没有改变像素质量、尺寸、安全限制、缓存或认证链。
+当前主要成本为原生解码，未发现值得增加复杂度的重复读取或整图复制；这不证明
+没有任何优化空间，也不覆盖冷存储、GPU 上传、AssetServer 调度或其他硬件。
+75 张图片所有版本/后端/遍次输出尺寸和完整 RGBA hash 相同，231 个源 WebP 的
+SHA-256 未变。原始构建日志、两个 binary、24 份正式逐图日志、初测、候选 patch、
+输入验证、二进制 SHA-256 和命令位于本机 `target/performance/image-release/`；
+复用 `target/performance/image-reads/summarize.mjs` 汇总。
+撤回后通过 fmt、workspace all-targets/all-features check/Clippy、两组串行工作区
+测试（all-features / no-default-features + publisher），以及 release 下 12 项图片
+回归和 7 项 media 回归；没有执行本轮窗口/GPU 或其他平台验收。
+
+```sh
+KEINE_IMAGE_BENCH=/path/to/read-only/images \
+  cargo test --locked --release -p keine --all-features --lib \
+  scene::images::benchmark::mounted_image_reads -- --ignored --nocapture --test-threads=1
+```
+
+#### 真实语音首读与连续解码
+
+2026-10-23，在 `3187648`、Rust 1.99.0、macOS arm64 / M5 Pro / 24 GiB 上，
+从本机 Narcissu 的 2,096 段 Opus 按文件大小分层抽取 96 段，共 3,521,091 B。
+使用锁定的 Hakutaku revision，不包含相邻 Hakutaku worktree 的未提交修改。
+实际路径为 `OpusSource → StreamingAudioFile → ContentFile → AssetCursor`；
+每个播放流持有 cursor，不是反复使用一次性的 `Asset::read_at()`。
+AssetLoader 当前初始化一次流以验证输入及取得时长，Decodable 播放时再独立打开。
+
+专项以相同流程测量散文件和资源包，不创建音频设备或窗口。六对进程，前三对
+before/after，后三对 after/before；每个进程五遍，先取进程内中位数再取六轮中位数。
+每遍重新打开 package，宿主文件系统缓存保持热；dev/test opt-level=1，不是 shipping
+LTO。打包、打开 package 与构造目录不计时；读取计数器有相同的计时开销，桌面负载
+未隔离。下表均为 96 段合计，首段 PCM 为每段 20 ms，连续解码按最快速度消费剩余
+sample，并计算校验和，不包含 Rodio mixer、设备缓冲、帧调度或实际听觉延迟。
+
+| Hakutaku 路径 | 原实现 | 候选 | 结果 |
+| --- | ---: | ---: | --- |
+| 加载探测 + 初始化播放并产出首段 PCM | 18.214 ms | 18.516 ms | +1.7%，无稳定收益 |
+| 剩余内容连续解码/消费 | 350.539 ms | 356.031 ms | +1.6%，无稳定收益 |
+| 全流程 ContentFile 读取累计 | 6.099 ms | 6.329 ms | 非物理 SSD 计时 |
+
+候选仅复用 codec registry、预分配 Ogg 最终的 128 KiB ring buffer、通过独占
+`Mutex::get_mut()` 避免每次 Read/Seek 加锁。初轮看似改善，反序后不成立，已全部撤回；
+没有改动生产读取策略、缓存预算、块大小或认证链。原实现平均首段准备约 0.190 ms/文件，
+这是批量均值而非 P95。读取累计仅占完整解码流程约 1.7%，当前测量不足以支持
+为了消除双重探测而保留预取 decoder、增加长期内存和生命周期状态。
+
+两种后端、全部原版/候选遍次均产出 26,692,901 个 sample，相同 PCM bit checksum。
+每遍逻辑 ContentFile 返回 14,548,830 B / 2,812 次 read（含 EOF），约为素材大小的
+4.13 倍；这是 Ogg 首尾探测与重新打开产生的逻辑读取，**不是** Hakutaku segment
+物理读取放大。散文件首段准备为 30.846 → 29.097 ms，受路径校验及宿主状态影响，
+不能外推为存储后端排名。没有测冷缓存、低端设备、长时硬件播放或真实掉音。
+
+```sh
+KEINE_VOICE_BENCH=/path/to/read-only/voices \
+  cargo test --locked -p keine --all-features --lib \
+  runtime::audio::benchmark::mounted_voice_reads -- --ignored --nocapture --test-threads=1
+```
+
+可复用测量位于 `tests/bench/runtime/audio.rs`；临时打包只使用内存中生成的测试身份，
+不修改源素材。原始 before/after binaries、12 份逐遍日志、输入 SHA-256、构建日志及
+汇总器位于本机 `target/performance/voice-reads/`。候选已撤回，当前命令只复现原实现。
+保留版本通过 fmt、workspace all-targets/all-features check/Clippy、串行工作区全功能
+测试及显式语音基准；2,096 个源文件 SHA-256 未变。并行测试中一次 Editor 导出失败
+单独重跑及串行套件均通过，沙箱 IPC 拒绝另在沙箱外重跑，不计作代码修复。
+
+#### 格式与既有集成证据
 
 独立库的格式、完整配对命令和测试 owner 位于锁定版本的
 [FORMAT](https://github.com/maincoretech/hakutaku/blob/8d637d5629b84f99251fd445366892bdb3c7cf2b/docs/FORMAT.md)、
