@@ -1,12 +1,11 @@
 <script>
-  import { msg } from '$lib/i18n/index.js';
+  import { msg, t } from '$lib/i18n/index.js';
   import { onMount, tick } from 'svelte';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import Header from '$lib/components/Header.svelte';
   import WaterScene from './WaterScene.svelte';
   import { siteConfig } from '$lib/siteConfig.js';
-  import { t } from '$lib/i18n/index.js';
   import { motionDuration } from '$lib/motion.js';
   import './site.css';
   import './hover.css';
@@ -24,7 +23,7 @@
   const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
   const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? (path.startsWith('/archive/') ? 'blog' : 'product'));
   const docsPage = $derived(path === '/docs' || path.startsWith('/docs/'));
-  const documentation = $derived(path.startsWith('/docs') || path === '/license' || path.startsWith('/download/') || path === '/404');
+  const documentation = $derived(docsPage || path === '/license' || path.startsWith('/download/') || path === '/404');
   const article = $derived(/^\/(blog|archive\/news)\/[^/]+/.test(path) || documentation);
   const detail = $derived((article && !documentation) || path.startsWith('/product/'));
   const backHref = $derived(path.startsWith('/archive/news/') ? '/archive/news' : path.startsWith('/blog/') ? '/blog' : path.startsWith('/product/') ? '/product' : '/');
@@ -70,12 +69,10 @@
   <a class="skip-link" href="#site-content">{$msg("跳到内容")}</a>
   <div class="site-viewport">
     {#if !article}<WaterScene bind:this={waterScene} {region} still={reducedMotion} />{/if}
-    <div class="site-brand">
-      <a class="site-brand-link" href="/" aria-label={$msg("maincore，返回首页")}>
+      <a class="site-brand site-brand-link" href="/" aria-label={$msg("maincore，返回首页")}>
         <img class="site-brand-logo" src="/favicon.png" width="42" height="42" alt="" />
         <span class="site-wordmark">maincore</span>
       </a>
-    </div>
     {#if !docsPage}<nav id="site-navigation" class="site-navigation" aria-label={$msg("主导航")}>
         {#each sections as section}
           <a href={section.href} class:active={region === section.label} aria-current={region === section.label ? 'page' : undefined}><span>{$t('nav.' + section.label)}</span></a>

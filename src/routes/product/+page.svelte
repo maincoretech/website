@@ -3,6 +3,7 @@
   import { msg } from '$lib/i18n/index.js';
   import { products } from '$lib/products.js';
   import '$lib/site/product.css';
+  const archive = products.find(group => group.category === 'Archive');
 </script>
 <PageMeta title={'maincore · ' + $msg('产品')} description={$msg("用 Kēne 制作视觉小说，用 Hakutaku 打包与更新游戏资源。了解 maincore 的开发工具、使用文档与实测数据。")} />
 <div class="product-page project-overview">
@@ -24,15 +25,9 @@
   </section>
 </div>
 <section id="catalog" class="catalog" aria-label={$msg("项目目录")}>
-  {#each products.filter(group => group.items.some(item => !['Kēne', 'Hakutaku'].includes(item.name))) as group}
-    <div class="catalog-group">
-      <h2>{$msg(group.category)}</h2>
-      {#each group.items.filter(item => !['Kēne', 'Hakutaku'].includes(item.name)) as item}
-        <a class="catalog-item" href={item.link} target="_blank" rel="noopener noreferrer">
-          <strong>{$msg(item.name)} ↗</strong><p>{$msg(item.desc)}</p>
-        </a>
-      {/each}
-    </div>
+  <h2>{$msg(archive.category)}</h2>
+  {#each archive.items as item}
+    <a href={item.link} target="_blank" rel="noopener noreferrer">{$msg(item.name)} ↗</a>
   {/each}
 </section>
 </div>

@@ -54,7 +54,7 @@
 
 /* Keep the text on a stable layer while the hover wash fades independently. */
 .site-shell .site-navigation a { position: relative; isolation: isolate; }
-.site-shell .site-navigation a::before {
+.site-shell :is(.entry-link, .site-navigation a)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -67,7 +67,13 @@
 }
 .site-shell .site-navigation a > span { transform: translateZ(0); }
 .site-shell .site-navigation a:is(:hover, :focus-visible) { background-color: transparent; }
-.site-shell .site-navigation a:focus-visible::before { opacity: 1; }
+.site-shell :is(.entry-link, .site-navigation a):focus-visible::before { opacity: 1; }
 @media (hover: hover) {
-  .site-shell .site-navigation a:hover::before { opacity: 1; }
+  .site-shell :is(.entry-link, .site-navigation a):hover::before { opacity: 1; }
+}
+.site-shell .reading-panel .entry-list a.entry-link {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent;
+  transition: color var(--hover-duration) var(--hover-ease), border-color var(--hover-duration) var(--hover-ease);
 }

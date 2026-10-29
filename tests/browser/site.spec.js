@@ -263,6 +263,9 @@ test('touch wake stays engaged while held and stops only when its own pointer en
   await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await expect.poll(() => page.evaluate(() => window.waterFlow.z)).toBe(0);
   // Water captures only bare scenery; dragging the reading surface still scrolls.
+  // Use a long page: the compact Archive index may now fit without scrolling.
+  await page.goto('/product/keine');
+  await expect(page.locator('.water-scene')).toHaveAttribute('data-status', 'ready');
   const panel = await page.locator('#site-content').boundingBox();
   const x = panel.x + panel.width * .8;
   const y = panel.y + panel.height * .75;

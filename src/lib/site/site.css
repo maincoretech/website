@@ -143,9 +143,6 @@
   opacity: 0.5;
   cursor: default;
 }
-.site-shell [hidden] {
-  display: none !important;
-}
 .site-viewport {
   position: relative;
   height: 100svh;
@@ -187,10 +184,6 @@
   top: calc(var(--utility-top) + 4px);
   left: clamp(16px, 3.8vw, 55px);
   height: 44px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none;
 }
 .site-brand-link {
   display: flex;
@@ -242,7 +235,6 @@
   text-align: center;
   background: transparent;
   color: #899398;
-  transition: color 180ms;
 }
 .site-navigation a.active {
   color: #d2e3eb;
@@ -303,19 +295,6 @@
   padding-bottom: 8px;
   border-bottom: 1px solid #314a58;
 }
-.reading-heading h2 {
-  margin: 0;
-  font: 400 1.6rem var(--f-n);
-  color: #bfd3de;
-}
-.reading-heading button {
-  border: 0;
-  background: transparent;
-  color: #8fadb9;
-  font: 1.5rem var(--f-b);
-  width: 30px;
-  height: 30px;
-}
 .project-switcher,
 .project-topics {
   display: flex;
@@ -375,7 +354,7 @@
   }
 }
 .content-surface .demo-section {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 .content-surface .about-content {
   color: #afc1cc;
@@ -394,17 +373,12 @@
 .content-surface .about-content ul {
   padding-left: 20px;
 }
-.content-surface .about-more {
-  display: inline-block;
-  margin-top: 24px;
-  font-size: 0.8rem;
-}
 .content-surface .section-heading {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 .content-surface .section-heading .sec-title-box {
   margin: 0;
@@ -437,16 +411,14 @@
 }
 .content-surface .editor-window {
   position: relative;
-  border: 1px solid #425c6a;
-  border-radius: 2px;
-  background: #223640;
-  box-shadow: 3px 3px 7px rgb(0 0 0 / 20%);
+  background-color: transparent;
+  border: 0;
 }
 .content-surface .editor-tabs {
   position: relative;
   display: flex;
-  background: #273d49;
   border-bottom: 1px solid #456170;
+  background-color: transparent;
 }
 .content-surface .code-progress {
   position: absolute;
@@ -474,9 +446,9 @@
   padding: 9px 12px;
   border: 0;
   border-bottom: 2px solid transparent;
-  background: transparent;
   color: #a5bdca;
   font: 0.82rem var(--f-m);
+  background-color: transparent;
 }
 .content-surface .editor-tabs button.active {
   color: #d4e3ec;
@@ -487,19 +459,19 @@
   font: 0.72rem var(--f-b);
 }
 .content-surface .code-surface {
-  padding: 16px 0;
-  background: var(--c-pr);
   overflow-x: auto;
+  background-color: transparent;
+  padding: 10px 0;
 }
 .content-surface .code-lines {
   min-width: max-content;
-  font: 12px/23px var(--f-m);
+  font: 12px/21px var(--f-m);
 }
 .content-surface .code-line {
   display: flex;
-  height: 23px;
   padding: 0 8px;
   border-left: 2px solid transparent;
+  height: 21px;
 }
 .content-surface .line-number {
   flex: 0 0 24px;
@@ -536,7 +508,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 .content-surface .demo-caption small {
   font: 0.72rem/1.6 var(--f-b);
@@ -548,14 +520,14 @@
 }
 .content-surface .entry-list {
   margin-inline: 0;
-  border-block: 1px solid #3b515f;
+  border-block: 0;
 }
 .content-surface .entry-link {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 6px 18px;
-  padding: 13px 14px;
-  background: rgb(36 53 63 / 62%);
+  gap: 4px 18px;
+  background-color: transparent;
+  padding: 12px 0;
 }
 .content-surface .entry-link + .entry-link {
   border-top: 1px solid #3c5260;
@@ -578,9 +550,9 @@
   margin: 0;
 }
 .content-surface .project-note + .project-note {
-  margin-top: 28px;
-  padding-top: 26px;
   border-top: 1px solid #314652;
+  margin-top: 18px;
+  padding-top: 16px;
 }
 .content-surface .project-note h3 {
   color: #aec8d7;
@@ -588,12 +560,13 @@
 }
 .content-surface .project-note > p {
   font-size: 0.85rem;
-  margin: 8px 0 17px;
   color: #afc1cb;
+  margin: 5px 0 10px;
+  line-height: 1.45;
 }
 .content-surface :is(.architecture-demo, .resource-demo) {
-  background: #21343e;
-  padding: 13px;
+  background: transparent;
+  padding: 0;
 }
 .content-surface .architecture-nodes {
   display: grid;
@@ -601,16 +574,15 @@
   gap: 7px;
 }
 .content-surface .architecture-nodes button {
-  padding: 9px 8px;
   border: 0;
   border-bottom: 2px solid transparent;
-  border-radius: 2px;
-  background-color: transparent;
   color: #899398;
   text-align: left;
-  transition:
-    background 160ms,
+  line-height: 1.35;
+  transition: color 160ms,
     border-color 160ms;
+  background-color: transparent;
+  padding: 6px 0;
 }
 .content-surface .architecture-nodes button.active {
   color: #d6e5ed;
@@ -622,11 +594,12 @@
 .content-surface .architecture-nodes small {
   display: block;
   font-size: 0.68rem;
-  margin-top: 5px;
+  margin-top: 3px;
 }
 .content-surface .architecture-detail {
-  min-height: 68px;
-  padding-top: 12px;
+  min-height: 56px;
+  padding-top: 8px;
+  line-height: 1.4;
 }
 .content-surface .architecture-detail > span {
   color: #a1c0d2;
@@ -636,13 +609,15 @@
   font-size: 0.82rem;
   margin: 5px 0 0;
   color: #b0c4cf;
+  margin-top: 3px;
 }
 .content-surface .project-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 24px;
-  margin-top: 12px;
   font: 0.82rem var(--f-n);
+  margin-top: 8px;
+  gap: 8px 18px;
+  line-height: 1.35;
 }
 .site-shell .benchmark-highlights {
   margin: 18px 0 22px;
@@ -728,7 +703,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .content-surface .resource-toolbar > span {
   font: 1.05rem var(--f-m);
@@ -738,24 +713,21 @@
   font-size: 0.85rem;
 }
 .content-surface .resource-toolbar button {
-  padding: 4px 10px;
-  border: 1px solid #648497;
-  border-radius: 2px;
-  background: #314e5f;
   color: #c7dce7;
   font: 0.78rem var(--f-n);
+  border: 0;
+  background-color: transparent;
+  padding: 4px 0;
 }
 .content-surface .segment {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 7px 10px;
-  margin-top: 4px;
-  background: #2b4553;
-  transition: background 200ms;
-}
-.content-surface .segment.changed {
-  background: #395d61;
+  margin-top: 2px;
+  line-height: 1.35;
+  transition: color 160ms;
+  background-color: transparent;
+  padding: 4px 0;
 }
 .content-surface .segment-branch {
   color: #86a5b6;
@@ -776,108 +748,14 @@
 .content-surface .segment-more {
   color: #91acbb;
 }
-
-/* The homepage demos sit directly on the scene, with lines rather than card fills. */
-.reading-panel.content-surface
-  :is(
-    .architecture-demo,
-    .resource-demo,
-    .editor-window,
-    .editor-tabs,
-    .code-surface,
-    .architecture-nodes button,
-    .editor-tabs button,
-    .resource-toolbar button,
-    .entry-link,
-    .segment
-  ) {
-  background-color: transparent;
-  box-shadow: none;
-  border-radius: 0;
-}
-.reading-panel :is(.editor-window, .entry-list) {
-  border: 0;
-}
-.reading-panel :is(.architecture-demo, .resource-demo) {
-  padding: 0;
-}
-.reading-panel .architecture-nodes button {
-  padding-inline: 0;
-  padding-block: 6px;
-  line-height: 1.35;
-  transition:
-    color 160ms,
-    border-color 160ms;
-}
-.reading-panel .entry-link {
-  padding-inline: 0;
-  padding-block: 9px;
-  gap: 4px 18px;
-}
-.reading-panel .resource-toolbar button {
-  border: 0;
-  padding-inline: 0;
-}
-.reading-panel .segment {
-  padding-inline: 0;
-  margin-top: 2px;
-  padding-block: 4px;
-  line-height: 1.35;
-  transition: color 160ms;
-}
 .reading-panel .segment.changed .segment-status {
   color: #c5dfd2;
-}
-.reading-panel.content-surface .demo-section {
-  margin-top: 12px;
-}
-.reading-panel .section-heading {
-  margin-bottom: 10px;
-}
-.reading-panel .project-note > p {
-  margin: 5px 0 10px;
-  line-height: 1.45;
-}
-.reading-panel .project-note + .project-note {
-  margin-top: 18px;
-  padding-top: 16px;
-}
-.reading-panel .architecture-nodes small {
-  margin-top: 3px;
-}
-.reading-panel.content-surface .architecture-detail {
-  min-height: 56px;
-  padding-top: 8px;
-  line-height: 1.4;
-}
-.reading-panel .architecture-detail p {
-  margin-top: 3px;
-}
-.reading-panel .project-actions {
-  margin-top: 8px;
-  gap: 8px 18px;
-  line-height: 1.35;
-}
-.reading-panel .resource-toolbar {
-  margin-bottom: 6px;
 }
 .reading-panel :is(.entry-title, .entry-link p, .about-content) {
   line-height: 1.45;
 }
 .reading-panel .about-content p {
   margin-block: 8px;
-}
-.reading-panel .code-surface {
-  padding-block: 10px;
-}
-.reading-panel .code-lines {
-  line-height: 21px;
-}
-.reading-panel .code-line {
-  height: 21px;
-}
-.reading-panel .demo-caption {
-  margin-top: 8px;
 }
 .site-copyright {
   position: absolute;
@@ -889,15 +767,6 @@
   color: color-mix(in srgb, var(--c-l) 40%, #727d82);
   opacity: 0.55;
   pointer-events: none;
-}
-.site-copyright a { pointer-events: auto; padding: 8px 4px; }
-.no-script-links {
-  position: absolute;
-  bottom: 130px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 24px;
 }
 @keyframes reading-in {
   from {
@@ -960,15 +829,6 @@
     top: 90px;
     width: calc(100% - 32px);
     padding: 10px 18px calc(var(--reading-fade) + 16px);
-  }
-  .reading-heading h2 {
-    font-size: 1.25rem;
-  }
-  .content-surface .demo-section {
-    margin-top: 18px;
-  }
-  .content-surface .architecture-detail {
-    min-height: 80px;
   }
 }
 @media (max-width: 380px) {

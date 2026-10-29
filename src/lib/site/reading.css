@@ -2,7 +2,6 @@
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .site-shell.article-page .site-viewport { background: #10151c; }
 .site-shell.article-page .reading-panel { bottom: 104px; mask-image: none; -webkit-mask-image: none; }
-.site-shell.article-page .site-back-top { bottom: 40px; }
 .site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
 .site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
 .site-shell .route-content { min-width: 0; }
@@ -15,33 +14,9 @@
 .site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #b3cae5; font: 1.4rem var(--f-n); }
 .site-page-title { margin: 6px 0 16px; font: 400 1.65rem/1.4 var(--f-h); color: #bfd3de; }
 .site-intro { margin: 10px 0 24px; color: #9fb7c4; font-size: .88rem; }
-.site-shell .entry-link { padding: 12px 0; }
 .site-shell .entry-link > .entry-title { display: block; font: 400 1.1rem/1.45 var(--f-n); }
-/* Animate the wash separately from text inside the masked reading surface.
-   Keep its layer alive across rapid entry changes; it never participates in hit testing. */
-.site-shell .reading-panel .entry-list a.entry-link {
-  position: relative;
-  isolation: isolate;
-  background-color: transparent;
-  transition: color var(--hover-duration) var(--hover-ease), border-color var(--hover-duration) var(--hover-ease);
-}
-.site-shell .entry-list .entry-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--hover-wash);
-  opacity: 0;
-  will-change: opacity;
-  transition: opacity var(--hover-duration) var(--hover-ease);
-}
-.site-shell .entry-list .entry-link:focus-visible::before { opacity: 1; }
-@media (hover: hover) {
-  .site-shell .entry-list .entry-link:hover::before { opacity: 1; }
-}
 .site-shell .list-section { margin: 22px 0; }
-.site-shell .list-section > h2, .site-shell .catalog-group > h2 { margin: 0 0 12px; font: 400 1.15rem/1.5 var(--f-n); color: #abc6d5; }
+.site-shell .list-section > h2 { margin: 0 0 12px; font: 400 1.15rem/1.5 var(--f-n); color: #abc6d5; }
 /* Every route shares the same width; only list pages use independent columns. */
 @media (min-width: 760px) {
   .site-shell .reading-panel { width: min(80%, 2240px); padding-inline: 20px; }
@@ -54,19 +29,10 @@
   .site-shell.wide-list .entry-link { min-height: 112px; }
   .site-shell.wide-list .list-section .entry-link { min-height: 144px; }
 }
-.site-shell .catalog { margin-top: 30px; padding-top: 18px; border-top: 1px solid #314652; }
-.site-shell .catalog-group { margin: 20px 0; }
-.site-shell .catalog-item { display: block; padding: 12px 0; border-bottom: 1px solid #2b3e48; }
-.site-shell .catalog-item strong { font: 400 1.1rem var(--f-n); }
-.site-shell .catalog-item p { margin: 5px 0 0; color: #a4bac6; font-size: .82rem; }
 .site-shell .article-heading h1 { margin: 6px 0 14px; font: 400 clamp(1.5rem, 3vw, 2.15rem)/1.5 var(--f-h); color: #c2d7e2; overflow-wrap: anywhere; }
 .site-shell .article-meta-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 20px; margin: 14px 0 22px; color: #91aab8; font: .75rem/1.6 var(--f-n); }
-.site-shell .article-toc { margin-bottom: 24px; border-block: 1px solid #2d4350; padding: 9px 0; }
-.site-shell .article-toc nav { display: grid; padding: 6px 0; }
-.site-shell .article-toc nav a { padding: 8px; min-height: 36px; color: #b0cad8; font: .8rem/1.5 var(--f-b); }
-@media (min-width: 760px) { .site-shell .article-toc nav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; } }
 .site-shell .article-prose { min-width: 0; color: #b6c9d3; overflow-wrap: anywhere; font-size: .95rem; line-height: 1.8; }
-.site-shell .article-prose :is(h2, h3, h4) { color: #bdd5e2; scroll-margin-top: 20px; font-family: var(--f-h); font-weight: 400; }
+.site-shell .article-prose :is(h2, h3, h4) { color: #bdd5e2; font-family: var(--f-h); font-weight: 400; scroll-margin-top: 64px; }
 .site-shell .article-prose h2 { margin: 30px 0 14px; font-size: 1.4rem; }
 .site-shell .article-prose h3 { margin: 24px 0 10px; font-size: 1.15rem; }
 .site-shell .article-prose h4 { margin: 20px 0 8px; font-size: 1rem; }
@@ -102,7 +68,6 @@
 .site-shell.article-page .site-back-top { bottom: 92px; }
 .site-shell.docs-page .reading-panel { bottom: 48px; }
 .site-shell.docs-page .site-back-top { bottom: 40px; }
-.site-shell .article-prose :is(h2, h3, h4) { scroll-margin-top: 64px; }
 @media (max-width: 759px) {
   .site-shell.article-page .site-navigation { width: calc(100% - 32px); }
   .site-shell.article-page .site-navigation a { padding-inline: 5px; }
