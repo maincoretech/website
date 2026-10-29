@@ -6,6 +6,10 @@
 .site-shell .page-section { font: 400 1.6rem var(--f-n); color: #bfd3de; }
 .site-shell .reading-back { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin-top: -8px; font: 1.5rem var(--f-b); }
 .site-shell .route-content { min-width: 0; }
+.site-shell .scroll-reveal-pending { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .site-shell .scroll-reveal-pending { opacity: 1; }
+}
 .site-shell .docs-exit { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 8px; padding-inline: 8px; font-size: .9rem; }
 .site-shell .reading-panel:not(.detail-reading) > .route-content { will-change: transform; }
 .site-shell .site-back-top { position: absolute; right: var(--utility-right); bottom: 115px; z-index: 3; width: 44px; height: 44px; border: 0; background: transparent; color: #b3cae5; font: 1.4rem var(--f-n); }

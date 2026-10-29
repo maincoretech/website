@@ -12,8 +12,8 @@ export const siteConfig = {
   /** 主导航 */
   nav: [
     { label: 'product', href: '/product' },
-    { label: 'blog', href: '/blog' },
     { label: 'docs', href: '/docs', reading: true },
+    { label: 'blog', href: '/blog' },
     { label: 'about', href: '/about' }
   ]
 };

@@ -2,7 +2,7 @@ import { tabSlideDuration, tabSlideEasing } from './tab-motion.js';
 
 // Only the outgoing reading panel is copied. The incoming page stays live,
 // so finishing a slide never swaps a screenshot back to the real page.
-export function prepareTabSlide(panel, direction, { duration = tabSlideDuration, easing: customEasing } = {}) {
+export function prepareTabSlide(panel, direction, { mode = 'slide', duration = tabSlideDuration, easing: customEasing } = {}) {
   if (!panel?.parentElement || !panel.animate) return null;
   const viewport = panel.parentElement;
   const bounds = panel.getBoundingClientRect();
@@ -53,11 +53,15 @@ export function prepareTabSlide(panel, direction, { duration = tabSlideDuration,
     cancel,
     play() {
       if (cancelled || !panel.isConnected) { cancel(); return; }
-      const outgoing = copy.querySelector('.route-content');
-      const incoming = panel.querySelector('.route-content');
+      const outgoing = mode === 'zoom' ? copy : copy.querySelector('.route-content');
+      const incoming = mode === 'zoom' ? panel : panel.querySelector('.route-content');
       if (!incoming || !outgoing) { cancel(); return; }
       layer.style.visibility = 'visible';
-      animations = [
+      const zoomFrame = (scale, opacity) => ({ transform: `scale(${scale})`, opacity, transformOrigin: '50% 50%' });
+      animations = mode === 'zoom' ? [
+        outgoing.animate([zoomFrame(1, 1), zoomFrame(direction > 0 ? 1.04 : .94, 0)], options),
+        incoming.animate([zoomFrame(direction > 0 ? .94 : 1.04, 0), zoomFrame(1, 1)], options)
+      ] : [
         outgoing.animate([{ transform: translate(0) }, { transform: translate(-direction * distance) }], options),
         incoming.animate([{ transform: translate(direction * distance) }, { transform: translate(0) }], options)
       ];

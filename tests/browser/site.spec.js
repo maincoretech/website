@@ -5,11 +5,68 @@ test.beforeEach(async ({ page }) => {
   await page.route('https://giscus.app/**', route => route.abort());
 });
 
-test('docs has visible exits and opposite entry and exit slides', async ({ page }) => {
+test('bottom navigation keeps its position during repeated hover', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Hover requires a mouse.');
+  await page.goto('/product');
+  const nav = page.locator('#site-navigation');
+  await expect(nav.locator('a')).toHaveText(['product', 'docs', 'blog', 'about']);
+  const about = nav.getByRole('link', { name: 'about', exact: true });
+  const measure = () => about.evaluate(node => {
+    const box = node.getBoundingClientRect();
+    const text = node.querySelector('span').getBoundingClientRect();
+    return [box.x, box.y, box.width, box.height, text.x, text.y, text.width, text.height];
+  });
+  const before = await measure();
+  const box = await about.boundingBox();
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect.poll(() => about.evaluate(node => getComputedStyle(node, '::before').opacity)).toBe('1');
+    expect(await measure()).toEqual(before);
+    await page.mouse.move(box.x + box.width / 2, box.y - 20);
+    await expect.poll(() => about.evaluate(node => getComputedStyle(node, '::before').opacity)).toBe('0');
+    expect(await measure()).toEqual(before);
+  }
+});
+
+for (const [route, selector] of [
+  ['/product/keine', '#keine-source'],
+  ['/product/hakutaku', '.hakutaku-flows .package-flow']
+]) {
+  test(`scroll reveal never hides already painted content or replays on ${route}`, async ({ page }) => {
+    await page.addInitScript(selector => {
+      window.scrollRevealStarts = [];
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function(frames, options) {
+        if (this.matches(selector)) window.scrollRevealStarts.push(getComputedStyle(this).opacity);
+        return animate.call(this, frames, options);
+      };
+    }, selector);
+    await page.goto(route);
+    await expect(page.locator('.water-scene')).toHaveAttribute('data-status', 'ready');
+    expect(await page.locator('#site-content').evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
+    const target = page.locator(selector);
+    await target.scrollIntoViewIfNeeded();
+    await expect.poll(() => page.evaluate(() => window.scrollRevealStarts)).toEqual(['0']);
+    await expect.poll(() => target.evaluate(node => node.getAnimations().length)).toBe(0);
+    await expect(target).toHaveCSS('opacity', '1');
+    await page.locator('#site-content').evaluate(node => node.scrollTop = 0);
+    await target.scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => window.scrollRevealStarts)).toEqual(['0']);
+    await expect(target).toHaveCSS('opacity', '1');
+    // Reduced motion must reveal sections that have not reached the viewport yet.
+    await page.reload();
+    await expect(page.locator('.water-scene')).toHaveAttribute('data-status', 'ready');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(page.locator('.scroll-reveal-pending')).toHaveCount(0);
+    await expect(target).toHaveCSS('opacity', '1');
+  });
+}
+
+test('docs has visible exits and centered entry and exit zooms', async ({ page }) => {
   await page.addInitScript(() => {
     const animate = Element.prototype.animate;
     Element.prototype.animate = function(frames, options) {
-      if (this.matches('.route-content') && !this.closest('[data-tab-slide-copy]')) {
+      if (this.matches('.reading-panel') && !this.closest('[data-tab-slide-copy]')) {
         window.lastContentMotion = { frames, duration: options.duration };
       }
       return animate.call(this, frames, options);
@@ -17,20 +74,23 @@ test('docs has visible exits and opposite entry and exit slides', async ({ page 
   });
   await page.goto('/about');
   const nav = page.getByRole('navigation', { name: '主导航', exact: true });
+  await expect(nav.locator('a')).toHaveText(['product', 'docs', 'blog', 'about']);
   await nav.getByRole('link', { name: 'docs', exact: true }).click();
   await expect(page).toHaveURL(/\/docs$/);
   await expect(nav).toHaveCount(0);
   await expect(page.locator('#site-content .docs-exit')).toBeInViewport();
   const enter = await page.evaluate(() => window.lastContentMotion);
   expect(enter.duration).toBe(360);
-  expect(enter.frames[0].transform).toMatch(/^translate3d\([\d.]+px,/);
+  expect(enter.frames[0].transform).toBe('scale(0.94)');
+  expect(enter.frames[0].transformOrigin).toBe('50% 50%');
   // The wordmark must be just as clickable as the small icon.
   await page.locator('.site-brand-link .site-wordmark').click();
   await expect(page).toHaveURL(/\/$/);
   await expect(nav).toBeVisible();
   const exit = await page.evaluate(() => window.lastContentMotion);
   expect(exit.duration).toBe(360);
-  expect(exit.frames[0].transform).toMatch(/^translate3d\(-[\d.]+px,/);
+  expect(exit.frames[0].transform).toBe('scale(1.04)');
+  expect(exit.frames[0].transformOrigin).toBe('50% 50%');
   await page.goBack();
   await expect(page).toHaveURL(/\/docs$/);
   await expect(nav).toHaveCount(0);

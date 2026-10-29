@@ -3,9 +3,9 @@ import { createCameraAxis, advanceCameraAxis } from './camera-motion.js';
 
 export const tabSlideDuration = 1200;
 
-// Documents form a stack: enter from the right and leave back to the left.
+// Documents form a stack: zoom into it and reverse the zoom when leaving.
 // Chapter links at the same depth keep the small content reveal.
-export function docsSlideDirection(from, to) {
+export function docsZoomDirection(from, to) {
   const depth = path => /^\/docs(?:\/|$)/.test(path ?? '')
     ? path.split('/').filter(Boolean).length : 0;
   return Math.sign(depth(to) - depth(from));

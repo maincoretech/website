@@ -91,7 +91,7 @@
         {@render children()}
       </div>
     </main>
-    <footer class="site-copyright">{$msg(siteConfig.copyright)} · <a href="/license">{$msg('许可')}</a> · <a href="/archive/news">{$msg('历史动态')}</a></footer>
+    <footer class="site-copyright">{$msg(siteConfig.copyright)}</footer>
     {#if showTop}<button class="site-back-top" aria-label={$t('a11y.back_to_top')} onclick={backToTop}>↑</button>{/if}
   </div>
   {#if path !== '/404'}<Header />{/if}
