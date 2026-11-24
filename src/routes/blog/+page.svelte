@@ -1,61 +1,48 @@
 <script>
+  import { preloadData } from '$app/navigation';
+  import { navigating } from '$app/state';
+  import { onMount } from 'svelte';
   import PageMeta from '$lib/site/PageMeta.svelte';
-  import { t, msg } from '$lib/i18n/index.js';
+  import PostList from '$lib/studio/PostList.svelte';
+  import Icon from '$lib/studio/Icon.svelte';
+  import { msg, t } from '$lib/i18n/index.js';
+  import { featuredPost, postGroups } from '$lib/studio/posts.js';
+  import { pressFeedback } from '$lib/studio/press-feedback.js';
 
-  /**
-   * 博客文章列表 — 从 src/lib/posts 目录下所有 .md 文件自动加载
-   * 添加新文章: 在 src/lib/posts/ 下创建 .md 文件，包含 frontmatter 即可
-   */
-  const modules = import.meta.glob('$lib/posts/*.md', { eager: true });
-
-  /** 格式化日期 */
-  function fmtDate(d) {
-    if (!d) return '';
-    const date = d instanceof Date ? d : new Date(d);
-    return date.toISOString().split('T')[0];
-  }
-
-  const posts = Object.entries(modules)
-    .map(([path, mod]) => {
-      const slug = path.split('/').pop()?.replace('.md', '') ?? '';
-      const meta = mod.metadata ?? {};
-      return {
-        slug,
-        title: meta.title ?? slug,
-        date: fmtDate(meta.date),
-        dateRaw: meta.date,
-        author: meta.author ?? 'Water Studio',
-        description: meta.description ?? '',
-        category: meta.category ?? 'uncategorized',
-        priority: meta.priority ?? 0
-      };
-    })
-    .sort((a, b) => b.priority - a.priority || new Date(b.dateRaw) - new Date(a.dateRaw));
-
-  /** 按分类分组 */
-  const grouped = $derived.by(() => {
-    const map = {};
-    for (const post of posts) {
-      (map[post.category] ??= []).push(post);
-    }
-    return Object.entries(map);
+  onMount(() => {
+    if (!featuredPost || !window.requestIdleCallback || navigator.connection?.saveData) return;
+    const idle = window.requestIdleCallback(() => {
+      if (document.visibilityState === 'visible' && !navigating.to) {
+        preloadData(featuredPost.href).catch(() => {});
+      }
+    });
+    return () => window.cancelIdleCallback(idle);
   });
 </script>
 
-<PageMeta title={$msg('博客') + ' · maincore'} description={$msg("开发文章、软件架构与实测记录。")} />
-<h1 class="site-page-title">{$t('pages.blog.subtitle')}</h1>
-{#each grouped as [cat, catPosts]}
-  <section class="list-section">
-    <h2>{$t('cat.' + cat) || cat}</h2>
-    <div class="entry-list">
-      {#each catPosts as post}
-        <a href="/blog/{post.slug}" class="entry-link" data-sveltekit-preload-data="tap">
-          <span class="entry-title">{post.title}</span>
-          <time datetime={post.date}>{post.date}</time>
-          {#if post.description}<p>{post.description}</p>{/if}
-        </a>
-      {/each}
-    </div>
-  </section>
-{/each}
-{#if posts.length === 0}<p class="site-intro">{$t('pages.blog.empty')}</p>{/if}
+<PageMeta title="blog · maincore" description="Development notes, software architecture, and benchmarks from maincore." />
+<div class="studio-page">
+  <h1 class="visually-hidden" lang="en">blog</h1>
+
+  {#if featuredPost}
+    <a href={featuredPost.href} class="studio-feature studio-press" use:pressFeedback
+      data-sveltekit-preload-code="viewport" data-sveltekit-preload-data="hover">
+      <span class="studio-feature-meta">
+        {#if featuredPost.date}<time datetime={featuredPost.date}>{featuredPost.date.replaceAll('-', '.')}</time>{/if}
+        {#if featuredPost.author}<span>{featuredPost.author}</span>{/if}
+      </span>
+      <strong>{featuredPost.title}</strong>
+      {#if featuredPost.description}<span class="studio-feature-excerpt">{featuredPost.description}</span>{/if}
+      <span class="studio-feature-arrow"><Icon name="arrow" /></span>
+    </a>
+  {:else}
+    <p>{$t('pages.blog.empty')}</p>
+  {/if}
+
+  {#each postGroups as [year, posts] (year)}
+    <section class="studio-blog-year">
+      <h2>{year || $msg('其他')}</h2>
+      <PostList {posts} compactDate={Boolean(year)} />
+    </section>
+  {/each}
+</div>

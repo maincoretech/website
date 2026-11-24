@@ -1,42 +1,24 @@
 <script>
   import '../app.css';
-  import SiteShell from '$lib/site/SiteShell.svelte';
-  import { onNavigate } from '$app/navigation';
+  import { afterNavigate } from '$app/navigation';
+  import { navigating, page } from '$app/state';
   import { onMount } from 'svelte';
   import { initLang } from '$lib/i18n/index.js';
-  import { motionDuration, reveal } from '$lib/motion.js';
-  import { docsZoomDirection, tabSlideDirection } from '$lib/site/tab-motion.js';
-  import { prepareTabSlide } from '$lib/site/tab-slide.js';
+  import SiteShell from '$lib/site/SiteShell.svelte';
+  import StudioShell from '$lib/studio/StudioShell.svelte';
+  import { usesStudioShell } from '$lib/studio/navigation.js';
+  import { createRouteMotion } from '$lib/studio/route-motion.js';
+  import '$lib/studio/route-motion.css';
 
   let { children } = $props();
-
-  let fallbackAnimation;
-  let tabSlide;
+  const pending = $derived(Boolean(navigating.to && navigating.to.url.pathname !== page.url.pathname));
 
   onMount(initLang);
-
-  onNavigate((navigation) => {
-    tabSlide?.cancel();
-    fallbackAnimation?.cancel();
-    if (!motionDuration(180)) return;
-    const docsDirection = navigation.from && navigation.to
-      ? docsZoomDirection(navigation.from.url.pathname, navigation.to.url.pathname) : 0;
-    const direction = docsDirection || (navigation.from && navigation.to
-      ? tabSlideDirection(navigation.from.url.pathname, navigation.to.url.pathname) : 0);
-    if (direction) {
-      const current = prepareTabSlide(document.getElementById('site-content'), direction,
-        docsDirection ? { mode: 'zoom', duration: 360, easing: 'cubic-bezier(.22, 1, .36, 1)' } : undefined);
-      tabSlide = current;
-      if (current) {
-        navigation.complete.catch(() => current.cancel());
-        return () => { if (tabSlide === current) current.play(); };
-      }
-    }
-    return () => {
-      const content = document.querySelector('.route-content');
-      fallbackAnimation = reveal(content);
-    };
-  });
+  afterNavigate(createRouteMotion());
 </script>
 
-<SiteShell>{@render children()}</SiteShell>
+{#if usesStudioShell(page.url.pathname)}
+  <StudioShell {pending}>{@render children()}</StudioShell>
+{:else}
+  <SiteShell {pending}>{@render children()}</SiteShell>
+{/if}

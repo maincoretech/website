@@ -1,7 +1,5 @@
 <script>
   import { onMount } from 'svelte';
-  import { fade } from 'svelte/transition';
-  import { motionDuration } from '$lib/motion.js';
   let { region = 'product', still = false, paper = true } = $props();
   let host;
   let api = $state.raw(null);
@@ -36,7 +34,7 @@
   });
 </script>
 
-<div class="water-scene" bind:this={host} data-status={status} out:fade|global={{ duration: motionDuration(320) }}>
+<div class="water-scene" bind:this={host} data-status={status}>
   {#if status === 'failed'}
     <div class="water-fallback" role="status">
       <p>此设备暂时无法显示动态背景。</p>

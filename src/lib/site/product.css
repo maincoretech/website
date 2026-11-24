@@ -19,20 +19,10 @@
 }
 .product-page .product-actions .primary-action:focus-visible { outline: 2px solid #d1e5ee; outline-offset: 4px; background: #bcd2dc; }
 .product-page .product-meta { margin: 18px 0 0; font: .7rem/1.7 var(--f-m); color: #7f9dab; }
-.product-page .product-benefits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; padding: 26px 0 32px; margin: 0; border-block: 1px solid #304854; }
-.product-page .product-benefits h3 { margin: 0 0 9px; font: 400 1.1rem/1.5 var(--f-b); color: #bcd4e0; }
-.product-page .product-benefits p { margin: 0; color: #93aebb; font: .85rem/1.8 var(--f-b); max-width: 36em; }
 .product-page .product-section { padding-top: 48px; scroll-margin-top: 16px; }
 .product-page .product-section > h2 { margin: 0 0 12px; color: #bdd5e2; font: 400 1.6rem/1.5 var(--f-b); }
 .product-page .product-section > p { margin: 0 0 24px; color: #94aebb; font: .9rem/1.8 var(--f-b); max-width: 52em; }
-.product-page .product-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; list-style: none; counter-reset: steps; padding: 0; margin: 24px 0; }
-.product-page .product-steps li { counter-increment: steps; border-top: 1px solid #35505e; padding-top: 16px; }
-.product-page .product-steps li::before { content: '0' counter(steps); display: block; color: #7b9bac; font: .75rem var(--f-m); margin-bottom: 12px; }
-.product-page .product-steps h3 { font: 400 1.05rem/1.5 var(--f-b); margin: 0 0 10px; color: #bdd5e2; }
-.product-page .product-steps p { font: .85rem/1.8 var(--f-b); color: #93aebb; margin: 0 0 12px; }
-.product-page .product-steps a { display: inline-flex; align-items: center; min-height: 44px; font: .82rem/1.5 var(--f-b); }
-.product-page .product-explore { padding-top: 16px; }
-.product-page .product-explore .stacked-project { margin-top: 0; padding-top: 0; border-top: 0; }
+.product-page .project-explorer { padding-top: 16px; }
 .product-page .product-note { color: #829eac; font: .75rem/1.75 var(--f-b); }
 /* The catalog is an index; detailed demos and workflows live on product routes. */
 .project-overview .overview-projects { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 80px); border-bottom: 1px solid #304854; }
@@ -113,13 +103,11 @@
   .runtime-features > div + div { padding: 0; border: 0; }
   .runtime-features dt { margin: 0; }
   .release-features { grid-template-columns: 1fr; gap: 18px; }
-  .keine-product .desktop-break { display: none; }
   .product-page .keine-hero::before { top: auto; aspect-ratio: 1440 / 950; background-size: contain; opacity: .048; }
   .product-page .product-hero { grid-template-columns: 1fr; gap: 32px; padding: 18px 0 32px; }
   .product-page .product-name { font-size: 4rem; }
   .product-page .product-promise { margin-top: 18px; font-size: 1.35rem; }
   .product-page .product-summary { font-size: .9rem; }
-  .product-page .product-benefits, .product-page .product-steps { grid-template-columns: 1fr; gap: 24px; }
   .product-page .product-section { padding-top: 36px; }
   .product-page .product-section > h2 { font-size: 1.35rem; }
   .product-page .product-actions { gap: 10px; }

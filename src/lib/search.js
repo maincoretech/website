@@ -3,6 +3,7 @@
  */
 import MiniSearch from 'minisearch';
 import { docs as documents } from './docs/projects.js';
+import { blogPosts } from './site/content.js';
 
 /** 把中文按字符拆分，英文按空格拆分 */
 function tokenize(s) {
@@ -10,12 +11,18 @@ function tokenize(s) {
   let buf = '';
   for (const ch of s) {
     if (/[\u4e00-\u9fff]/.test(ch)) {
-      if (buf) { tokens.push(buf.toLowerCase()); buf = ''; }
+      if (buf) {
+        tokens.push(buf.toLowerCase());
+        buf = '';
+      }
       tokens.push(ch);
     } else if (/[a-zA-Z0-9]/.test(ch)) {
       buf += ch;
     } else {
-      if (buf) { tokens.push(buf.toLowerCase()); buf = ''; }
+      if (buf) {
+        tokens.push(buf.toLowerCase());
+        buf = '';
+      }
     }
   }
   if (buf) tokens.push(buf.toLowerCase());
@@ -23,53 +30,62 @@ function tokenize(s) {
 }
 
 function escapeHtml(value) {
-  return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function plainText(raw) {
-  return raw.replace(/^---[\s\S]*?---/, '')
+  return raw
+    .replace(/^---[\s\S]*?---/, '')
     .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/[#*>\x60\[\]()!_\-|~]/g, ' ')
-    .replace(/\s+/g, ' ').trim();
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-let idx;
-
-function build() {
-  idx = new MiniSearch({
-    fields: ['title', 'text'],
-    storeFields: ['title', 'slug', 'kind', 'text'],
-    tokenize
-  });
-
-  const postModules = import.meta.glob('$lib/posts/*.md', { eager: true, query: '?raw' });
-  const docs = [];
-
-  for (const [path, mod] of Object.entries(postModules)) {
-    const slug = path.split('/').pop()?.replace('.md', '') ?? '';
-    const raw = mod.default;
-    const title = raw.match(/title:\s*(.+)/)?.[1] ?? slug;
-    const text = plainText(raw);
-    docs.push({ id: `blog/${slug}`, title, text, slug: `/blog/${slug}`, kind: 'blog' });
-  }
-
-  const documentModules = import.meta.glob('$lib/docs/content/*/*.md', { eager: true, query: '?raw', import: 'default' });
-  for (const doc of documents) {
-    const raw = Object.entries(documentModules).find(([path]) => path.endsWith('/' + doc.project + '/' + doc.slug + '.md'))?.[1] ?? '';
-    docs.push({ id: doc.href, title: doc.project + ' · ' + doc.title, text: plainText(raw), slug: doc.href, kind: 'docs' });
-  }
-  idx.addAll(docs);
-}
-
-build();
+const index = new MiniSearch({
+  fields: ['title', 'text'],
+  storeFields: ['title', 'slug', 'kind', 'text'],
+  tokenize
+});
+const postSources = import.meta.glob('/src/lib/posts/*.md', { eager: true, query: '?raw', import: 'default' });
+const documentSources = import.meta.glob('/src/lib/docs/content/*/*.md', {
+  eager: true,
+  query: '?raw',
+  import: 'default'
+});
+index.addAll([
+  ...blogPosts.items.map(({ slug, href, title }) => ({
+    id: href,
+    slug: href,
+    title,
+    kind: 'blog',
+    text: plainText(postSources[`/src/lib/posts/${slug}.md`])
+  })),
+  ...documents.map(({ project, slug, title, href }) => ({
+    id: href,
+    slug: href,
+    title: project + ' · ' + title,
+    kind: 'docs',
+    text: plainText(documentSources[`/src/lib/docs/content/${project}/${slug}.md`] ?? '')
+  }))
+]);
 
 /** 匹配词高亮：优先标题，否则正文片段 */
 function highlight(doc, term) {
   const esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const re = new RegExp(`(${esc})`, 'gi');
 
-  const mark = value => value.split(re).map((part, index) => index % 2 ? '<mark>' + escapeHtml(part) + '</mark>' : escapeHtml(part)).join('');
+  const mark = (value) =>
+    value
+      .split(re)
+      .map((part, index) => (index % 2 ? '<mark>' + escapeHtml(part) + '</mark>' : escapeHtml(part)))
+      .join('');
 
   if (doc.title.toLowerCase().includes(term.toLowerCase())) {
     return { inTitle: true, html: mark(doc.title) };
@@ -91,11 +107,9 @@ function highlight(doc, term) {
 
 export function search(term) {
   if (!term?.trim()) return [];
-  const results = idx.search(term, { boost: { title: 3 }, prefix: true, fuzzy: 0.2 });
+  const results = index.search(term, { boost: { title: 3 }, prefix: true, fuzzy: 0.2 });
   return results.map((r) => ({
     ...r,
     hl: highlight(r, term)
   }));
 }
-
-

@@ -1,10 +1,9 @@
 import { error } from '@sveltejs/kit';
+import { newsPosts } from '$lib/site/content.js';
+
 export const prerender = true;
-const modules = import.meta.glob('$lib/news/*.md');
-export function entries() { return Object.keys(modules).map(path => ({ slug: path.split('/').pop().replace('.md', '') })); }
+export const entries = newsPosts.entries;
+
 export async function load({ params }) {
-  const key = Object.keys(modules).find(path => path.endsWith('/' + params.slug + '.md'));
-  if (!key) error(404, 'Archived article not found');
-  const { default: Content, metadata: meta } = await modules[key]();
-  return { Content, meta, slug: params.slug };
+  return (await newsPosts.load(params.slug)) ?? error(404, 'Archived article not found');
 }

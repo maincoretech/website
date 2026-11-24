@@ -39,7 +39,7 @@ const files = [
   'lib/site/TableOfContents.svelte',
   'routes/product/+page.svelte', 'routes/product/keine/+page.svelte',
   'routes/product/hakutaku/+page.svelte', 'routes/about/+page.svelte',
-  'lib/site/ProjectExplorer.svelte', 'lib/site/EngineDemos.svelte',
+  'lib/site/ProjectExplorer.svelte',
   'lib/site/KeineMetrics.svelte', 'lib/site/BenchmarkHighlights.svelte',
   'lib/site/BenchmarkComparison.svelte', 'lib/site/ArchiveBenchmarks.svelte',
   'lib/site/ArchiveMethod.svelte', 'lib/site/ScriptBenchmarks.svelte',
@@ -53,7 +53,7 @@ test('explicit product/UI messages are covered and visible Chinese is not hardco
       const source=node.arguments[0].value;
       if (typeof source==='string' && /[\u3400-\u9fff]/.test(source)) assert.ok(messages[source], `${file}: ${source}`);
     }
-    if (node.name === 'pre' || node.attributes?.some(a=>a.name==='class' && a.value?.some?.(v=>v.data?.includes('code-lines')))) return;
+    if (node.name === 'pre') return;
     if (node.type==='Text') assert.ok(!/[\u3400-\u9fff]/.test(node.data), `${file}: ${node.data}`);
     for(const value of Object.values(node)) {
       if(Array.isArray(value)) value.forEach(child=>visit(child,file));

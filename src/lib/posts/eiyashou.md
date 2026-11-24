@@ -2,18 +2,20 @@
 title: Eiyashou v2.0 语法与用例参考
 date: 2026-10-08
 author: maincore
-description: Eiyashou 2.0 的工程结构、语法、命令与示例
+description: 从第一句对白到分支和演出，附 Eiyashou 2.0 命令参考
 priority: 2
 category: tech
+titleEn: "Eiyashou v2.0 Syntax and Examples"
+descriptionEn: "Write your first line of dialogue, add choices and stage directions, and look up Eiyashou 2.0 commands."
 ---
 
-Eiyashou 是 Kēne 的原生脚本语言。故事、分支、资源加载和演出写在 UTF-8 的 `.shou` 文件中。前半篇是示例，后半篇是命令参考。
+要让 Kēne 跑一段故事，先从一行对白开始。能跑起来以后，再加人物、分支、镜头和声音。这篇前半段按做一幕戏的顺序给例子，后半段留作命令和参数参考。Eiyashou 剧本是 UTF-8 的 `.shou` 文件。
 
-本文对应 **Kēne 0.13.1 / Eiyashou 2.0（2026-10-08）**，不代表最新版，也不适用于旧版引擎。工程写 `script.version: 2`，省略时也默认 2，显式旧版本会被拒绝。已合并的旧命令没有别名。示例中的 `room`、`rin_smile` 等都是资源 ID，不是文件路径；把它们用于自己的工程前，请先在资源清单中登记对应文件。
+下面的例子用的是 **2026-10-08 的 Kēne 0.13.1 / Eiyashou 2.0**。工程可写 `script.version: 2`，省略时也按 2 处理。显式填旧版本会报错，已经合并的旧命令也没有别名。看到 `room` 或 `rin_smile` 时，先去资源清单登记自己的素材，再把例子里的 ID 换成你的。
 
 ## 第一个工程
 
-建立下面的文件。路径以工程目录为起点；脚本必须是 UTF-8。
+先建一个最小工程。下面的路径都从工程目录算起，剧本文件保存为 UTF-8。
 
 ```text
 my-story/
@@ -24,7 +26,7 @@ my-story/
     └── start.shou
 ```
 
-`config.yaml`：
+入口场景先叫 `start`，在 `config.yaml` 里指定它。
 
 ```yaml
 title: My Story
@@ -39,7 +41,7 @@ script:
   characters: characters.yaml
 ```
 
-`assets.yaml` 写 `{}`，`characters.yaml` 写 `characters: {}`。然后在 `scripts/start.shou` 写：
+暂时只跑对白，`assets.yaml` 写 `{}`，`characters.yaml` 写 `characters: {}`。最后新建 `scripts/start.shou`，放进这段。
 
 ```shou
 scene start {
@@ -49,11 +51,11 @@ scene start {
 }
 ```
 
-在 Kēne 仓库根目录执行 `cargo validate /path/to/my-story` 可检查工程。启动预览时，将同一个工程目录传给 `cargo dev /path/to/my-story`。`scene start` 的名字须与 `script.entry` 一致；同一场景里的语句用逗号分开。
+在 Kēne 仓库根目录运行 `cargo validate /path/to/my-story`，再用 `cargo dev /path/to/my-story` 看它能不能跑。这里 `scene start` 的名字要和 `script.entry` 对上。同一个场景里的语句用逗号分开。
 
 ## 资源与人物
 
-需要画面或声音时，把相应文件放进工程，再扩展 `assets.yaml`。生产素材采用 WebP 图像与 Ogg Opus 音频；清单键是脚本中使用的裸 ID。
+要让场景有画面和声音，先把文件放进工程，再在 `assets.yaml` 里给它们起 ID。下面清单左边的键就是剧本里写的名字。正式素材用 WebP 图像和 Ogg Opus 音频。
 
 ```yaml
 backgrounds:
@@ -78,7 +80,7 @@ luts:
   warm: assets/warm-lut.webp
 ```
 
-`characters.yaml` 登记说话者：
+人物的显示姓名和颜色放在 `characters.yaml` 里。这里先登记一个说话者。
 
 ```yaml
 characters:
@@ -91,13 +93,15 @@ characters:
       blink: [rin_smile, rin_sad, rin_smile]
 ```
 
-`avatar` 和 `expressions` 是 Editor 的人物素材预设，引用 `figures` 资源 ID；不会自动显示头像、切换立绘或驱动口型。运行时对白使用 `name` 和 `color`。多帧表情保留帧顺序，真正播放仍须插入下面的 `sprite.sequence` 命令。
+运行时显示对白时会读 `name` 和 `color`。`avatar` 和 `expressions` 引用 `figures` 里的 ID，给 Editor 当人物素材预设。想让头像或表情真的出现在游戏里，还要在剧本里写对应命令。多帧表情按清单的顺序排列，播放时用后面的 `sprite.sequence`。
 
-资源清单里的 `particles` 是纹理资源；`particle.show` 的第一个参数是实例 ID，第二个是预设 ID。下文各段是**独立用例**：放入自己的 `scene ... { ... }`，并按需调整资源和变量。例子中展示 `rin_*` 的地方是立绘槽位 ID 前缀，不是文件名通配符。
+`particles` 清单里登记的是纹理。使用 `particle.show` 时，第一个参数给实例起名，第二个选粒子预设。下面各段可以独立放进自己的 `scene ... { ... }` 试，记得补齐需要的资源和变量。`rin_*` 匹配的是立绘槽位的 ID 前缀。
 
 ## 基础语法
 
-一个源文件可以写多个 `scene id { ... }`。Loader 递归读取 `scripts/**/*.shou`，`scene` ID 在项目内唯一；不需要 `import`，也不按文件名顺序执行。`script.entry` 指向入口 scene，入口文件不必叫 `main.shou`。语句用逗号分隔，可以换行，也可以把数条语句写在同一行。最后一条语句后不需要逗号。`//` 是行注释，`/* ... */` 是块注释。命令参数中，位置参数写在前面，命名参数写成 `name: value`；未知或重复参数会报错。
+一个 `.shou` 里可以有多个 `scene id { ... }`，Loader 会递归读取 `scripts/**/*.shou`。每个 scene 在工程内用唯一的 ID。剧本从 `script.entry` 指定的 scene 开始，所以文件想怎么分、入口文件叫什么都可以，也不用写 `import`。
+
+一行可以写一句，也可以写几句，语句之间用逗号，最后一个逗号可省。`//` 写行注释，`/* ... */` 写块注释。调用命令时位置参数在前，后面才是 `name: value` 形式的命名参数。写错字段名或重复传参会报错。
 
 | 写法                                          | 含义                                            |
 | --------------------------------------------- | ----------------------------------------------- |
@@ -110,7 +114,9 @@ characters:
 | `"数量 ${count}"`                             | 仅在对白、旁白、选择项文本中插入纯表达式        |
 | `"字面量 /${count}"`                          | 用 `/${` 显示原样的 `${`，不做插值              |
 
-变量用 `let` 声明，项目内每个名字只声明一次；再次经过该语句时，仅在尚未初始化时初始化。类型为 `bool`、`int`、`float`、`string`，以及同一种元素类型的列表。空列表必须写 `list(bool)`、`list(int)`、`list(float)` 或 `list(string)`，不能写 `[]`。表达式里的字符串只使用双引号；可转义 `\"`、`\\`、`\n`、`\r`、`\t`。插值不能放在变量值或命令的普通字符串参数中。
+变量用 `let` 起名，每个名字在工程里只声明一次。重走那句 `let` 时，已经初始化的值会继续保留。变量可用 `bool`、`int`、`float`、`string`，也可以是同一种元素的列表。要从空列表开始，用 `list(bool)`、`list(int)`、`list(float)` 或 `list(string)`。
+
+普通字符串用双引号，支持 `\"`、`\\`、`\n`、`\r`、`\t` 这些转义。插值留给对白等支持的文字位置，普通命令参数和变量值里的字符串不解析插值。
 
 ```shou
 let names = ["凛", "澪"],
@@ -136,7 +142,7 @@ if ((count > 0) and (not false)) {
 | 列表       | `[a, b]`、`list(type)`、`items[i]`、`items.length`、`value in items` | 同类型元素；索引越界报错；空列表用 `list(type)` |
 | 字符串     | `"文本"`、`"${纯表达式}"`                                            | 插值仅供显示文字使用，列表不能直接插值          |
 
-控制流只有 `if / else if / else`、`loop / break`、`choice`、`goto / call / return`，没有 `while`、`for`、`continue`。`break` 离开最近一层循环。赋值有 `=`、`+=`、`-=`、`*=`、`/=`、`%=`，没有 `++`、`--`。列表修改是语句，不是表达式：`append`、`remove`、`clear`、`insert`、`pop`；`pop` 必须写 `into: 已声明变量`。
+控制流用 `if / else if / else`、`loop / break`、`choice` 和 `goto / call / return`。语言没有 `while`、`for`、`continue`，也没有 `++` 或 `--`。`break` 只离开最近一层循环。赋值可以用 `=`、`+=`、`-=`、`*=`、`/=` 和 `%=`。想改列表就单写一条 `append`、`remove`、`clear`、`insert` 或 `pop`，其中 `pop` 要把结果写入已经声明的变量，用 `into` 指定。
 
 ```shou
 let items = list(string),
@@ -152,11 +158,11 @@ choice("下一步") {
 }
 ```
 
-`choice` 的提示文字可省略，写成 `choice { "选项": goto(next_scene) }`；`when` 为 false 的选项不显示，所有选项都隐藏则是运行时错误。`call` 与 `return` 成对用于子场景；`goto` 替换当前场景。无等待、无退出路径的循环会报错。
+`choice` 可以省去提示，直接写 `choice { "选项": goto(next_scene) }`。`when` 为 false 的选项会藏起来，因此运行到选择时至少得剩一个可见项。想去子场景做点事再回来，用 `call` 和 `return`。只想直接换场景，用 `goto`。循环里要有等待或可以退出的路径。
 
 ## 对白与文字
 
-人物 ID 后接冒号表示对白。没有人物 ID 的字符串是旁白。可在对白后加一个语音资源 ID，再写尾部选项；`return` 和 `break` 始终是控制语句，不会被当成语音 ID。`[wait=500]` 会在打字到该位置时停 500 毫秒。`${...}` 只接受 Eiyashou 表达式。
+对白前面写人物 ID 加冒号。直接写字符串就是旁白。对白后可以跟语音资源 ID，再写尾部选项。`return` 和 `break` 碰到这里也照样按控制语句执行。在句子里写 `[wait=500]`，打字打到这里就停半秒。`${...}` 里可以放 Eiyashou 表达式。
 
 ```shou
 let trust = 2,
@@ -167,14 +173,14 @@ sprite(rin_stage, rin_smile, position: right),
 rin: { "先看这里。", "然后再决定。" }
 ```
 
-每条字符串的尾部选项是 `volume`（语音音量 0–1，默认 1）、`concat`（拼接前句）、`auto`（该句自动推进）、`inherit_speaker`（沿用前句角色）；三个布尔值默认都为 `false`。每句 `auto` 与全局 `playback.auto` 不同。
+一句话的尾部有四个选项。`volume` 调语音音量，范围 0–1，默认 1。`concat` 拼到前一句，`auto` 让这一句自动继续，`inherit_speaker` 沿用前一句的说话人，三项默认都关闭。全局自动播放另外用 `playback.auto`。
 
 ```shou
 rin: "我想说……", auto: true,
 "其实很高兴见到你。", concat: true, inherit_speaker: true
 ```
 
-要切换文字呈现方式、显示状态或段落动画，可以这样写：
+要换文字的呈现方式、显示状态或段落动画，可以从这几条试起。
 
 ```shou
 text.box(visible: true, auto: false),
@@ -186,7 +192,7 @@ text.presentation(dialogue),
 text.box(visible: false, auto: false)
 ```
 
-`@arrival` 为对白指定稳定的源 ID；旁白和选择项也可标注，ID 在工程中须唯一。`text.retract` 让已显示的对白退回到指定前缀；`keep` 必须是执行时原文的前缀。空 `source` 表示当前对白，空 `keep` 表示退掉整句。退字完成后仍会等待下一次推进。
+想给一句对白标个名字，可以在前面加 `@arrival`。对白、旁白和选择项都能标 ID，工程内不能重名。要让文字退回一部分，用 `text.retract`。`keep` 必须是执行时那句原文的前缀。`source` 留空就用当前对白，`keep` 留空就退掉整句，退完还会等玩家继续。
 
 ```shou
 rin: "我完全不在乎。",
@@ -195,7 +201,7 @@ rin: "我……其实很在乎。",
 wait.advance()
 ```
 
-开场字幕、画面浮字也有各自的命令：
+如果想把开场字幕放进舞台，或把一行字单独浮在画面上，用下面的命令。
 
 ```shou
 text.intro(hold: true) {
@@ -208,11 +214,11 @@ wait(1s),
 text.float.hide(chapter_title)
 ```
 
-`text.float.hide()` 不填 ID 时隐藏当前浮字；持续浮字需要自行隐藏。`wait(300ms)` 是定时等待，`wait.advance()` 等待玩家操作。
+`text.float.hide()` 省略 ID 就隐藏当前浮字，持续显示的浮字需要自己关。`wait(300ms)` 等一段固定时间，`wait.advance()` 要等玩家操作。
 
 ### 字符串内的富文本与停顿
 
-下面是文字渲染器接受的行内形式，不是 HTML、CSS 或可执行表达式。`[文字](参数)` 包裹的文字参与逐字显示，样式参数不占字数；不支持嵌套标签。
+富文本直接写在字符串里。`[文字](参数)` 中的文字照常一个字一个字出现，参数本身不占字数。这里的标记不支持嵌套，写法按下表来。
 
 ```shou
 rin: "[桜](さくら) 与 [重点](color=#ffb7c5,bold)。",
@@ -234,11 +240,11 @@ rin: "[桜](さくら) 与 [重点](color=#ffb7c5,bold)。",
 | `[wait=N]` / `[wait time="N"]` | 同句暂停 N 毫秒；相邻等待累加，负数按 0；非有限或无法解析的值保留为文字 |
 | `[wait]`                       | 同句等待推进输入；与独立 `wait.advance()` 的位置不同                    |
 
-样式参数可用逗号或分号分隔；包含样式的混合写法应带 `key=value`（例如 `color=#ffffff,bold,italic`）。没有样式键的普通参数文本会被视为读音。未知样式键目前被渲染器忽略，不应把它当作新 DSL 能力。`[wait time="250"]` 放进脚本字符串时，内部引号需要转义。
+样式参数用逗号或分号分开。混合样式里要有 `key=value`，如 `color=#ffffff,bold,italic`。没有样式键的参数文本会按读音处理，未知样式键会被渲染器忽略。把 `[wait time="250"]` 写进脚本字符串时，记得转义里面那对引号。
 
 ## 变量、分支和场景流转
 
-变量是严格类型：`bool`、整数、浮点数、字符串及同类型列表。条件必须求得布尔值，不存在 JavaScript 式 truthy。`/` 是实数除法，`%` 只用于整数。字符串可以插入纯表达式，列表不能直接插值。
+拿到某个道具以后才给玩家看新选项，可以先用布尔变量记状态，再用 `if` 或 `when` 读取它。条件要算出布尔值。`/` 是实数除法，`%` 只接整数。支持插值的文字可以放纯表达式，列表需要先转换成合适的值。
 
 ```shou
 scene start {
@@ -268,9 +274,11 @@ scene classroom {
 }
 ```
 
-`goto` 替换当前场景，不压入返回栈；`call` 调用场景，`return` 回到调用后的语句。被调用场景走到末尾也会返回，普通入口走到末尾不会自动进入另一个文件；章节尾部应写 `goto(下一章)`，结局显式写 `story.end()`。例如上面的三个 scene 可以分别放进三个 `.shou` 文件，执行顺序仍由控制流决定。`choice` 的 `when` 为 false 时隐藏该项，所有选项都隐藏会在运行时报错；空选项块 `{}` 会继续执行选择后的语句。
+例如从教室进走廊，这一章就交给了走廊场景，可以用 `goto`。如果只是进一个子场景处理完再回来，用 `call`，等遇到 `return` 或子场景走完就回到调用处。普通入口走到末尾不会自动跑下一个文件，章节尾自己写 `goto(下一章)`，到结局时写 `story.end()`。把这些 scene 拆到不同文件里也一样。
 
-循环和列表适合维护背包、线索等状态：
+`choice` 里 `when` 为 false 的选项会隐藏。都被隐藏时会报运行时错误。选项块 `{}` 留空，选完会接着跑后面的语句。
+
+想记背包、线索或玩家选过的东西时，可以用列表和循环。
 
 ```shou
 let clues = ["票根", "照片"],
@@ -288,11 +296,11 @@ loop {
 }
 ```
 
-`pop` 也可省略索引；空列表或索引越界时不会改写目标变量。循环必须有能推进或结束的路径；无等待、无出口的无限循环会报错。
+`pop` 省略索引也能用。列表空了或索引越界，目标变量原来的值还在。写循环时要留能等待或退出的路径，否则会报错。
 
 ## 背景、立绘和焦点
 
-`background` 显示或清除背景，`sprite` 创建/替换一个立绘槽，`sprite.update` 修改已有立绘。坐标使用 1920×1080 设计空间；时间可写 `ms` 或 `s`。省略的稀疏更新字段保持现值。
+一幕戏通常先用 `background` 放好背景，再用 `sprite` 给人物放一个立绘槽。槽已经存在、只是想换图或改布局时，用 `sprite.update`。所有坐标按 1920×1080 的设计空间来写，时间单位可用 `ms` 或 `s`。更新时省略的字段继续用原值。
 
 ```shou
 background(room, transition: fade(300ms), scale: 1.05),
@@ -307,9 +315,11 @@ hide(rin_stage, transition: fade(300ms)),
 background(none)
 ```
 
-位置可写 `position: right(x: 500, y: -20)`；组内 `x/y` 是锚点偏移，命令顶层 `x/y` 是变换偏移。布局采用 `layout: viewport(height: 0.85)` 或 `layout: scene(...)` 等分组值，完整形式见后面的布局表。`sprite.update(id, asset)` 只换图，保留省略的位置、布局与缩放，目标不存在时跳过；显式 `position: center, layout: natural, scale: 1` 才重设这些状态。`hide(rin_*)` 隐藏所有以 `rin_` 开头的立绘槽；`hide(*)` 隐藏全部。`blocking: false` 允许过渡开始后继续执行后续语句。
+`position: right(x: 500, y: -20)` 括号里的 `x/y` 是锚点偏移，写在最外层的 `x/y` 是变换偏移。布局也用 `layout: viewport(height: 0.85)` 或 `layout: scene(...)` 这类分组写法，后面有完整表格。
 
-动作、逐帧和按状态切图：
+只传 `sprite.update(id, asset)` 就只换图，位置、布局和缩放会留下来，找不到这个槽时跳过。需要重设时明确写 `position: center, layout: natural, scale: 1`。`hide(rin_*)` 按槽位前缀隐藏，`hide(*)` 全部隐藏。希望过渡开始后剧本立刻往下走，写 `blocking: false`。
+
+需要让人物动起来时，可以挑预设、自己写关键帧，也可以按状态切换图片。几种写法放在一起看。
 
 ```shou
 sprite(rin_stage, rin_smile),
@@ -341,9 +351,9 @@ sprite.select.when(rin_stage, default: rin_neutral) {
 }
 ```
 
-固定帧率序列默认 12 FPS、`loop: false`。也可省略 `fps`，让所有 `frame` 都写 `duration`；不能两种计时混用。
+定帧率的序列默认 12 FPS，默认只播一遍。想单独控制每帧时长，就省略 `fps`，给每个 `frame` 都写 `duration`。同一序列选一种计时方式。
 
-说话时突出当前人物可用焦点规则；`characters` 列的是舞台立绘/角色 ID。下面让立绘 ID 与 `characters.yaml` 中的角色键 `rin` 相同，配置一次后自动跟随对白，旁白使用 `narration`：
+多人对话时，可以把当前说话的人提亮或放大。`characters` 列出舞台立绘或角色的 ID。例子里立绘 ID 和人物清单的键都叫 `rin`，设好以后就能自动跟着对白走，旁白则用 `narration` 的规则。
 
 ```shou
 sprite(rin, rin_smile),
@@ -357,11 +367,11 @@ scene.parallax(amplitude_percent: 5, scale: 1.1),
 scene.parallax.stop()
 ```
 
-`inherit_speaker` 或没有角色的 `concat` 会延续上一句焦点；显式 `sprite.focus(...)` 可覆盖紧接着的一句。`objects.yaml` 中的运行时别名由 Loader 解析。
+`inherit_speaker` 或没有角色的 `concat` 会沿用上一句的焦点。只想临时改下一句的焦点，可以先写 `sprite.focus(...)`。`objects.yaml` 里的运行时别名由 Loader 处理。
 
 ### 眨眼与说话部件
 
-眼睛、嘴使用普通 sprite，因此沿用位置、布局、层级与变换，不需要另一套对象模型：
+眼睛和嘴都是普通 sprite，位置、布局、层级和变换照常写。
 
 ```shou
 sprite(eyes, rin_smile),
@@ -375,22 +385,24 @@ sprite.sequence(mouth, mode: talk, speaker: "rin", fps: 12) {
 rin: "说话时播放嘴部帧。"
 ```
 
-实际制作时将示例整张立绘换成登记好的透明眼睛/嘴部素材。动态模式至少两帧，第一帧是静止帧；`blink` 间隔默认 3s，必须为正，不能写 `speaker`；`talk` 的 `speaker` 必须是字符串，可写角色 ID `"rin"` 或显示姓名 `"凛"`，不能写 `interval`。Loader 将已登记的角色 ID 解析成显示姓名，运行时据此匹配当前对白。说话序列跟随逐字显示而非音频口型识别，文字完成后回到第一帧。两种动态模式都不能写 `loop`，也可用统一的逐帧 `duration` 替代 `fps`；换图或隐藏会清理序列。
+做正式素材时，把示例里的整张图换成清单里登记好的透明眼睛和嘴部图。两种动态模式都至少两帧，第一帧用来停着时显示。眨眼的 `interval` 默认 3s，必须大于 0，`blink` 不接 `speaker`。说话的 `speaker` 写字符串，角色 ID `"rin"` 或显示姓名 `"凛"` 都行，`talk` 不接 `interval`。
+
+Loader 会把已登记的角色 ID 换成显示姓名，运行时拿它匹配对白。口部序列跟着文字揭示，文字出完就回第一帧。动态模式都不能写 `loop`，可以用统一的逐帧 `duration` 代替 `fps`。换图或隐藏时会清掉原序列。
 
 ### 立绘环境光照
 
-`sprite` 默认 `light: true`；`sprite(rin, rin_smile, light: false)` 关闭该立绘的环境染色，`sprite.transform(rin, light: true)` 重新开启，稀疏更新省略时保留。配置 `layout.environment_light` 的默认强度为 1，范围 0–1，0 全局关闭；只对原生 keine 项目生效。
+立绘默认会跟一点背景色调。单张图想关掉，就写 `sprite(rin, rin_smile, light: false)`，再开用 `sprite.transform(rin, light: true)`。更新时省略 `light` 会沿用原值。原生 keine 工程的 `layout.environment_light` 可设 0–1，默认 1，写 0 就全局关闭。
 
 ```yaml
 layout:
   environment_light: 0.8
 ```
 
-这是背景原图色调对普通 alpha 立绘的温和适配，不是方向光、阴影或法线重照明；不染色头像、文字、UI 或非 alpha 混合层。无可取色场景时回退中性白，聚焦与手工滤镜仍生效。
+这个效果从背景原图取色，只轻轻染到普通 alpha 立绘。头像、文字、UI 和非 alpha 混合层保持原样。背景取不到色时用中性白，人物聚焦和手工滤镜照常生效。
 
 ## 镜头、后期和遮罩
 
-`camera.move` 可以一次调整画面变换和后期；目标为 `scene`、`characters`、`all` 或 `none`。`tween` 列表指定需要插值的数值字段；省略列表则按整条命令的默认补间，`[]` 使字段立即生效。
+想在镜头推近的同时把画面调暗，可以在一条 `camera.move` 里写变换和后期。目标可选 `scene`、`characters`、`all` 或 `none`。如果只想让某些数值随时间变化，就把字段名放进 `tween`。省略 `tween` 使用整条命令的默认补间，写 `[]` 则立即应用。
 
 ```shou
 camera.move(scene, x: 120, scale_x: 1.05, blur_amount: 2, tween: [x, blur_amount], duration: 1s),
@@ -401,7 +413,7 @@ camera.bind(rin_stage, distance: 1.5),
 camera.unbind(rin_stage, distance: 1.5)
 ```
 
-`camera.effect` 与 `camera.move` 共用稀疏特效字段，包括镜面破碎和速度线：未写字段保留当前值；`focal_distance`、`lut_preset` 可用 `none` 清除。一次命令仍是一个原子 Action，不因效果种类拆分。
+镜面破碎和速度线也能用 `camera.effect` 写。它与 `camera.move` 共用后期字段，只提交要改的值即可。`focal_distance`、`lut_preset` 可用 `none` 清掉。同时改几个效果仍算一次 Action。
 
 ```shou
 camera.effect(all, speed_lines_intensity: 0.6, speed_lines_radial: true),
@@ -411,11 +423,15 @@ camera.move(all, x: 20, shake: shake(amplitude: 4, frequency: 2),
 camera.reset(all, duration: 300ms, easing: ease_out, blocking: true)
 ```
 
-嵌套 `shake` 的时长省略时沿用外层 `duration`；振幅、频率与时长必须齐全。已有震动时，`tween` 的 `shake_amplitude` / `shake_frequency` 从当前值补间，频率变化连续积累相位；首次震动直接使用指定振幅与频率，时长控制持续时间，不是从 0 渐强所需的时间。`camera.reset` 同步恢复目标镜头变换与全部特效，并立即停止震动；不修改视差或镜头绑定。省略时长为立即恢复，阻塞只在整组末尾等待一次。
+在命令里嵌套 `shake` 时，省略震动时长就沿用外层 `duration`。振幅、频率和时长都要能确定。如果已经在震动，`shake_amplitude` / `shake_frequency` 会从当前值补间，频率变化也会连续累计相位。第一次震动会直接用指定的振幅和频率，时长表示要震多久。
+
+`camera.reset` 会恢复目标镜头和全部特效，立刻停止震动，视差和镜头绑定则继续保留。省略时长就立即恢复，阻塞只在整组末尾等一次。
 
 ### 时长、阻塞与关闭效果
 
-`camera.move` / `camera.effect` 的 `duration` 是到达目标值的过渡时长，不是效果的寿命；完成后保留目标值。省略或写 `0ms` 立即应用。`blocking: false` 允许剧情并行推进，但紧接着给同一镜头下另一条命令会替换当前补间；需要先淡入再淡出时，显式阻塞、插入 `wait` 或使用时间轴。
+给 `camera.move` 或 `camera.effect` 写 `duration`，意思是用多长时间走到目标。到达后仍会保留那个值。省略时长或写 `0ms` 就立刻生效。
+
+用 `blocking: false` 可以让剧本继续，下一条同一镜头的命令也可能把还在跑的补间换掉。需要先淡入再淡出，可以等第一条完成、插一条 `wait`，或把两段都写进时间轴。
 
 ```shou
 camera.effect(scene, bloom_intensity: 0.6, duration: 500ms, blocking: true),
@@ -423,9 +439,11 @@ wait(1s),
 camera.effect(scene, bloom_intensity: 0, duration: 500ms, blocking: true)
 ```
 
-`tween` 只插值已提供的数值字段，未列出的字段立即应用；LUT、色调预设和布尔开关是离散值，不自动交叉混合。关闭连续效果通常把强度渐变到 0。`lut_preset: "warm"` 引用 `assets.yaml` 的 `luts.warm`，还需非零 `lut_intensity` 才会加载并生效。当前着色器读取 256×16 的 16³ LUT 横向图集，不是任意图片或 `.cube` 文件：R 沿格内横轴、G 沿纵轴、B 为从左到右的 16 个切片。
+`tween` 只对传进来并且列出的数值做补间，其他字段立即应用。LUT、色调预设和布尔开关都是离散值。渐渐关闭连续效果时，把强度补间到 0 就行。
 
-遮罩可限制到某个立绘，或覆盖整个舞台。这里的 `targets` 是 ID 列表：
+`lut_preset: "warm"` 用的是 `assets.yaml` 里的 `luts.warm`，还得给非零 `lut_intensity`。着色器读取 256×16 的 16³ LUT 横向图集。R 沿格内横轴，G 沿纵轴，B 按从左到右的 16 个切片排。
+
+遮罩可以只盖某些立绘，也可以盖整个舞台。只指定部分对象时，`targets` 写的是 ID 列表。
 
 ```shou
 stage.mask.show(iris, mode: clip, plane: topmost, scope: selected, targets: [rin_stage], shape: ellipse, center_x: 50, center_y: 45, opacity: 0.7, color: rgba(1, 0, 0, 0.8), duration: 300ms),
@@ -434,7 +452,7 @@ stage.mask.hide(iris, duration: 200ms, blocking: false)
 
 ## 时间轴
 
-`stage.animate` 把属性关键帧和按时间触发的事件写在同一段里。`track` 指定目标与属性，`key` 指定时间和值；事件可切场景、控制镜头、粒子和声音。下面的 `room`、`roof`、`rin_smile`、`snow_texture`、`theme` 等 ID 需先登记在资源清单。
+如果角色移动到一半才要让镜头推近、声音响起，可以把它们写进同一个 `stage.animate`。`track` 选目标和属性，`key` 填一个时间和值，切场景、声音和粒子等用事件触发。先把例子里的 `room`、`roof`、`rin_smile`、`snow_texture`、`theme` 登记到资源清单。
 
 ```shou
 stage.animate(opening, duration: 2s, repeat: 1, playback_rate: 1, blocking: true) {
@@ -455,11 +473,11 @@ stage.animate(opening, duration: 2s, repeat: 1, playback_rate: 1, blocking: true
 }
 ```
 
-时间轴中的 `event.scene` 定义舞台场景层，不等同于脚本的 `scene rooftop_view { ... }` 流程跳转。`repeat`、`infinite`、`playback_rate` 与 `blocking` 控制整段播放；关键帧的 `easing` 可逐点指定。
+时间轴内的 `event.scene` 设置的是舞台上的场景层。脚本跳转还是走 `scene rooftop_view { ... }` 那套流程。整段怎么播由 `repeat`、`infinite`、`playback_rate` 和 `blocking` 控制，每个关键帧还可以给自己的 `easing`。
 
 ## 音效、视频、粒子
 
-单次与循环音效统一使用 `se`；持续环境音写 `loop: true` 并提供实例 `id`，不再支持 `se.loop`。背景音乐用 `bgm`；`none` 停止相应播放。视频的 `mixed` 模式可与场景混合，`fullscreen` 是默认模式。
+一声门响、持续的雨声都用 `se`。雨声需要写 `loop: true` 并给实例一个 `id`，旧的 `se.loop` 已合并。音乐用 `bgm`，要停止对应播放可写 `none`。视频默认全屏，想混在场景里播时用 `mixed`。
 
 ```shou
 bgm(theme, volume: 0.7, fade: 500ms, loop: true),
@@ -474,7 +492,7 @@ video.stop(op, fade: 300ms),
 bgm(none, fade: 500ms)
 ```
 
-`video(opening)` 保留为全屏、非循环、阻塞的简写。`se` 默认 `loop: false`，有 `id` 也仍只播放一次；`se.stop(id)` 停止该 ID 的单次或循环音效。`se.stop(*, fade: 300ms)` 或 `se(none, fade: 300ms)` 淡出所有单次与循环音效；`se(none, id: rain_loop, fade: 300ms)` 只关闭指定实例。省略 `fade` 或写 `0ms` 为立即停止；`video.stop(*)` 停止全部视频。粒子可以按实例关闭，也可清空图层：
+`video(opening)` 是全屏、播一遍、等结束的简写。`se` 默认只播一次，就算给了 `id` 也是如此。用 `se.stop(id)` 停一项声音。`se.stop(*, fade: 300ms)` 和 `se(none, fade: 300ms)` 淡出所有音效，写 `se(none, id: rain_loop, fade: 300ms)` 则只停那场雨。省略 `fade` 或写 `0ms` 会立即停。`video.stop(*)` 停全部视频，粒子可以按实例关，也可以清空图层。
 
 ```shou
 video(opening, skippable: true),
@@ -492,9 +510,9 @@ particle.layers.clear()
 
 ### 音效包络与替换
 
-播放命令的 `fade` 是淡入，停止命令的 `fade` 是淡出。淡入从音频真正开始播放时计时，资源加载等待和暂停不消耗它。单次音效的 `fade_out` 在样本自然末尾应用包络，不把声音提前截断；大于总长时覆盖全段。当前正式 Opus 资源有可用时长元数据，开发兼容解码无法取得时长时会警告并保留原播放。
+声音开始命令里的 `fade` 是淡入，停止命令里的是淡出。等素材加载和暂停的时间都不算进淡入。单次音效的 `fade_out` 从自然末尾往前算，声音还是播到结尾。淡出比声音还长时会覆盖全段。正式 Opus 有可用的时长元数据，开发用的兼容解码如果拿不到时长，会提示并沿用原播放。
 
-`fade_out` 只允许非循环、非 `none` 的 `se`；循环音效用显式停止来淡出。同 ID 的循环音效替换会等新资源可播放，再按新命令的 `fade` 交叉淡变；暂停中的替换不先关闭旧声音，显式停止会一起清理待播放实例。同一帧先停止再播放仍按源码顺序生效。
+`fade_out` 用在会自然结束的单次 `se`，循环声要在停止时淡出。用同一个 ID 换一段循环音效时，先等新的声音能播，再按新命令的 `fade` 交叉淡变。暂停期间换音效会先留着旧声，显式停止则把还在等的实例一起清掉。同一帧内先停再播时，仍照剧本里写的顺序执行。
 
 ```shou
 se(rain, id: ambience, loop: true, volume: 0.3, fade: 1s),
@@ -507,7 +525,7 @@ se(bell, fade_out: 200ms)
 
 ## 输入、界面和加载
 
-玩家输入、弹窗结果先准备变量；输入类型可选 `string`、`number`、`bool`。下例是三种常见输入：
+想请玩家输入名字或数字，先声明一个变量来接结果。输入类型是 `string`、`number` 或 `bool`，下面各写一个例子。
 
 ```shou
 let player_name = "",
@@ -518,7 +536,7 @@ input.request(player_age, type: number, title: "年龄", min_value: 0, max_value
 input.request(agreed, type: bool, title: "同意吗？", true_text: "同意", false_text: "再想想")
 ```
 
-系统 UI 的槽位包括 `title`、`save`、`load`、`settings`、`history`、`gallery`、`input`。确认弹窗可把结果写入已声明变量：
+要调出游戏自己的界面，可以选 `title`、`save`、`load`、`settings`、`history`、`gallery` 或 `input` 槽位。要让确认框的结果进入分支，先声明一个变量再传给它。
 
 ```shou
 let confirmed = false,
@@ -532,7 +550,7 @@ screen.curtain.hide(color: rgba(0, 0, 0, 0), duration: 300ms),
 gallery.unlock(cg, room, name: "雨后的房间")
 ```
 
-`ui.message` 也可用 `alert` 模式。画廊解锁的类型是 `cg` 或 `bgm`。资源加载策略可以明确预告即将使用的资源：
+只需通知玩家时，`ui.message` 也可用 `alert`。图和音乐的画廊解锁分别写 `cg` 和 `bgm`。知道下一幕要用到某个资源，也可以提前告诉加载器。
 
 ```shou
 assets.loading(mode: manual, lookahead: 5, blocking: true) {
@@ -543,7 +561,7 @@ assets.loading(mode: manual, lookahead: 5, blocking: true) {
 
 ## 命令参考：流程与文字
 
-以下表格以当前 v2.0 解析器为准。第一列给出可写的最小形式或常见形式；第三列列出其余合法的**命名参数**。位置参数按示例顺序书写，命名参数可省略，除非文字特别注明必填。结构化命令还要求 `{ ... }` 内至少有一行相应子项。
+查表时，第一列是最小写法或常见用法，第三列补充其余命名参数。这些表以本文版本的 v2.0 解析器为准。位置参数按示例顺序写，命名参数通常可省，必填项会注明。带 `{ ... }` 的命令至少写一个相应子项。
 
 | 写法                                                   | 用例                                | 其他命名参数                                                                                                                |
 | ------------------------------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -563,9 +581,11 @@ assets.loading(mode: manual, lookahead: 5, blocking: true) {
 | `text.float.configure(infinite: true)`                 | 将当前浮字改为持续显示              | `infinite` **必填**；可加 `id` 为其命名                                                                                     |
 | `text.float.hide()` / `text.float.hide(chapter_title)` | 隐藏当前浮字或指定 ID               | 无                                                                                                                          |
 
-`text.style` 的内建 ID 是 `default`、`cinematic`、`"cinematic-centered"`、`literary`、`sharp`、`handwritten`；带连字符的 ID 加引号。其他 ID 保留为自定义样式身份，不代表运行宿主一定提供对应样式。
+`text.style` 自带 `default`、`cinematic`、`"cinematic-centered"`、`literary`、`sharp` 和 `handwritten`。带连字符时记得加引号。其他 ID 可以留给自定义样式，实际有没有这个样式得看使用的运行宿主。
 
-`text.paragraph.style` 的 `reveal_effect` 可写 `instant`、`smooth_rise`、`classic`、`smooth_drop`、`slide_left`、`slide_right`、`pop`、`flip`、`swing`、`blur`；只有出现任一 `reveal_*` 字段才创建揭示动画配置。`typewriter_speed` 不得为负。`text.float` 默认在设计空间中心 `(960, 540)`，默认字号 48；字号必须为正。持续浮字的典型组合是 `blocking: false`，紧接着 `text.float.configure(infinite: true)`，最后显式 `text.float.hide()`。
+段落的 `reveal_effect` 可选 `instant`、`smooth_rise`、`classic`、`smooth_drop`、`slide_left`、`slide_right`、`pop`、`flip`、`swing`、`blur`。至少填一个 `reveal_*` 字段，才会创建揭示动画配置。`typewriter_speed` 最小为 0。
+
+`text.float` 默认放在设计空间中心 `(960, 540)`，默认字号是 48，字号必须为正。想让它常驻，可以在显示时写 `blocking: false`，然后写 `text.float.configure(infinite: true)`，等不需要时再用 `text.float.hide()`。
 
 ### 流程与列表
 
@@ -581,7 +601,7 @@ items.insert(index, value)
 pop(items, into: target) / pop(items, index, into: target)
 ```
 
-`pop` 的目标变量须先声明；弹出空列表或越界索引时目标保持不变。`choice` 选项块结束后回到选择后续语句。选择项可以没有 `when`，也可以没有前置 `@id`。
+`pop` 要先声明接收结果的变量。列表为空或索引越界时，保留变量原值。`choice` 的选项块跑完后接着执行后面的语句，`when` 和前置的 `@id` 都可省。
 
 ## 命令参考：背景与人物
 
@@ -605,15 +625,19 @@ pop(items, into: target) / pop(items, index, into: target)
 | `avatar.show(rin_smile)` / `avatar.hide()`                                                                | 显示/隐藏小头像                | 无                                                                                                                          |
 | `scene.parallax(amplitude_percent: 5)` / `scene.parallax.stop()`                                          | 开启/关闭鼠标视差              | `edge_ease_percent`、`return_to_center_on_leave`、`scale`                                                                   |
 
-初始变换字段全集是 `x`、`y`、`alpha`、`scale`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`，与后续 transform 使用相同名称。`scale` 同时设置两轴，不能与 `scale_x` / `scale_y` 混写；`scale` 必须大于 0。`background` 创建不接受颜色或 `light`，`background.transform` 接受颜色但不接受 `light`；镜头和关键帧也没有统一 `scale` 简写。
+创建时可用 `x`、`y`、`alpha`、`scale`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height` 设初始变换，与后面的 transform 同名。`scale` 大于 0，会同时设两条轴，所以要和 `scale_x` / `scale_y` 二选一。
 
-`background`、`sprite`、`hide` 的 `blocking` 默认 `true`，过渡默认 `instant`。`background(none)` 不可再给初始变换。`sprite(...)` 默认 `position: center`、`z: 0`、`blend: alpha`、`light: true`；`blend` 可用 `alpha`、`add`、`multiply`、`screen`，`z` 必须为 32 位整数。`move` 的位置只能是 `left`、`center`、`right` 或对应的 `left(...)` / `center(...)` / `right(...)`，省略时长为瞬移。
+创建 `background` 时可以给变换，颜色要通过 `background.transform` 改。两者都不接 `light`。镜头和关键帧使用各轴字段。
 
-`sprite.transform` / `background.transform` 至少给一个变换或滤镜字段。`duration` / `easing` 只控制变换；`brightness`、`contrast`、`saturation`、`light` 即时应用，纯颜色/光照更新不接受非零 `duration`。这里的 `x/y` 是设置变换偏移值，不是每次累加位移。
+`background`、`sprite` 和 `hide` 默认 `blocking: true`，过渡默认 `instant`。`background(none)` 清掉背景时省去初始变换。新建 `sprite` 时，默认值为 `position: center`、`z: 0`、`blend: alpha`、`light: true`。混合方式可用 `alpha`、`add`、`multiply` 或 `screen`，层级 `z` 为 32 位整数。`move` 接受 `left`、`center`、`right`，也接受它们带括号的形式。省略时长时立刻移动。
 
-`transition` 可写 `instant`、`fade(300ms)`、`slide_from_left(300ms)`、`slide_from_right(300ms)`、`crossfade(300ms)`、`wipe(300ms)`、`dissolve(300ms)`。`easing` 可写 `linear`、`ease_in`、`ease_out`、`ease_in_out`、`in_out_quad`、`out_cubic`、`in_out_cubic`、`out_back`、`out_bounce`。
+`sprite.transform` 和 `background.transform` 至少写一个变换或滤镜字段。`duration`、`easing` 作用于变换。`brightness`、`contrast`、`saturation`、`light` 立即应用，只设颜色或光照时不能给非零 `duration`。这里的 `x` 和 `y` 会直接设定偏移。
 
-`sprite.animate` / `sprite.transition` 的内建预设有 `enter`、`exit`、`shake`、`enter_from_bottom`、`enter_from_left`、`enter_from_right`、`move_front_and_back`、`blur`、`old_film`、`dot_film`、`reflection_film`、`glitch_film`、`rgb_film`、`godray_film`、`remove_film`、`shockwave_in`、`shockwave_out`；自定义预设用带引号的 ID，`sprite.transition` 的 `enter: none` / `exit: none` 可清除对应预设。`sprite.keyframes` 的 `frame` 必须有 `duration`，另接受 `easing` 与九字段 `x`、`y`、`alpha`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`；空变换帧会在该段时长内保持先前状态。`sprite.focus.configure` 的三组 `style(...)` 分别可写 `scale`、`brightness`、`saturation`、`contrast`、`blur`、`alpha`。
+`transition` 可以直接用 `instant`，也可以从这些带时长的过渡里选 `fade(300ms)`、`slide_from_left(300ms)`、`slide_from_right(300ms)`、`crossfade(300ms)`、`wipe(300ms)`、`dissolve(300ms)`。`easing` 可用 `linear`、`ease_in`、`ease_out`、`ease_in_out`、`in_out_quad`、`out_cubic`、`in_out_cubic`、`out_back`、`out_bounce`。
+
+`sprite.animate` 和 `sprite.transition` 的内建预设包括 `enter`、`exit`、`shake`、`enter_from_bottom`、`enter_from_left`、`enter_from_right`、`move_front_and_back`、`blur`、`old_film`、`dot_film`、`reflection_film`、`glitch_film`、`rgb_film`、`godray_film`、`remove_film`、`shockwave_in`、`shockwave_out`。自定义 ID 用引号包起来。`sprite.transition` 要清掉进出预设时，给 `enter` 或 `exit` 填 `none`。
+
+`frame` 必须给 `duration`，可以再填 `easing` 以及 `x`、`y`、`alpha`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`。一帧里只填时间，就会在这段时间里保持原状态。`sprite.focus.configure` 的三组 `style(...)` 各自可设 `scale`、`brightness`、`saturation`、`contrast`、`blur`、`alpha`。
 
 | 序列模式      | 参数和计时                                                            | 用例                     |
 | ------------- | --------------------------------------------------------------------- | ------------------------ |
@@ -622,11 +646,11 @@ pop(items, into: target) / pop(items, index, into: target)
 | `mode: blink` | 至少两帧；`interval` 默认 3s 且必须为正；拒绝 `loop`、`speaker`       | 周期眨眼                 |
 | `mode: talk`  | 至少两帧；必填 `speaker: "角色ID或显示姓名"`；拒绝 `loop`、`interval` | 随角色逐字显示切换嘴部帧 |
 
-动态模式仍可二选一使用 FPS 或每帧时长。没有 `mode` 时，`interval` / `speaker` 不合法。
+动态序列用 FPS 或逐帧时长计时，选一种就行。先指定 `mode`，才能写这个模式对应的 `interval` 或 `speaker`。
 
 ### 四种立绘布局
 
-`sprite` 与 `sprite.update` 共用分组布局规则；创建省略为 `natural`，更新省略则保留现值。位置组与布局组不能混写旧的扁平字段。
+`sprite` 和 `sprite.update` 用同一套分组布局。新建立绘时省略布局会用 `natural`，更新时省略就保留原布局。位置和布局写成组，旧的扁平字段需要先改写。
 
 ```shou
 sprite(rin_natural, rin_smile, layout: natural),
@@ -649,7 +673,7 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 | `size(...)`                                | `width`、`height`                            | canvas 宽高均必填                                       |
 | `rect(...)`                                | `x`、`y`、`width`、`height`                  | 四项全写                                                |
 
-`scene` 的 `fit` 接受 `by_height`、`by_width`、`cover`、`contain`、`stretch`、`center`。`sprite.update` 只接受整体 `scale`，不接受 `scale_x/y` 或顶层变换 `x/y`；它与 `sprite.transform` 的职责不同。鼠标视差 `scene.parallax` 的 `scale` 也必须大于 0。
+`scene` 的 `fit` 支持 `by_height`、`by_width`、`cover`、`contain`、`stretch`、`center`。`sprite.update` 的缩放只写整体 `scale`。要单独改一条轴或顶层 `x/y`，用 `sprite.transform`。`scene.parallax` 的 `scale` 也须大于 0。
 
 ## 命令参考：镜头与舞台
 
@@ -664,17 +688,17 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 | `stage.mask.hide(iris)`                                                             | 关闭指定遮罩                     | `duration`、`blocking`                                                                                                            |
 | `stage.animate(opening, duration: 2s) { track(...) { key(...) } }`                  | 关键帧与定时事件的组合           | `duration` **必填**；`repeat`、`infinite`、`playback_rate`、`blocking` 可选                                                       |
 
-镜头目标只能是 `scene`、`characters`、`all`、`none`。九个变换字段是 `x`、`y`、`alpha`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`；`camera.move` 至少需要一个变换、后期或 `shake` 字段。镜面破碎与速度线也都是稀疏字段，不再要求完整状态。
+镜头目标从 `scene`、`characters`、`all`、`none` 中选。可用的九个变换字段是 `x`、`y`、`alpha`、`scale_x`、`scale_y`、`rotation`、`blur`、`width`、`height`。`camera.move` 至少带一个变换、后期或 `shake` 字段。镜面破碎和速度线可以只提交要改的字段。
 
-`tween: [x, blur_amount]` 只补间已传入的指定数值通道；省略时按整条命令补间，`tween: []` 则立即生效且不额外阻塞。未知字段、重复字段或离散字段补间会报错。通道名称对应数值变换/后期字段，镜头嵌套震动另有 `shake_amplitude`、`shake_frequency`；非数值的 `lut_preset`、`color_tone`、布尔字段不可补间。
+`tween: [x, blur_amount]` 会对传入的这两个数值做补间。省略列表时按整条命令补间，`tween: []` 立即应用且不额外阻塞。未知或重复的通道、离散字段都会报错。通道名与数值变换或后期字段对应。嵌套震动用 `shake_amplitude`、`shake_frequency`。`lut_preset`、`color_tone` 和布尔开关直接应用。
 
-`shake: shake(...)` 的完整字段是 `amplitude`、`frequency`、`duration`、`axis`、`falloff`、`amplitude_randomness`、`frequency_randomness`，不能在组内写 `blocking`，由外层镜头命令控制。
+`shake: shake(...)` 可给 `amplitude`、`frequency`、`duration`、`axis`、`falloff`、`amplitude_randomness` 和 `frequency_randomness`。阻塞选项写在外层镜头命令。
 
-`camera.shake` 的 `axis` 为 `x`、`y`、`both`，`falloff` 为 `linear`、`exponential`；两个 `*_randomness` 值都在 0–1。`amplitude` 不得为负。时间轴里的 `event.camera.shake` 使用相同轴、衰减与随机量，但 `frequency` 必须大于 0。
+`axis` 可用 `x`、`y` 或 `both`，`falloff` 可用 `linear` 或 `exponential`。两个 `*_randomness` 在 0–1 之间，`amplitude` 最小为 0。时间轴事件 `event.camera.shake` 也用这些轴、衰减和随机量，`frequency` 要大于 0。
 
 ### `camera.effect` 字段
 
-下列字段可用于 `camera.effect`，也可与九个变换字段一起用于 `camera.move`。除了 `focal_distance`、`lut_preset`、`color_tone` 的特殊类型，以及 `godray_parallel`、`speed_lines_radial`、`speed_lines_region_ellipse` 三个布尔字段，其余均为数值。只写需要变动的字段；`focal_distance: none` 或 `lut_preset: none` 清除对应状态。`color_tone` 接受 `none`、`grayscale`、`sepia`；布尔字段使用 `true` 或 `false`。本表不包含公共控制字段 `duration`、`easing`、`blocking`、`tween`。
+这张表里的后期字段可以写进 `camera.effect`，也能与变换一起写进 `camera.move`。只填要改的值。除了 `focal_distance`、`lut_preset`、`color_tone` 以及三个布尔字段 `godray_parallel`、`speed_lines_radial`、`speed_lines_region_ellipse`，其余都填数值。`focal_distance` 和 `lut_preset` 可以用 `none` 清除，色调选 `none`、`grayscale` 或 `sepia`，布尔值写 `true` 或 `false`。`duration`、`easing`、`blocking` 和 `tween` 见上文的公共控制字段。
 
 | 效果组         | 完整字段名                                                                                                                                                                                                                                                                                                                          |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -692,11 +716,11 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 | 镜面破碎       | `mirror_shatter_intensity`、`mirror_shatter_center_x`、`mirror_shatter_center_y`、`mirror_shatter_spread`、`mirror_shatter_seed`                                                                                                                                                                                                    |
 | 速度线         | `speed_lines_intensity`、`speed_lines_radial`、`speed_lines_density`、`speed_lines_angle`、`speed_lines_speed`、`speed_lines_center_x`、`speed_lines_center_y`、`speed_lines_region_ellipse`、`speed_lines_region_x`、`speed_lines_region_y`、`speed_lines_region_width`、`speed_lines_region_height`、`speed_lines_region_feather` |
 
-特效中的 `center_x/y` 等字段按各效果自己的坐标语义使用，不要把示例里的 0.5 当作立绘设计空间的 0.5 像素。时间轴属性表与后期字段表也不等同：当前 `track` 不接受镜面破碎/速度线通道，但 `event.camera.patch` 可即时设置这些字段。
+看到 `center_x/y` 时，要按该特效自己的坐标用法理解。示例的 0.5 和立绘设计空间里的 0.5 像素不是一回事。镜面破碎和速度线可用 `event.camera.patch` 立即设置，时间轴的 `track` 不接受这些通道。
 
 ### 舞台遮罩的模式与字段
 
-遮罩只通过 `stage.mask.show(id, ...)` 创建或更新，通过 `stage.mask.hide(id, ...)` 关闭。`mode` 可为 `overlay`、`clip`；`plane` 可为 `behind_scene`、`bottom`、`top`、`topmost`；`scope` 可为 `scene`、`characters`、`all`、`selected`。`scope: selected` 时用 `targets: [id, ...]` 指定舞台对象。
+创建或更新遮罩用 `stage.mask.show(id, ...)`，关闭用 `stage.mask.hide(id, ...)`。`mode` 可选 `overlay` 或 `clip`，`plane` 可选 `behind_scene`、`bottom`、`top` 或 `topmost`。`scope` 可选 `scene`、`characters`、`all` 或 `selected`。选 `selected` 时，把要覆盖的对象写进 `targets: [id, ...]`。
 
 | 类别         | 合法字段与值                                                                                                                                  |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -707,7 +731,7 @@ sprite.update(rin_tall, rin_smile, position: center, layout: natural, scale: 1)
 | 后处理       | `blur`、`vignette_amount`、`vignette_size`、`noise_amount`、`noise_size`、`hue`、`saturation`、`brightness`                                   |
 | 播放         | `duration`、`blocking`                                                                                                                        |
 
-颜色写为 `rgba(r, g, b, a)`。使用图片形状或纹理填充时，`image` / `texture` 应引用已登记的图像资源；`none` 可清除对应图片字段。
+颜色用 `rgba(r, g, b, a)`。拿图片做遮罩形状或填充纹理时，`image` 和 `texture` 都引用已经登记的图像 ID，写 `none` 可以清掉对应项。
 
 ```shou
 stage.mask.show(vignette, mode: overlay, plane: top, scope: all, shape: rectangle, fill_mode: gradient, gradient_start: rgba(0, 0, 0, 0), gradient_end: rgba(0, 0, 0, 1), gradient_direction: 90),
@@ -718,7 +742,7 @@ stage.mask.hide(vignette, duration: 300ms)
 
 ### 时间轴子项
 
-`stage.animate` 必须有 `duration`，且至少有一个 `track` 或 `event.*` 子项。`duration` 与 `playback_rate` 必须大于 0；`repeat` 是非负整数。`track(camera | character(id) | scene_layer(id), property, image: ..., muted: ...)` 必须有至少一个 `key(time: ..., value: ..., easing: ...)`。`time` 和数值 `value` 必填；`image` 只用于 `character(id)` 目标。
+写 `stage.animate` 时，要给 `duration`，再加至少一个 `track` 或 `event.*`。`duration` 和 `playback_rate` 必须大于 0，`repeat` 填非负整数。`track(camera | character(id) | scene_layer(id), property, image: ..., muted: ...)` 至少放一个 `key(time: ..., value: ..., easing: ...)`。每个关键帧的 `time` 和数值 `value` 必填。`image` 只用于 `character(id)`。
 
 | 子项                                                   | 必填与可选参数                                                                                                                                        | 用例                             |
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
@@ -729,7 +753,7 @@ stage.mask.hide(vignette, duration: 300ms)
 | `event.scene(scene_id, ...) { layer(id, asset, ...) }` | 必填 `time`；可选 `transition`、`reset_camera`、`fit`、`x`、`y`、`anchor_x`、`anchor_y`、成对的 `width` / `height`；`layer` 可用 `distance`、`x`、`y` | 替换舞台场景与层，不改变脚本流程 |
 | `event.audio(id, bgm / effect / vocal, asset, ...)`    | 必填 `time`；可选 `volume`、`loop`、`duration`、`fade_in`、`fade_out`                                                                                 | 定时播放音乐、音效或语音         |
 
-`event.scene` 的 `fit` 同样接受 `by_height`、`by_width`、`cover`、`contain`、`stretch`、`center`。`event.camera.patch` 使用上表的稀疏后期字段，不接受镜头命令的 `duration`、`easing`、`blocking`、`tween`。时间轴中 `event.scene` 可以包含多个 `layer`；其他事件不能带子项。
+`event.scene` 的 `fit` 支持 `by_height`、`by_width`、`cover`、`contain`、`stretch` 和 `center`，可以放多个 `layer`。别的事件不带子项。`event.camera.patch` 可直接用上表的后期字段，时长、缓动、阻塞与补间不在事件里写。
 
 ```shou
 stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1, blocking: true) {
@@ -742,7 +766,7 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 }
 ```
 
-`track` 接受以下属性名；可用目标取决于各属性的运行时语义。
+给 `track` 选属性时看下表。某些属性只对对应的目标有意义。
 
 | 属性组       | 属性名                                                                                                                                                                                                                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -772,9 +796,9 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 | `particle.hide(snow)` / `particle.hide(*)` | 隐藏单个或全部粒子                  | `duration`                                                                                                   |
 | `particle.layers.clear()`                  | 清空粒子图层                        | 无                                                                                                           |
 
-所有音量值在 0–1。`video.play` 的 `alpha` 在 0–1；`mode` 为 `fullscreen` 或 `mixed`，默认全屏；默认 `loop: false`、`muted: false`、`alpha: 1`、`skippable: true`、`wait: true`。`wait: true` 等待视频结束；`skippable` 控制是否允许跳过。
+音量和 `video.play` 的 `alpha` 都在 0–1 之间。视频默认 `fullscreen`，也可选 `mixed`。默认值是 `loop: false`、`muted: false`、`alpha: 1`、`skippable: true`、`wait: true`。`wait` 决定要不要等视频播完，`skippable` 决定玩家能不能跳过。
 
-`particle.show` 的 `count` 在语法层接受 0–65535 的整数；0 使用预设密度，渲染时每个发射器最多 256 个粒子。`texture` 引用 `assets.yaml` 中 `particles` 命名空间的资源 ID。内建明确命名的预设包括 `LIGHT_SNOW`、`MODERATE_SNOW`、`HEAVY_SNOW`、`LIGHT_RAIN`、`MODERATE_RAIN`、`HEAVY_RAIN`、`FIREFLY`、`FALLEN_LEAVES`；预设 ID 不是纹理 ID。其他名称按当前渲染器的雪/雨/萤火/叶片关键词匹配，未匹配则回退环境粒子，不是额外的严格枚举。
+`particle.show` 的 `count` 能填 0–65535 的整数。写 0 用预设密度，实际渲染时每个发射器最多 256 个粒子。`texture` 从 `assets.yaml` 的 `particles` 里选。明确命名的内建预设有 `LIGHT_SNOW`、`MODERATE_SNOW`、`HEAVY_SNOW`、`LIGHT_RAIN`、`MODERATE_RAIN`、`HEAVY_RAIN`、`FIREFLY` 和 `FALLEN_LEAVES`。预设名称和纹理 ID 分别传。其他名字按雪、雨、萤火或叶片等关键词匹配，没匹配上就用环境粒子。
 
 | 粒子字段          | 单位或约束             |
 | ----------------- | ---------------------- |
@@ -787,7 +811,7 @@ stage.animate(detail, duration: 1s, repeat: 1, infinite: false, playback_rate: 1
 | `color`           | `rgba(r, g, b, a)`     |
 | `wind`、`gravity` | 数值风力与重力覆盖     |
 
-省略参数沿用预设，大小和速度仍保留预设的透视层差异。雨雪省略 `wind` 时有低频阵风；显式 `wind` 使用固定横向速度并关闭阵风与风速散布，`wind: 0` 即无横向风。雪的 `drift` 控制轻微摆动，旋转与翻面使近远层更自然；雨丝倾角跟随实际速度。雨雪预设的重力与阻力默认 0，维持稳定下落，需要加速或减速时显式覆盖 `gravity` / `drag`。这些字段只在 `particle.show` 中提供；当前 `event.particle` 仍只有时间轴表里列出的原字段，不接受 `size` 等新选项。
+省略字段时沿用预设，大小和速度也会保留远近层的差异。雨雪默认有低频阵风。指定 `wind` 后改用固定横向速度，关掉阵风和风速散布。只想垂直落下就写 `wind: 0`。雪用 `drift` 调摆动，配合旋转和翻面区分远近。雨丝方向跟随实际速度。雨雪预设把重力和阻力设为 0，想让它加速或减速，再写 `gravity` 或 `drag`。这些字段用在 `particle.show`，时间轴里的 `event.particle` 仍按自己的表填。
 
 ```shou
 se.stop(*, fade: 300ms),
@@ -810,9 +834,9 @@ particle.hide(*, duration: 300ms)
 | `gallery.unlock(cg, room, name: "雨后的房间")`                                                     | 解锁 CG 或 BGM                 | `name` **必填**；第一个参数只能是 `cg` 或 `bgm`                                    |
 | `assets.loading() { resource(room, kind: background) }`                                            | 配置资源预加载策略             | `mode`、`lookahead`、`blocking`；子项 `resource(asset, kind: background / figure)` |
 
-`input.request` 的可选字段全集是 `type`、`title`、`description`、`placeholder`、`confirm_text`、`required_text`、`required`、`min_length`、`max_length`、`min_value`、`max_value`、`step`、`true_text`、`false_text`。可只给变量名，默认 `type: string`，其他项沿用引擎默认值。`type` 可为 `string`、`number`、`bool`；长度和值边界按输入类型使用，`step` 必须大于 0，下界不得超过上界。结果变量应先 `let` 声明。`ui.message` 的第一参数可为 `alert` 或 `confirm`，`result` 指向已声明的结果变量。
+`input.request` 最简单的写法只传变量名，类型默认 `string`，其他值用引擎默认值。可选项有 `type`、`title`、`description`、`placeholder`、`confirm_text`、`required_text`、`required`、`min_length`、`max_length`、`min_value`、`max_value`、`step`、`true_text`、`false_text`。根据 `string`、`number` 或 `bool` 选择对应边界，`step` 要大于 0，下界不能大于上界。先用 `let` 声明接收结果的变量。`ui.message` 的第一参数为 `alert` 或 `confirm`，`result` 也指向已声明变量。
 
-`ui.show` / `ui.hide` 的槽位全集是 `title`、`save`、`load`、`settings`、`history`、`gallery`、`input`。`assets.loading` 的 `mode` 可为 `auto` 或 `manual`，`lookahead` 是 0–65535 的整数；`resource` 的 `kind` 目前仅接受 `background` 和 `figure`。`screen.curtain` 的颜色是 `rgba(r, g, b, a)`；时长与其他命令一样写 `ms` 或 `s`。
+`ui.show` 和 `ui.hide` 能操作 `title`、`save`、`load`、`settings`、`history`、`gallery`、`input`。`assets.loading` 的 `mode` 可用 `auto` 或 `manual`，`lookahead` 填 0–65535 的整数。`resource` 的 `kind` 只接 `background` 或 `figure`。`screen.curtain` 颜色写 `rgba(r, g, b, a)`，时长照常用 `ms` 或 `s`。
 
 ```shou
 let nickname = "",
@@ -830,17 +854,17 @@ assets.loading(mode: auto, lookahead: 8, blocking: false) {
 
 ## 工程清单与迁移映射
 
-`assets.yaml` 的全部命名空间是 `backgrounds`、`figures`、`voices`、`bgm`、`se`、`videos`、`particles`、`luts`。每项可写工程相对路径，也可写 `{ path: ..., tags: [...] }`。`characters.yaml` 的每个人物需要 `name`，可选 `color`（`#RRGGBB`）、`avatar` 和 `expressions`。脚本中的人物、素材、对象 ID 分属不同命名空间；引用图片时写清单键，不能直接在命令里嵌入文件路径。
+`assets.yaml` 按用途分组，组名是 `backgrounds`、`figures`、`voices`、`bgm`、`se`、`videos`、`particles`、`luts`。每项可以直接写工程相对路径，也可以写 `{ path: ..., tags: [...] }`。`characters.yaml` 里每人必填 `name`，还可写 `color`（`#RRGGBB`）、`avatar` 和 `expressions`。人物、素材和对象各有自己的 ID，剧本中要引用图片时写清单的键。
 
 ### Editor 中的人物与源码
 
-在 Characters 中维护稳定角色 ID、显示姓名、颜色、头像与单帧/多帧表情，可选资源或多选导入。选择脚本插入位置后，Show 插入 `sprite`；Change、Blink、Talk 操作已有实例，所以先 Show，再指定同一个舞台 ID。Insert avatar 显式插入头像命令。按钮生成的动态序列默认 10 fps，Blink 默认间隔 3s；这不改变解析器省略帧率时的默认 12 fps。
+在 Editor 的 Characters 里，可以从资源选择或批量导入头像和表情，再给人物维护固定 ID、显示姓名和颜色。选好插入位置，Show 会写入 `sprite`。Change、Blink、Talk 要操作已经放上舞台的实例，先 Show，再用同一舞台 ID。Insert avatar 则显式插入头像命令。按钮生成的动态序列默认 10 fps、Blink 间隔默认 3s，解析器处理手写脚本时的默认帧率仍为 12 fps。
 
-预设修改不会重写已有剧本，只有预设引用但剧本从未使用的图片也不会因此自动进入发行资源白名单。人物源修改可撤销，按 Ctrl+S 保存；GUI 无法定位的非标准 YAML 结构应在源文件中编辑。
+换预设时，已经写过的剧本保持原样。图只留在预设里、从没在剧本用过，也不会自动进入发行白名单。人物编辑可以撤销，用 Ctrl+S 保存。界面定位不到的非标准 YAML 可以直接在源文件里改。
 
-Text、Blocks 与 Inspector 编辑同一份源码。补全菜单用方向键选择、Enter 接受、Esc 关闭；Ctrl+Space 或 Alt+/ 手动触发（macOS 为 Option+/），灰色行内补全用 Right 接受。IME 组合输入确认后才查询补全。编辑后保存、校验，再在 Preview 检查演出；仅看到 Inspector 数值改变不等于保存和重开已通过。
+Text、Blocks 和 Inspector 都编辑同一份源文件。弹出补全菜单后，用方向键选、Enter 接受、Esc 关。也可按 Ctrl+Space 或 Alt+/ 手动打开，macOS 为 Option+/。灰色行内补全用 Right 接受，IME 先确认文字才会查补全结果。编辑完可以按保存、校验、Preview、关掉重开走一遍，核对刚才的改动确实写进去了。
 
-原生新工程通常不需要 `objects.yaml`。如果迁移旧工程时必须把作者 ID 映射回原引擎对象 ID，在 `config.yaml` 的 `script` 下增加 `objects: objects.yaml`，并写：
+新原生工程通常用不到 `objects.yaml`。从别的引擎迁移，确实需要把作者 ID 映射回旧对象 ID 时，再在 `config.yaml` 的 `script` 下加 `objects: objects.yaml`，然后填写映射。
 
 ```yaml
 objects:
@@ -849,11 +873,11 @@ prefixes:
   rin_: 'character-layer:'
 ```
 
-`objects` 映射单个对象 ID，`prefixes` 处理 `hide(rin_*)` 这类前缀分组。映射只在加载时解析一次，不递归替换；未映射 ID 保持原样。资源 ID、变量名、场景名与对白文本不参与对象映射。映射键须为裸 ID，目标不能为空，同一表内目标不能重复。
+`objects` 改的是单个对象 ID，`prefixes` 处理 `hide(rin_*)` 一类前缀。加载时解析一次，未登记的 ID 照旧。映射键用裸 ID，目标必填且在同一张表里不能重复。资源 ID、变量名、场景名和对白文本都按原值读。
 
 ## 从旧写法更新到 v2
 
-这些是需要修改源码的转换，不是兼容别名。不能只把旧工程的版本号改成 2 而保留旧命令。
+从 v1 升上来时，这张表需要逐项改剧本源码。单改版本号，旧写法依然会报错。
 
 | 旧写法                                                        | v2 写法                                                              |
 | ------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -871,7 +895,7 @@ prefixes:
 
 ### 迁移旧引擎工程
 
-从 Kēne 仓库根目录执行；第一个参数是原工程，第二个是新工程目录：
+在 Kēne 仓库根目录调用下面的命令。先给原工程路径，再给新的目标目录。
 
 ```sh
 cargo migrate /path/to/old-project /path/to/new-project
@@ -879,11 +903,11 @@ cargo validate /path/to/new-project
 cargo dev /path/to/new-project
 ```
 
-`cargo migrate` 使用仓库提供的 publisher-feature alias，将当前适配器可无损表达的非原生作者工程转为 Eiyashou v2。原工程只读，目标必须不存在、位于源工程外，且父目录已经存在；已打包工程和已使用 Eiyashou 的原生工程会被拒绝。它不提供就地 v1→v2 升级。
+`cargo migrate` 是仓库提供的 publisher-feature alias。它把适配器能够无损表达的非原生作者工程转成 Eiyashou v2。源工程只读，目标要在源目录外、尚未创建，并且父目录已经存在。打过包的工程、原生 Eiyashou 工程和就地 v1→v2 升级都不走这条路径。
 
-生成 `config.yaml`、`assets.yaml`、`characters.yaml`、`objects.yaml`、`scripts/` 与引用资源副本，按实际源文件分组，保留控制流；适配器生成的入口/调度可放在入口脚本。资源复制不转码，先在临时目录生成并验证，成功才安装到目标。不能无损表达的命令会明确失败，不承诺全部上游扩展兼容。旧格式资源后续仍需按正式发行要求转换成 WebP/Opus，并用实际媒体复验。
+迁移会生成 `config.yaml`、`assets.yaml`、`characters.yaml`、`objects.yaml`、`scripts/` 和引用资源副本。剧本按源文件分组并保留控制流，适配器生成的入口或调度可以放在入口脚本。先在临时目录生成并校验，成功后才放到目标。遇到无法无损表达的命令会报错。资源复制后保持原格式，正式发行前再转 WebP 和 Opus，并验证实际媒体。
 
-LetsGal v2 的 `characters.json` 中，中心锚点的 `left` / `top` 按画布百分比换算：水平位置转为 `center(x: ...)`，垂直位置从自上而下转为 Kēne 自下而上的偏移，并结合表情、角色、全局高度的优先级扣除半高。显示、更新与序列使用同一换算，distance 缩放保留中心；非中心的 v2 锚点明确拒绝，不猜测。无版本的旧基线继续走旧规则；场景层布局另行处理，不能把角色换算直接套给它。
+LetsGal v2 的 `characters.json` 用画布百分比记中心锚点的 `left` 和 `top`。迁移时，水平位置换成 `center(x: ...)`，垂直方向换成 Kēne 自下而上的偏移，再按表情、角色、全局高度的优先级扣掉半高。显示、更新和序列走同一换算，distance 缩放保留中心。v2 非中心锚点会报错。无版本的旧基线继续走旧规则，场景层则按自己的布局换算。
 
 ### 常见错误
 
@@ -907,8 +931,8 @@ LetsGal v2 的 `characters.json` 中，中心锚点的 `left` / `top` 按画布�
 
 ## 限制与校验
 
-Eiyashou 不执行任意 JavaScript、CSS 或未知宿主扩展，也不提供新的 WebGAL wrapper。时间轴与普通命令使用不同的参数表；`camera.effect`、`particle.show` 的字段不能直接套用到时间轴事件。
+剧本能调用这篇列出的语言能力，任意 JavaScript、CSS、未知宿主扩展和新的 WebGAL wrapper 都在范围外。普通命令和时间轴事件各有自己的参数表，移植 `camera.effect` 或 `particle.show` 的写法时先查对应事件。
 
-使用示例时，替换资源 ID，并补齐 `goto` / `call` 的目标场景。先用 `cargo validate` 检查引用和入口，再在 Preview 测试分支、动画、音视频和读档；解析通过不能代替这些检查。
+复制例子以后，先换成自己的资源 ID，再补齐 `goto`、`call` 指向的场景。用 `cargo validate` 查入口和引用，再到 Preview 试分支、动画、音视频与读档。解析通过之后，实际演出仍值得看一遍。
 
-本文版本使用 Save v11、IR schema v7 和 authoring 协议 v9。存档要求 Program fingerprint 匹配，修改脚本后可能无法加载旧存档；旧 IR 则需重新编译。升级引擎时，以对应版本的解析器、typed model 和 `dev/docs/language.md` 为准。构建、测试与打包见[开发与发布指南](/blog/keine-development-and-release)。
+本文这版使用 Save v11、IR schema v7 和 authoring 协议 v9。存档读取要求 Program fingerprint 一致，改完剧本后旧存档可能打不开，旧 IR 要重新编译。升级引擎时，随所用版本一起查解析器、typed model 和 `dev/docs/language.md`。 [开发与发布指南](/blog/keine-development-and-release)

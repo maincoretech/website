@@ -1,0 +1,42 @@
+.studio-route-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  height: 100%;
+  max-height: 100svh;
+  background: var(--studio-background);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.route-pending::before {
+  content: '';
+  position: fixed;
+  z-index: 300;
+  inset: 0 auto auto 0;
+  width: 40%;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--studio-accent, #b4d4f3), transparent);
+  opacity: 0;
+  animation: route-loading 1.15s 120ms ease-in-out infinite alternate;
+}
+
+@keyframes route-loading {
+  from {
+    opacity: 0.5;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(150%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-pending::before {
+    inset-inline-start: 30%;
+    animation: none;
+    opacity: 1;
+  }
+}

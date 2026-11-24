@@ -5,7 +5,7 @@
   import '$lib/site/product.css';
   const archive = products.find(group => group.category === 'Archive');
 </script>
-<PageMeta title={'maincore · ' + $msg('产品')} description={$msg("用 Kēne 制作视觉小说，用 Hakutaku 打包与更新游戏资源。了解 maincore 的开发工具、使用文档与实测数据。")} />
+<PageMeta title="products · maincore" description="Build visual novels with Kēne and package game assets with Hakutaku. Explore guides and benchmarks for both projects." />
 <div class="product-page project-overview">
 <h1 class="visually-hidden">{$msg("maincore 产品")}</h1>
 <div class="overview-projects">

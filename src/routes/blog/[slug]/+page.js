@@ -1,21 +1,9 @@
 import { error } from '@sveltejs/kit';
+import { blogPosts } from '$lib/site/content.js';
 
 export const prerender = true;
+export const entries = blogPosts.entries;
 
-/** @type {import('@sveltejs/kit').EntryGenerator} */
-export function entries() {
-  const modules = import.meta.glob('$lib/posts/*.md');
-  return Object.keys(modules).map((path) => {
-    const slug = path.split('/').pop()?.replace('.md', '') ?? '';
-    return { slug };
-  });
-}
-
-/** Validate routes without shipping duplicate raw article bodies. */
-export function load({ params }) {
-  const modules = import.meta.glob('$lib/posts/*.md');
-  if (!Object.keys(modules).some(path => path.endsWith('/' + params.slug + '.md'))) {
-    error(404, '文章未找到。');
-  }
-  return {};
+export async function load({ params }) {
+  return (await blogPosts.load(params.slug)) ?? error(404, '文章未找到。');
 }

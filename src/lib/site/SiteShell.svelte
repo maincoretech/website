@@ -1,17 +1,17 @@
 <script>
   import { msg, t } from '$lib/i18n/index.js';
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import { beforeNavigate, afterNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import Header from '$lib/components/Header.svelte';
   import WaterScene from './WaterScene.svelte';
   import { siteConfig } from '$lib/siteConfig.js';
-  import { motionDuration } from '$lib/motion.js';
+  import { motionAllowed, reducedMotionQuery } from '$lib/motion.js';
   import './site.css';
   import './hover.css';
   import './reading.css';
 
-  let { children } = $props();
+  let { children, pending } = $props();
   let panel;
   let waterScene = $state.raw(null);
   let pageHeading = $state.raw(null);
@@ -23,28 +23,25 @@
   const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
   const region = $derived(sections.find(section => path === section.href || path.startsWith(section.href + '/'))?.label ?? (path.startsWith('/archive/') ? 'blog' : 'product'));
   const docsPage = $derived(path === '/docs' || path.startsWith('/docs/'));
-  const documentation = $derived(docsPage || path === '/license' || path.startsWith('/download/') || path === '/404');
+  const documentation = $derived(docsPage || path.startsWith('/download/') || path === '/404');
   const article = $derived(/^\/(blog|archive\/news)\/[^/]+/.test(path) || documentation);
   const detail = $derived((article && !documentation) || path.startsWith('/product/'));
   const backHref = $derived(path.startsWith('/archive/news/') ? '/archive/news' : path.startsWith('/blog/') ? '/blog' : path.startsWith('/product/') ? '/product' : '/');
 
   function onScroll() {
-    waterScene?.scroll(panel.scrollTop - previousScrollTop);
-    previousScrollTop = panel.scrollTop;
-    const next = panel.scrollTop > 280;
-    if (next !== showTop) showTop = next;
+    const top = panel.scrollTop;
+    waterScene?.scroll(top - previousScrollTop);
+    previousScrollTop = top;
+    showTop = top > 280;
   }
   function backToTop() {
-    panel.scrollTo({ top: 0, behavior: motionDuration(200) ? 'smooth' : 'instant' });
+    panel.scrollTo({ top: 0, behavior: motionAllowed() ? 'smooth' : 'instant' });
   }
   beforeNavigate(({ from }) => {
     if (from && panel) scrollPositions.set(from.url.pathname + from.url.search, panel.scrollTop);
   });
-  afterNavigate(async ({ to, type }) => {
-    await tick();
-    // Let the new reading width settle before restoring the nested scroll area.
-    // Article and list routes use different widths, including during View Transitions.
-    await new Promise(requestAnimationFrame);
+  afterNavigate(({ to, type }) => {
+    // Restore the nested reader after the new page is mounted.
     if (!panel || !to || to.url.href !== $page.url.href) return;
     const top = type === 'popstate' ? scrollPositions.get(to.url.pathname + to.url.search) ?? 0 : 0;
     panel.scrollTop = top;
@@ -57,7 +54,7 @@
     showTop = panel.scrollTop > 280;
   });
   onMount(() => {
-    const media = matchMedia('(prefers-reduced-motion: reduce)');
+    const media = matchMedia(reducedMotionQuery);
     const update = () => reducedMotion = media.matches;
     update();
     media.addEventListener('change', update);
@@ -65,7 +62,7 @@
   });
 </script>
 
-<div class="site-shell" class:article-page={article} class:docs-page={docsPage} class:wide-list={path === '/' || path === '/blog'}>
+<div class="site-shell" class:route-pending={pending} class:article-page={article} class:docs-page={docsPage}>
   <a class="skip-link" href="#site-content">{$msg("跳到内容")}</a>
   <div class="site-viewport">
     {#if !article}<WaterScene bind:this={waterScene} {region} still={reducedMotion} />{/if}
@@ -78,7 +75,7 @@
           <a href={section.href} class:active={region === section.label} aria-current={region === section.label ? 'page' : undefined}><span>{$t('nav.' + section.label)}</span></a>
         {/each}
     </nav>{/if}
-    <main id="site-content" class="reading-panel content-surface" class:detail-reading={detail} bind:this={panel} onscroll={onScroll} tabindex="-1">
+    <main id="site-content" class="reading-panel content-surface" bind:this={panel} onscroll={onScroll} tabindex="-1" aria-busy={pending || undefined}>
       {#if detail && path !== '/product/keine'}<div class="reading-heading">
         <span class="page-section" tabindex="-1" bind:this={pageHeading}>{$t('nav.' + region)}</span>
         {#if path !== '/' && path !== '/product'}<a class="reading-back" href={backHref} aria-label={$msg(backHref === '/' ? $t('back.home') : '返回栏目')}>←</a>{/if}

@@ -2,6 +2,8 @@
 title: Kēne｜另一个视觉小说引擎
 date: 2026-08-03
 priority: 5
+titleEn: "Introducing Kēne, a Native Visual Novel Engine"
+descriptionEn: "An introduction to the Rust, Bevy, and wgpu visual novel engine for Windows, macOS, and Linux."
 ---
 
 [Kēne](https://github.com/maincoretech/keine) 是基于 Rust、Bevy 和 wgpu 的原生视觉小说引擎，面向 Windows、macOS 和 Linux，采用 1920×1080 设计空间。

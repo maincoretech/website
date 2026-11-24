@@ -2,6 +2,8 @@
 title: hexz_k｜游戏资源打包工具
 date: 2026-06-18
 priority: 2
+titleEn: "hexz_k, a Game Asset Packaging Tool"
+descriptionEn: "A command-line and desktop tool for packaging game assets with hexz on Windows, macOS, and Linux."
 ---
 
 基于 [hexz](https://github.com/hexz-org/hexz) 的游戏资源打包工具，提供命令行和 egui 界面，支持 Windows、macOS 和 Linux。

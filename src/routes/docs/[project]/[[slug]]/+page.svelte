@@ -1,6 +1,7 @@
 <script>
   import { docs, projects } from '$lib/docs/projects.js';
   import { msg } from '$lib/i18n/index.js';
+  import { translateMessage } from '$lib/i18n/message-runtime.js';
   import TableOfContents from '$lib/site/TableOfContents.svelte';
   import PageMeta from '$lib/site/PageMeta.svelte';
   import sources from '$lib/docs/sources.json';
@@ -9,8 +10,10 @@
   const source = $derived(sources[data.doc.project + "/" + data.doc.slug]);
   const chapter = $derived(docs.filter(d => d.project === data.project.id));
   const index = $derived(chapter.findIndex(d => d.slug === data.doc.slug));
+  const englishTitle = $derived(translateMessage(data.doc.title, 'en'));
 </script>
-<PageMeta title={data.project.name + ' · ' + $msg(data.doc.title) + ' · maincore'} description={data.project.name + ' — ' + $msg(data.doc.title)} />
+<PageMeta title={`${data.project.name} · ${englishTitle} · maincore`}
+  description={`${englishTitle} in the ${data.project.name} documentation.`} />
 <nav class="docs-projects" aria-label={$msg('项目文档')}>
   <a href="/docs">{$msg('文档')}</a>
   {#each projects as project}<a href={`/docs/${project.id}`} aria-current={project.id === data.project.id ? 'true' : undefined}>{project.name}</a>{/each}

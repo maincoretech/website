@@ -2,11 +2,11 @@
   import { msg } from '$lib/i18n/index.js';
   import comparison from '../../../static/posts/keine-tday/summary.json';
   import evidence from '../../../static/benchmarks/preview-highlights.json';
+  import { median } from './benchmark-data.js';
   import { comparisonScale, comparisonSeries, seriesMeasurements } from './benchmark-scale.js';
 
   const tones = ['#c9e2eb', '#afcbd5', '#96b3be', '#7e9da9', '#698895', '#577482', '#466170'];
   const patterns = { keine: 'solid', renpy: 'dots', suika: 'diagonal', webgal: 'horizontal', tyrano: 'dashes', letsgal: 'cross', onscripter: 'vertical' };
-  const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
   const runtimeCharts = [
     { id: 'cpu', label: '静态 CPU', unit: '%', digits: 2, rows: comparison.engines.map(e => ({ ...e, value: e.workloads.idle.cpu_percent })) },
     { id: 'rss', label: '静态内存', unit: 'MiB', digits: 1, rows: comparison.engines.map(e => ({ ...e, value: e.workloads.idle.rss_mib })) },
@@ -92,7 +92,10 @@
   .comparison-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 24px; color: #b7ccd8; font: .74rem/1.4 var(--f-b); }
   .comparison-value { min-width: 5ch; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; color: #c9e2eb; }
   .comparison-track { display: block; height: 6px; background: rgb(100 133 150 / 10%); }
-  .comparison-fill { display: block; width: var(--amount); height: 100%; }
+  .comparison-fill {
+    display: block; width: var(--amount); height: 100%;
+    transition: width var(--expressive-spatial-time) var(--expressive-effects-ease);
+  }
   .comparison-scale { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin-top: 8px; color: #879ba8; font: .64rem/1.5 var(--f-b); }
   .scale-toggle { padding: 2px 4px; border: 0; background: transparent; color: #afc6d3; font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
   .scale-toggle:hover { background: rgb(160 170 180 / 12%); }

@@ -3,7 +3,6 @@ const zh = {
   lang: 'zh',
   langLabel: '中文',
 
-  contentLicense: { summary: '署名 · 非商业 · 不得发布改编', details: '许可说明' },
   nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
@@ -27,7 +26,7 @@ const zh = {
     about: { subtitle: '关于 maincore' }
   },
 
-  search: { placeholder: '搜索', no_results: '无结果' },
+  search: { placeholder: '搜索', no_results: '无结果', loading: '正在搜索' },
 
   a11y: { menu: '菜单', back_to_top: '返回顶部' },
 

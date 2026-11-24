@@ -3,7 +3,6 @@ const zhHant = {
   lang: 'zh-Hant',
   langLabel: '繁體',
 
-  contentLicense: { summary: '署名 · 非商業 · 不得發布改編', details: '許可說明' },
   nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
@@ -27,7 +26,7 @@ const zhHant = {
     about: { subtitle: '關於 maincore' }
   },
 
-  search: { placeholder: '搜尋', no_results: '無結果' },
+  search: { placeholder: '搜尋', no_results: '無結果', loading: '正在搜尋' },
 
   a11y: { menu: '選單', back_to_top: '返回頂部' },
 

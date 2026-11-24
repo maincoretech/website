@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "water-site",
+      "name": "website",
       "dependencies": {
         "@fontsource/inconsolata": "^5.2.8",
         "@fontsource/lato": "^5.2.7",

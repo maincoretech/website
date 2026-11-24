@@ -2,21 +2,18 @@ export const prerender = true;
 
 import { siteConfig } from '$lib/siteConfig.js';
 import { docs } from '$lib/docs/projects.js';
+import { blogPosts, newsPosts } from '$lib/site/content.js';
 
 /**
  * Sitemap XML — 自动扫描所有页面和博客
  */
-export async function GET() {
+export function GET() {
   const base = `https://${siteConfig.domain}`;
 
-  const pages = ['/product', '/product/keine', '/product/hakutaku', '/blog', '/about'];
+  const pages = ['/', '/works', '/product', '/product/keine', '/product/hakutaku', '/blog', '/about'];
 
-  const postModules = import.meta.glob('$lib/posts/*.md', { eager: true });
-  const blogSlugs = Object.keys(postModules).map((p) => '/blog/' + p.split('/').pop()?.replace('.md', ''));
-
-  const newsModules = import.meta.glob('$lib/news/*.md');
-  const newsSlugs = Object.keys(newsModules).map(p => '/archive/news/' + p.split('/').pop().replace('.md', ''));
-  const urls = [...pages, '/docs', '/license', '/download/keine', '/archive/news', ...newsSlugs, ...docs.map(d => d.href), ...blogSlugs];
+  const contentUrls = [...newsPosts.items, ...docs, ...blogPosts.items].map(({ href }) => href);
+  const urls = [...pages, '/docs', '/download/keine', '/archive/news', ...contentUrls];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

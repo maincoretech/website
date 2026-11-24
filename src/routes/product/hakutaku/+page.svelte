@@ -5,7 +5,7 @@
   import ProjectExplorer from '$lib/site/ProjectExplorer.svelte';
   import '$lib/site/product.css';
 </script>
-<PageMeta title={$msg("Hakutaku · 游戏资源格式 · maincore")} description={$msg("面向视觉小说的加密资源格式。用签名快照与可复用数据段组织游戏内容，支持随机访问与增量更新。")} />
+<PageMeta title="Hakutaku · game asset format · maincore" description="An encrypted asset format for visual novels, with signed snapshots and reusable segments for random access and incremental updates." />
 <div class="product-page">
   <section class="product-hero" aria-labelledby="hakutaku-title">
     <div>
@@ -32,7 +32,7 @@
   <section class="product-section" aria-labelledby="hakutaku-details">
     <h2 id="hakutaku-details">{$msg("性能与资源更新")}</h2>
 
-    <div class="product-explore"><ProjectExplorer product="hakutaku" intro={false} /></div>
+    <ProjectExplorer product="hakutaku" />
   </section>
 </div>
 <style>

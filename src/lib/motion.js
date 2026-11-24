@@ -1,54 +1,47 @@
 import { tick } from 'svelte';
-import { fly } from 'svelte/transition';
-import { cubicOut } from 'svelte/easing';
 
 const switches = new WeakMap();
-const ease = 'cubic-bezier(.22, 1, .36, 1)';
+export const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 
-export function motionDuration(ms) {
-  return typeof window === 'undefined' || matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms;
+export function motionAllowed() {
+  return typeof window !== 'undefined' && !matchMedia(reducedMotionQuery).matches;
 }
 
-export function popup(node) {
-  return fly(node, { y: -5, duration: motionDuration(160), easing: cubicOut });
+function timing(style, type) {
+  return {
+    duration: parseFloat(style.getPropertyValue(`--expressive-${type}-time`)),
+    easing: style.getPropertyValue(`--expressive-${type}-ease`).trim()
+  };
 }
 
-export function reveal(node) {
-  if (!node?.isConnected || !node.animate || !motionDuration(180)) return;
-  const animation = node.animate(
-    [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }],
-    { duration: 180, easing: ease }
-  );
-  animation.finished.catch(() => {});
-  return animation;
-}
-
-// Keep the component mounted (including its timers and focusable controls).
-// A newer interaction cancels the old one before it can overwrite the latest choice.
+// Commit every choice immediately. Interrupt any motion on the same content.
 export async function transitionContent(node, update) {
-  if (!node) { await update(); return true; }
+  if (!node?.animate) {
+    update();
+    return;
+  }
   const previous = switches.get(node);
-  const opacity = previous ? getComputedStyle(node).opacity : 1;
-  previous?.animation?.cancel();
-  const current = {};
+  let start = { opacity: 0.76, transform: 'translateY(4px)' };
+  if (previous?.some((animation) => animation.playState === 'running')) {
+    const { opacity, transform } = getComputedStyle(node);
+    start = { opacity, transform };
+  }
+  previous?.forEach((animation) => animation.cancel());
+  const current = [];
   switches.set(node, current);
+
   try {
-    if (node.isConnected && node.animate && node.getClientRects().length && motionDuration(70)) {
-      current.animation = node.animate([{ opacity }, { opacity: 0 }], { duration: 70, easing: 'ease-out', fill: 'forwards' });
-      await current.animation.finished.catch(() => {});
-    }
-    if (switches.get(node) !== current || !node.isConnected) return false;
-    await update();
+    update();
     await tick();
-    if (switches.get(node) !== current || !node.isConnected) return false;
-    current.animation?.cancel();
-    current.animation = reveal(node);
-    await current.animation?.finished.catch(() => {});
-    return switches.get(node) === current;
+    if (switches.get(node) !== current || !node.isConnected || !motionAllowed() || !node.getClientRects().length)
+      return;
+    const style = getComputedStyle(node);
+    current.push(
+      node.animate([{ opacity: start.opacity }, { opacity: 1 }], timing(style, 'effects')),
+      node.animate([{ transform: start.transform }, { transform: 'none' }], timing(style, 'spatial'))
+    );
+    await Promise.allSettled(current.map((animation) => animation.finished));
   } finally {
-    if (switches.get(node) === current) {
-      current.animation?.cancel();
-      switches.delete(node);
-    }
+    if (switches.get(node) === current) switches.delete(node);
   }
 }

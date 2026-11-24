@@ -2,7 +2,7 @@
   import PageMeta from '$lib/site/PageMeta.svelte';
   import { msg } from '$lib/i18n/index.js';
 </script>
-<PageMeta title="404 · maincore" description={$msg('这个地址没有对应的页面。')} noindex />
+<PageMeta title="404 · maincore" description="The requested page could not be found." noindex />
 <h1 class="site-page-title">404</h1>
 <p class="site-intro">{$msg('这个地址没有对应的页面。')}</p>
 <div class="article-prose">

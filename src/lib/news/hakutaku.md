@@ -2,6 +2,8 @@
 title: Hakutaku｜另一个资源包格式
 date: 2026-08-22
 priority: 6
+titleEn: "Introducing Hakutaku, a Visual Novel Asset Format"
+descriptionEn: "The first version of Hakutaku pairs a signed snapshot with reusable asset segments."
 ---
 
 [Hakutaku](https://github.com/maincoretech/hakutaku) 是面向视觉小说的资源格式。这次介绍 v1：一个签名快照 `game.haku`，配上若干可跨版本复用的 `.taku` 数据段。

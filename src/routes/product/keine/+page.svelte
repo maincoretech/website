@@ -32,7 +32,7 @@
     { title: 'Demand-driven', text: '按画面与输入需要唤醒，音频独立推进；资源预取有界，媒体流式读取。' }
   ];
 </script>
-<PageMeta title={$msg("Kēne · 视觉小说引擎 · maincore")} description={$msg("Kēne 是带原生编辑器的视觉小说引擎。用 Eiyashou 编写剧情与多轨演出，内建立绘动画、镜头特效、原生预览和 Hakutaku 增量资源打包。")} />
+<PageMeta title="Kēne · visual novel engine · maincore" description="A native visual novel engine and editor with Eiyashou scripting, live preview, and incremental asset packaging with Hakutaku." />
 <div class="product-page keine-product">
   <nav class="product-local-nav" aria-label={$msg("Kēne 页面导航")}>
     <a href="/product">{$msg("← 所有项目")}</a>
@@ -132,7 +132,7 @@
   </section>
   <section class="product-section" aria-labelledby="keine-details">
     <h2 id="keine-details">{$msg("性能与架构")}</h2>
-    <div class="product-explore"><ProjectExplorer product="keine" intro={false} includeLive={false} showMetrics={false} /></div>
+    <ProjectExplorer product="keine" showMetrics={false} />
   </section>
   <aside class="keine-related">{$msg("资源包格式：")} <a href="/product/hakutaku">Hakutaku →</a></aside>
 </div>

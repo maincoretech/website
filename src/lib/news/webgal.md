@@ -2,6 +2,8 @@
 title: WebGAL_k｜桌面端视觉小说引擎
 date: 2026-06-18
 priority: 1
+titleEn: "WebGAL_k, a Desktop Visual Novel Engine"
+descriptionEn: "A desktop adaptation of WebGAL that uses Tauri and hexz to package and update game assets."
 ---
 
 WebGAL_k 基于 [WebGAL](https://github.com/OpenWebGAL/WebGAL)，用 [Tauri v2](https://v2.tauri.app) 打包桌面应用，用 [hexz](https://github.com/maincoretech/hexz_k) 将游戏资源装进单个 `.hxz` 文件。资源包可以复用未修改的数据，方便后续增量更新。

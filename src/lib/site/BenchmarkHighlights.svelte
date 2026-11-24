@@ -6,8 +6,8 @@
   import ScriptBenchmarks from './ScriptBenchmarks.svelte';
   import ArchiveBenchmarks from './ArchiveBenchmarks.svelte';
   import ArchiveMethod from './ArchiveMethod.svelte';
+  import { median } from './benchmark-data.js';
   let { product, showMetrics = true } = $props();
-  const median = values => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
   const reduction = (before, after) => ((1 - median(after) / median(before)) * 100).toFixed(1);
   const k = evidence.keine;
   const h = evidence.hakutaku;

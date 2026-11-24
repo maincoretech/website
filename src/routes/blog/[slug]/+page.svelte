@@ -1,25 +1,14 @@
 <script>
-  /**
-   * 单篇博客文章页
-   * URL: /blog/[slug]
-   * 自动匹配 src/lib/posts/ 下的同名 .md 文件
-   */
-  import { page } from '$app/stores';
-  import { error } from '@sveltejs/kit';
-  import { t } from '$lib/i18n/index.js';
   import Article from '$lib/site/Article.svelte';
+  import Icon from '$lib/studio/Icon.svelte';
+  import { pressFeedback } from '$lib/studio/press-feedback.js';
 
-  const modules = import.meta.glob('$lib/posts/*.md', { eager: true });
-
-  let contentState = $derived.by(() => {
-    const slug = $page.params.slug;
-    const match = Object.entries(modules).find(([p]) => p.endsWith(`/${slug}.md`));
-    if (!match) error(404, $t('error.post_not_found') + ` "${slug}"`);
-    const [, mod] = match;
-    return { Content: mod.default, meta: mod.metadata ?? {} };
-  });
-
+  let { data } = $props();
 </script>
-<Article meta={contentState.meta} articleKey={$page.params.slug}>
-  <contentState.Content />
-</Article>
+<div class="studio-article" lang="zh-Hans">
+  <a href="/blog" class="studio-icon-button studio-action studio-press" lang="en" aria-label="back to blog"
+    title="back to blog" use:pressFeedback><Icon name="back" /></a>
+  <Article meta={data.meta} articleKey={data.slug} supportingToc>
+    <data.Content />
+  </Article>
+</div>

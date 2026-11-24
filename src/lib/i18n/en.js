@@ -3,7 +3,6 @@ const en = {
   lang: 'en',
   langLabel: 'English',
 
-  contentLicense: { summary: 'Attribution · Noncommercial · No shared adaptations', details: 'License details' },
   nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
@@ -27,7 +26,7 @@ const en = {
     about: { subtitle: 'About maincore' }
   },
 
-  search: { placeholder: 'search', no_results: 'no results' },
+  search: { placeholder: 'search', no_results: 'no results', loading: 'Searching' },
 
   a11y: { menu: 'Menu', back_to_top: 'Back to top' },
 

@@ -3,7 +3,6 @@ const ja = {
   lang: 'ja',
   langLabel: '日本語',
 
-  contentLicense: { summary: '表示 · 非営利 · 改変物の共有禁止', details: 'ライセンスについて' },
   nav: { docs: 'docs', news: 'news', product: 'product', blog: 'blog', about: 'about' },
 
   sidebar: {
@@ -27,7 +26,7 @@ const ja = {
     about: { subtitle: 'maincore について' }
   },
 
-  search: { placeholder: '検索', no_results: '結果なし' },
+  search: { placeholder: '検索', no_results: '結果なし', loading: '検索中' },
 
   a11y: { menu: 'メニュー', back_to_top: 'トップに戻る' },
 

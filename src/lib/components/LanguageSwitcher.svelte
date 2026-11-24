@@ -1,7 +1,7 @@
 <script>
   import { lang, setLang, msg } from '$lib/i18n/index.js';
   import { Translate } from '$lib/icons.js';
-  import { popup, transitionContent } from '$lib/motion.js';
+  import { transitionContent } from '$lib/motion.js';
 
   const langs = [
     { code: 'zh', label: '简' },
@@ -12,10 +12,12 @@
 
   let open = $state(false);
   let trigger;
+  const listId = $props.id();
 
   function pick(code) {
     open = false;
-    transitionContent(document.querySelector('.route-content'), () => setLang(code));
+    trigger?.focus();
+    if ($lang !== code) transitionContent(document.querySelector('.route-content'), () => setLang(code));
   }
 
   function toggle() { open = !open; }
@@ -38,31 +40,30 @@
     onclick={(e) => { e.stopPropagation(); toggle(); }}
     aria-label={$msg('语言')}
     aria-expanded={open}
+    aria-controls={listId}
   >
     {@html Translate}
     <span class="lang-label">{langs.find(l => l.code === $lang)?.label ?? $lang}</span>
   </button>
 
-  {#if open}
-    <ul class="lang-drop" transition:popup>
-      {#each langs as l}
-        <li>
-          <button
-            class="lang-opt"
-            class:active={$lang === l.code}
-            onclick={() => pick(l.code)}
-          >{l.label}</button>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+  <ul class="lang-drop expressive-popover" id={listId} data-open={open} inert={!open}>
+    {#each langs as l}
+      <li>
+        <button
+          class="lang-opt"
+          class:active={$lang === l.code}
+          onclick={() => pick(l.code)}
+        >{l.label}</button>
+      </li>
+    {/each}
+  </ul>
 </span>
 
 <style>
   .lang-wrap { position: relative; display: inline-flex; align-items: center; margin-right: 10px; height: 100%; padding: 9px 0; }
   .lang-btn {
     background: var(--c-sh, rgba(11,80,140,.44)); color: #fff; border: none; border-radius: 4px;
-    height: 100%; padding: 0 7px; cursor: pointer; transition: background .15s, border-radius .15s, box-shadow .15s;
+    height: 100%; padding: 0 7px; cursor: pointer;
     display: inline-flex; align-items: center; gap: 4px; font: .75rem var(--f-b, sans-serif);
     white-space: nowrap; line-height: 1;
   }
@@ -80,7 +81,7 @@
   .lang-opt {
     display: block; width: 100%; padding: 5px 14px; border: none; background: none;
     font: .75rem var(--f-b, sans-serif); color: var(--c-t); cursor: pointer;
-    text-align: center; transition: background .1s;
+    text-align: center; transition: background-color var(--expressive-effects-time) var(--expressive-effects-ease);
   }
   .lang-opt:hover { background: rgba(80,120,150,.3); }
   .lang-opt.active { color: var(--c-l); font-weight: 700; }

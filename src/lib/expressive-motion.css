@@ -1,0 +1,89 @@
+:root {
+  --expressive-spatial-time: 220ms;
+  --expressive-effects-time: 160ms;
+  --expressive-spatial-ease: cubic-bezier(0.2, 0.75, 0.25, 1.06);
+  --expressive-effects-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Short spatial overshoot and a monotonic effects curve for web controls. */
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --expressive-spatial-ease: linear(0, 0.12 8%, 0.36 16%, 0.62 25%, 0.84 36%, 0.97 48%, 1.026 64%, 1.014 79%, 1);
+    --expressive-effects-ease: linear(0, 0.045 8%, 0.18 17%, 0.49 33%, 0.77 50%, 0.93 70%, 0.985 88%, 1);
+  }
+}
+
+.expressive-chevron {
+  transition: transform var(--expressive-spatial-time) var(--expressive-spatial-ease);
+}
+:is(details[open] > summary, button[aria-expanded='true']) > .expressive-chevron {
+  transform: rotate(180deg);
+}
+
+.expressive-popover {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    transform var(--expressive-spatial-time) var(--expressive-spatial-ease),
+    opacity var(--expressive-effects-time) var(--expressive-effects-ease),
+    visibility 0s linear var(--expressive-effects-time);
+}
+.expressive-popover[data-open='true'] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+@supports selector(details::details-content) {
+  details::details-content {
+    opacity: 0;
+    transition:
+      opacity var(--expressive-effects-time) var(--expressive-effects-ease),
+      content-visibility var(--expressive-spatial-time) allow-discrete;
+  }
+
+  details[open]::details-content {
+    opacity: 1;
+  }
+
+  .expressive-overlay::details-content {
+    transform: translateY(-5px);
+    transition:
+      transform var(--expressive-spatial-time) var(--expressive-spatial-ease),
+      opacity var(--expressive-effects-time) var(--expressive-effects-ease),
+      content-visibility var(--expressive-spatial-time) allow-discrete;
+  }
+
+  .expressive-overlay[open]::details-content {
+    transform: none;
+  }
+
+  @supports (interpolate-size: allow-keywords) {
+    details:not(.expressive-overlay)::details-content {
+      interpolate-size: allow-keywords;
+      block-size: 0;
+      overflow: clip;
+      transition:
+        block-size var(--expressive-spatial-time) var(--expressive-effects-ease),
+        opacity var(--expressive-effects-time) var(--expressive-effects-ease),
+        content-visibility var(--expressive-spatial-time) allow-discrete;
+    }
+
+    details[open]:not(.expressive-overlay)::details-content {
+      block-size: auto;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --expressive-spatial-time: 0ms;
+    --expressive-effects-time: 0ms;
+  }
+  details::details-content {
+    transition: none;
+  }
+}

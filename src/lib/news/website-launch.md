@@ -2,6 +2,8 @@
 title: Website 上线
 date: 2026-06-18
 priority: 0
+titleEn: "maincore Website Launch"
+descriptionEn: "The original announcement of the maincore website."
 ---
 
 maincore 官网~~激情上线~~。

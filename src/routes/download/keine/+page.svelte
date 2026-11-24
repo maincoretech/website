@@ -1,5 +1,6 @@
 <script>
   import PageMeta from '$lib/site/PageMeta.svelte';
+  import Icon from '$lib/studio/Icon.svelte';
   import { msg } from '$lib/i18n/index.js';
   const packages = [
     { name: 'macOS', arch: 'Apple Silicon · M 系列', file: 'keine-editor-macos-arm64.zip' },
@@ -7,7 +8,7 @@
     { name: 'Linux', arch: 'x64 · glibc 2.39+', file: 'keine-editor-linux-x64.zip' }
   ];
 </script>
-<PageMeta title={$msg('下载 Kēne') + ' · maincore'} description={$msg('选择平台、安装编辑器，并预览第一个剧本。')} />
+<PageMeta title="download Kēne · maincore" description="Download Kēne Editor for macOS, Windows, or Linux, then preview your first script." />
 <article class="download-page">
   <a class="back" href="/product/keine">← Kēne</a>
   <h1>{$msg('下载 Kēne')}</h1>
@@ -30,7 +31,10 @@
     <a href="https://github.com/maincoretech/keine/releases/tag/editor-latest">{$msg('版本说明 ↗')}</a>
   </div>
   <details class="install-help">
-    <summary>{$msg('系统要求与启动帮助')}</summary>
+    <summary>
+      <span class="help-chevron expressive-chevron" aria-hidden="true"><Icon name="chevron-down" size={16} /></span>
+      {$msg('系统要求与启动帮助')}
+    </summary>
     <ul>
       <li><strong>macOS</strong> — {$msg('适用于 M 系列 Mac；暂不提供 Intel Mac 预编译包。')} {$msg('启动')} <code>Kēne Editor.app</code>。</li>
       <li><strong>Windows</strong> — {$msg('启动')} <code>editor.exe</code>。<strong>Linux</strong> — {$msg('运行库基线为 Ubuntu 24.04 / glibc 2.39；需要图形桌面及显卡驱动。')} {$msg('启动')} <code>./editor</code>。</li>
@@ -62,7 +66,9 @@
   .help-links { display: flex; flex-wrap: wrap; gap: 4px 24px; }
   .help-links a { display: inline-flex; align-items: center; min-height: 44px; font-size: .85rem; }
   .install-help { margin-top: 8px; border-top: 1px solid #304650; font-size: .82rem; color: #94adba; }
-  summary { cursor: pointer; padding: 14px 0; min-height: 44px; }
+  summary { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 14px 0; min-height: 44px; }
+  summary::-webkit-details-marker { display: none; }
+  .help-chevron { display: inline-flex; }
   .install-help ul { padding-left: 20px; }
   .install-help li { margin-bottom: 12px; }
   @media(max-width: 640px) {

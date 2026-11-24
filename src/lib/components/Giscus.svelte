@@ -1,10 +1,10 @@
 <script>
-  import { browser, dev } from '$app/environment';
+  import { dev } from '$app/environment';
+  import { onMount } from 'svelte';
 
-  let loaded = $state(false);
+  let container;
 
-  $effect(() => {
-    if (!browser || loaded) return;
+  function load() {
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
     script.setAttribute('data-repo', 'maincoretech/website');
@@ -24,12 +24,21 @@
     script.setAttribute('data-loading', 'lazy');
     script.setAttribute('crossorigin', 'anonymous');
     script.async = true;
-    document.getElementById('giscus-container')?.appendChild(script);
-    loaded = true;
+    container.appendChild(script);
+  }
+
+  onMount(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || !container.isConnected) return;
+      observer.disconnect();
+      load();
+    }, { rootMargin: '240px' });
+    observer.observe(container);
+    return () => observer.disconnect();
   });
 </script>
 
-<div id="giscus-container" class="giscus"></div>
+<div id="giscus-container" class="giscus" bind:this={container}></div>
 
 <style>
   .giscus {

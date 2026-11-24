@@ -36,7 +36,7 @@ for (const [route,p] of pages) {
   const canonical = p.tags.find(t => t.rel === 'canonical')?.href;
   if (route === '/404') { assert.ok(meta('robots')?.includes('noindex')); assert.equal(canonical,undefined); }
   else {
-    assert.equal(canonical,origin + (route === '/' ? '/product' : route), route + ': canonical');
+    assert.equal(canonical,origin + route, route + ': canonical');
     if (titles.has(title)) assert.equal(canonical,titles.get(title), route + ': duplicate page title');
     titles.set(title,canonical);
   }

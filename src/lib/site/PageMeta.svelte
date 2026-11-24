@@ -1,12 +1,10 @@
 <script>
   import { page } from '$app/stores';
-  import { lang } from '$lib/i18n/index.js';
   import { siteConfig } from '$lib/siteConfig.js';
   let { title, description, article = false, date, noindex = false } = $props();
   const origin = 'https://' + siteConfig.domain;
   const path = $derived($page.url.pathname.replace(/\/$/, '') || '/');
-  const url = $derived(origin + (path === '/' ? '/product' : path));
-  const locale = $derived(({ zh: 'zh_CN', 'zh-Hant': 'zh_TW', en: 'en_US', ja: 'ja_JP' })[$lang]);
+  const url = $derived(origin + path);
 </script>
 
 <svelte:head>
@@ -18,7 +16,7 @@
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={url} />
-  <meta property="og:locale" content={locale} />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:image" content={origin + '/social/maincore.png'} />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
